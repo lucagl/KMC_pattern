@@ -61,7 +61,7 @@ However if I do so the coupling between the two must happen in a separate routin
 //Define global variables
 const double  r0 =1, J=1, A= 1, F = 1;//Maybe some from input file?
 const double PI = 3.14159265358979323846;
-const int n_classes = 3;
+const int n_classes = 5;
 int L;
 
 int n_proc,ierr;
@@ -103,13 +103,14 @@ int main(int argc, char **argv){
 
 
 	//int x,y; //just dummy variables fr clarity
-	double T,concentration;
+	double T,conc0;
 
 	int int_steps,frame;
 
 	clock_t t1,t2;
 	t1=clock();
 	float seconds;
+	int counter [n_classes];
 	
 // MPI stuff ------ 
 	/* Now replicate this process to create parallel processes.
@@ -168,26 +169,27 @@ int main(int argc, char **argv){
 	srand (time(NULL)*(proc_ID+1));// initialise random generator differently for each thread
 	
 
+int i_rand =i_rand = rand() % 4 +1;
+std:: cout << i_rand;
 
-
-
-	L = 100;
-	n_steps = 4000;
+	L = 10;
+	n_steps = 10;
 	print_every = 20;
-	concentration = 0.1;
-	radius = 30;
+	conc0 = 0.1;
+	radius = 2;
 	T =3;
 
 
 // INITIALIZATION -----------------
 	Island island(radius);
-	Adatom adatom(concentration);
+	Adatom adatom(conc0);
 
-	Events R[4] = {Events(L),Events(L),Events(L),Events(L)};
+	Events R[5] = {Events(L),Events(L),Events(L),Events(L),Events(L)};
 	R[0].D = energy(1,T,J);
 	R[1].D = energy(2,T,J);
 	R[2].D = energy(3,T,J);
 	R[3].D = A;
+	R[4].D = 4.0*F; //4 possible movements
 	island.init_neighbours(); 
 
 // Fill classes
@@ -202,11 +204,21 @@ int main(int argc, char **argv){
 			if (island.nn[y][x]==3){
 				R[2].populate(x,y);
 			}
-			if (adatom.matrix[y][x] >=1){
+			
+			for(int k=0; k<adatom.matrix[y][x]; k++){
+				// I consider possibility of multiple adatoms on top of each other 
+				R[4].populate(x,y);
 				if(is_attSite(x,y,island)) R[3].populate(x,y);
 			}
+			}
 		}
-	}
+	
+std :: cout << "\nTRYING EXIST\n" ;
+int x =rand() %L;
+int y =rand() %L;
+
+std :: cout << "\n coordinate " << x <<" ,  "<< y << ":\t"<<R[4].exist(x,y) ;
+
 
 // -----------------------------------------
 
@@ -230,33 +242,54 @@ int main(int argc, char **argv){
 
 
 // CHECKS ------------------------------
-	// std :: cout<< "\n island \n";
+	std :: cout<< "\n island \n";
+	for ( int i = 0;i < L;i++){
+		for(int j =0;j<L;j++){
+			std::cout << "\t"<< island.matrix[i][j]; 
+		}
+		std :: cout <<"\n";
+	}
+	std :: cout<< "\n adatoms \n";
+	for ( int i = 0;i < L;i++){
+		for(int j =0;j<L;j++){
+			std::cout << "\t"<< adatom.matrix[i][j]; 
+		}
+		std :: cout <<"\n";
+	}
+	std :: cout << "\n total number adatoms"<< (adatom.N) ;
+	std :: cout << "\n Elements in det class 1:  " << R[0].N << "\t elements in det class 2:  " << R[1].N << "\t elements in det class 3:  " << R[2].N  << "\n";
+ 	std :: cout << "\n Elements in att class:" << R[3].N << "\t elements in diffusion class" << R[4].N << "\n";
+
+	// for (int i = 0; i < R[3].N; i++)
+ 	//  {
+	// 	std :: cout << i <<"\t(" << R[4].where(i)[0]<< ","<< R[4].where(i)[1] << ")\n";
+ 	// }
+	// std :: cout<< "\n diffusion mask \n";
 	// for ( int i = 0;i < L;i++){
 	// 	for(int j =0;j<L;j++){
-	// 		std::cout << "\t"<< island.matrix[i][j]; 
+	// 		std::cout << "\t"<< R[4].mask[i][j]; 
 	// 	}
-	// 	std :: cout <<"\n";
+	// std :: cout <<"\n";
 	// }
-	// std :: cout<< "\n adatoms \n";
-	// for ( int i = 0;i < L;i++){
-	// 	for(int j =0;j<L;j++){
-	// 		std::cout << "\t"<< adatom.matrix[i][j]; 
-	// 	}
-	// 	std :: cout <<"\n";
-	// }
-	// std :: cout << "\n total number adatoms"<< (concentration * L*L) ;
- 	// std :: cout << "\n Elements in att class:" << R[3].N << "\n";
+
 	// for (int i = 0; i < R[3].N; i++)
  	//  {
 	// 	std :: cout << i <<"\t(" << R[3].where(i)[0]<< ","<< R[3].where(i)[1] << ")\n";
  	// }
-	// std :: cout<< "\n attachment \n";
-	// for ( int i = 0;i < L;i++){
-	// 	for(int j =0;j<L;j++){
-	// 		std::cout << "\t"<< R[3].mask[i][j]; 
-	// 	}
-	// std :: cout <<"\n";
-	//}
+	std :: cout<< "\n attachment mask\n";
+	for ( int i = 0;i < L;i++){
+		for(int j =0;j<L;j++){
+			std::cout << "\t"<< R[3].mask[i][j]; 
+		}
+	std :: cout <<"\n";
+	}
+
+
+
+
+
+
+
 // 	std :: cout<< "\n neighbours \n";
 // 	for ( int i = 0;i <L;i++){
 // 		for(int j =0;j<L;j++){
@@ -286,7 +319,7 @@ T =1 ;
 
 for (int k = 0; k < n_steps; k++)
 {
-	KMC_step(R, island, adatom, T);
+	KMC_step(R, island, adatom, T, counter);
 
 	if ((k%print_every)== 0){
 		frame+=1;
@@ -295,66 +328,49 @@ for (int k = 0; k < n_steps; k++)
 	}
 	
 
-	//std :: cout<< "\n  " << k+1 <<"  KMC step \n";
 
-	// std :: cout<< "\n island \n";
-	// 	for ( int i = 0;i < L;i++){
-	// 		for(int j =0;j<L;j++){
-	// 			std::cout << "\t"<< island.matrix[i][j]; 
-	// 		}
-	// 		std :: cout <<"\n";
-	// 	}
-		// std :: cout<< "\n neighbours \n";
-		// for ( int i = 0;i < L;i++){
-		// 	for(int j =0;j<L;j++){
-		// 		std::cout << "\t"<< island.nn[i][j]; 
-		// 		}
-		// 	std :: cout <<"\n";
-		// 	}
+	std :: cout<< "\n  " << k+1 <<"  KMC step \n";
 
-	// std :: cout << "\n Elements in the classes:" << R[0].N << ", \t" << R[1].N << ", \t" << R[2].N<< "\n";
+		std :: cout<< "\n island \n";
+	for ( int i = 0;i < L;i++){
+		for(int j =0;j<L;j++){
+			std::cout << "\t"<< island.matrix[i][j]; 
+		}
+		std :: cout <<"\n";
+	}
+	std :: cout<< "\n adatoms \n";
+	for ( int i = 0;i < L;i++){
+		for(int j =0;j<L;j++){
+			std::cout << "\t"<< adatom.matrix[i][j]; 
+		}
+		std :: cout <<"\n";
+	}
+	std :: cout << "\n total number adatoms"<< (adatom.N) ;
+	std :: cout << "\n Elements in det class 1:  " << R[0].N << "\t elements in det class 2:  " << R[1].N << "\t elements in det class 3:  " << R[2].N  << "\n";
+ 	std :: cout << "\n Elements in att class:" << R[3].N << "\t  elements in diffusion class" << R[4].N << "\n";
 
-	// for (int i = 0; i < R[0].N; i++)
-	// {
-	// 	std :: cout << i <<"\t(" << R[0].where(i)[0]<< ","<< R[0].where(i)[1] << ")\n";
-	// }
-	// std :: cout << "\n \n";
-	// for (int i = 0; i < R[1].N; i++)
-	// {
-	// 	std :: cout << i <<"\t(" << R[1].where(i)[0]<< ","<< R[1].where(i)[1] << ")\n";
-	// }
-	// std :: cout << "\n \n";
-	// for (int i = 0; i < R[2].N; i++)
-	// {
-	// 	std :: cout << i <<"\t(" << R[2].where(i)[0]<< ","<< R[2].where(i)[1] << ")\n";
-	// }
-
-	// std :: cout<< "\n R1 mask \n";
+	// for (int i = 0; i < R[3].N; i++)
+ 	//  {
+	// 	std :: cout << i <<"\t(" << R[4].where(i)[0]<< ","<< R[4].where(i)[1] << ")\n";
+ 	// }
+	// std :: cout<< "\n diffusion mask \n";
 	// for ( int i = 0;i < L;i++){
 	// 	for(int j =0;j<L;j++){
-	// 		std::cout << "\t"<< R[0].mask[i][j]; 
+	// 		std::cout << "\t"<< R[4].mask[i][j]; 
 	// 	}
-	// 	std :: cout <<"\n";
+	// std :: cout <<"\n";
 	// }
-	// std :: cout<< "\n R2 mask \n";
-	// for ( int i = 0;i < L;i++){
-	// 	for(int j =0;j<L;j++){
-	// 		std::cout << "\t"<< R[1].mask[i][j]; 
-	// 	}
-	// 	std :: cout <<"\n";
-	// }
-
-	// std :: cout<< "\n R3 mask \n";
-	// for ( int i = 0;i < L;i++){
-	// 	for(int j =0;j<L;j++){
-	// 		std::cout << "\t"<< R[2].mask[i][j]; 
-	// 	}
-	// 	std :: cout <<"\n";
-	// }
+	std :: cout<< "\n attachment mask\n";
+	for ( int i = 0;i < L;i++){
+		for(int j =0;j<L;j++){
+			std::cout << "\t"<< R[3].mask[i][j]; 
+		}
+	std :: cout <<"\n";
+	}
 
 }
 
-
+std :: cout << "\tDetachment # nn1= " << counter[0] << "\tDetachment # nn2= " << counter[1] <<"\tDetachment # nn3= " << counter[2] << "\tAttachment # = " << counter[3] << "\t Diffusion # = " << counter[4] ;
 
 
 
@@ -378,6 +394,17 @@ for (int k = 0; k < n_steps; k++)
 		std :: cout << "-----------"<<"\n"<< std:: endl;
 	}
 
+//Consistency CHECK
+// int counter =0;
+// 	for (int i = 0; i < L; i++){
+//         for (int j = 0; j < L; j++){
+//             counter += adatom.matrix[i][j];
+//         }
+//     }
+// 	if(counter != adatom.N){
+// 		std :: cout << "PROBLEM! Inconsistency 1";
+// 	}
+// MORE..?
 
 
 MPI_Finalize();

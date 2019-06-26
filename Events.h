@@ -24,6 +24,8 @@ class Events {
 		void destroy(int i); //must take care of reduction of elements. When called mask[][] must also set to 0 concerned element
 		void destroy_byPosition (int x,int y);
 		void populate (int x, int y);
+		void change (int i, int x, int y);
+		bool exist (int x, int y);
 		int* where (int i);
 		double rate();
 

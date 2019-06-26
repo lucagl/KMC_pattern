@@ -13,8 +13,9 @@
 double energy(int nn, double T, double J);
 int extract (int N);
 double cumulative (Events R []);
+//int non_zero(int M [L][L]);
 
-void KMC_step(Events R[], Island& island, Adatom& adatom, double T);
+void KMC_step(Events R[], Island& island, Adatom& adatom, double T, int* counter);
 int is_attSite(int x,int y, const Island& island);
 
 #endif

@@ -8,15 +8,15 @@ class Adatom {
     public:
         int ** matrix;
         int maxL;
-        double conc;
+        int N;
         bool is_attSite(int x,int y);
         void print(const std::string&, int** mask, double temperature);
 
         Adatom(double concentration){
-            int n_adatom, current_density = 0;
+            int n_adatom, current_density = 1;
             int rand_inti,rand_intj;
 
-            conc = concentration;
+            N = int(concentration*L*L);
             maxL = L;
 
             matrix =new int*[L];
@@ -24,12 +24,11 @@ class Adatom {
                 matrix[i] = new int[L] (); 
             }
             
-	        n_adatom = int(conc*L*L);
             
             for(int i =0;i<L; i++){
 		
                 for(int j =0;j<L;j++){
-			        if(current_density<=n_adatom){
+			        if(current_density<=N){
                         rand_inti=rand()% L;
                         rand_intj=rand()% L;
                         matrix[rand_inti][rand_intj] +=1; // can be on top of each other 

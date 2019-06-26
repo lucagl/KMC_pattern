@@ -2,7 +2,7 @@
 #include "Events.h"
 #include<list>
 #include<tuple>
-
+#include<algorithm>
 
 void Events :: populate(int  x, int y){
     element.push_back(std::make_tuple(x,y));
@@ -13,7 +13,16 @@ void Events :: populate(int  x, int y){
     // std :: cout << "\n"<< index;
     // if(N!=index) N=0;
 }
+void Events :: change(int i,int x, int y){
 
+    std :: list<std :: tuple<int, int>>::iterator it=element.begin();
+    advance(it,i);
+   // index -=1;
+	mask[std :: get<1>(*it)][std :: get<0>(*it)] -=1;
+    *it = (std::make_tuple(x,y));
+    //N = element.size();//also updates N
+    mask[y][x] +=1;
+}
 void Events :: destroy(int i){
 
     std :: list<std :: tuple<int, int>>::iterator it=element.begin();
@@ -37,6 +46,13 @@ void Events :: destroy_byPosition(int x, int y){
         std :: cout << "\n Unsucesful attempt to remove"<<" x = " << x <<" y = " << y << "unexisting element in class list. \n";
         exit (EXIT_FAILURE);
     }
+}
+bool Events :: exist (int x,int y){
+    bool answ;
+    std :: tuple <int,int> coordinate;
+    coordinate = std :: make_tuple(x,y);
+    answ = std::find(element.begin(), element.end(), coordinate) != element.end();
+    return answ;
 }
 
 
@@ -63,6 +79,6 @@ int * Events :: where (int i){
 
 double Events :: rate(){
     double r;
-    r = 4.0*D*double(N);
+    r = D*double(N);
     return r;
 }
