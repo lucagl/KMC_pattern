@@ -22,7 +22,8 @@ class Events {
 		int ** mask; //better to make it boolean
 		void coordinate_in (int i, int x, int y); //change coordinate element, to keep track changes. Maybe input a touple
 		void destroy(int i); //must take care of reduction of elements. When called mask[][] must also set to 0 concerned element
-		void destroy_byPosition (int x,int y);
+		void destroy_coordinates (int x,int y);
+		void destroy_singleCoordinate (int x,int y);
 		void populate (int x, int y);
 		void change (int i, int x, int y);
 		bool exist (int x, int y);

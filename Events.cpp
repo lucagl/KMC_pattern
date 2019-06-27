@@ -20,7 +20,7 @@ void Events :: change(int i,int x, int y){
    // index -=1;
 	mask[std :: get<1>(*it)][std :: get<0>(*it)] -=1;
     *it = (std::make_tuple(x,y));
-    //N = element.size();//also updates N
+
     mask[y][x] +=1;
 }
 void Events :: destroy(int i){
@@ -30,24 +30,45 @@ void Events :: destroy(int i){
    // index -=1;
 	mask[std :: get<1>(*it)][std :: get<0>(*it)] -=1;
     element.erase(it);
-    N = element.size();//also updates N
+    N = element.size();// updates N
 }
-void Events :: destroy_byPosition(int x, int y){
+void Events :: destroy_coordinates(int x, int y){
     int oldN;
     
     oldN = element.size();
     std :: tuple <int,int> coordinate;
     coordinate = std :: make_tuple(x,y);
     element.remove(coordinate);//O(n) Tkink better way?
-	mask[std :: get<1>(coordinate)][std :: get<0>(coordinate)] -=1;
+	mask[std :: get<1>(coordinate)][std :: get<0>(coordinate)] =0;
 
-    N = element.size();//also updates N
+    N = element.size();// updates N
+
+
     if (oldN == N) {
-        std :: cout << "\n Unsucesful attempt to remove"<<" x = " << x <<" y = " << y << "unexisting element in class list. \n";
+         std :: cout << "\n Old N =" <<oldN << "\t" << "new N =" << N;  
+        std :: cout << "\n Unsucesful attempt to remove"<<" x = " << x <<" y = " << y << "unexisting MULTIPLE OR SINGLE element in class list. \n";
         exit (EXIT_FAILURE);
     }
 }
+void Events :: destroy_singleCoordinate(int x, int y){
+    
+    int oldN;
+    std :: list<std :: tuple<int, int>>::iterator it;
+    oldN = element.size();
+    std :: tuple <int,int> coordinate;
+    coordinate = std :: make_tuple(x,y);
+    it = std::find(element.begin(), element.end(), coordinate);
+    if (it == element.end()) {
+        std :: cout << "\n Unsucesful attempt to remove"<<" x = " << x <<" y = " << y << "unexisting SINGLE element in class list. \n";
+        exit (EXIT_FAILURE);
+    }
+    element.erase(it);
+	mask[std :: get<1>(coordinate)][std :: get<0>(coordinate)] -=1;
+
+    N = element.size();//also updates N
+}
 bool Events :: exist (int x,int y){
+    // return true if coordinate already present. More than one could be present
     bool answ;
     std :: tuple <int,int> coordinate;
     coordinate = std :: make_tuple(x,y);

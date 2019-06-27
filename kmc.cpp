@@ -174,7 +174,7 @@ std:: cout << i_rand;
 
 	L = 10;
 	n_steps = 10;
-	print_every = 20;
+	print_every = 1;
 	conc0 = 0.1;
 	radius = 2;
 	T =3;
@@ -213,11 +213,11 @@ std:: cout << i_rand;
 			}
 		}
 	
-std :: cout << "\nTRYING EXIST\n" ;
-int x =rand() %L;
-int y =rand() %L;
+// std :: cout << "\nTRYING EXIST\n" ;
+// int x =rand() %L;
+// int y =rand() %L;
 
-std :: cout << "\n coordinate " << x <<" ,  "<< y << ":\t"<<R[4].exist(x,y) ;
+// std :: cout << "\n coordinate " << x <<" ,  "<< y << ":\t"<<R[4].exist(x,y) ;
 
 
 // -----------------------------------------
@@ -338,6 +338,16 @@ for (int k = 0; k < n_steps; k++)
 		}
 		std :: cout <<"\n";
 	}
+
+	std :: cout<< "\n neighbours \n";
+
+	for ( int i = 0;i <L;i++){
+		for(int j =0;j<L;j++){
+			std::cout << "\t"<< island.nn[i][j]; 
+			}
+		std :: cout <<"\n";
+		}
+
 	std :: cout<< "\n adatoms \n";
 	for ( int i = 0;i < L;i++){
 		for(int j =0;j<L;j++){
@@ -349,17 +359,42 @@ for (int k = 0; k < n_steps; k++)
 	std :: cout << "\n Elements in det class 1:  " << R[0].N << "\t elements in det class 2:  " << R[1].N << "\t elements in det class 3:  " << R[2].N  << "\n";
  	std :: cout << "\n Elements in att class:" << R[3].N << "\t  elements in diffusion class" << R[4].N << "\n";
 
-	// for (int i = 0; i < R[3].N; i++)
- 	//  {
-	// 	std :: cout << i <<"\t(" << R[4].where(i)[0]<< ","<< R[4].where(i)[1] << ")\n";
- 	// }
-	// std :: cout<< "\n diffusion mask \n";
-	// for ( int i = 0;i < L;i++){
-	// 	for(int j =0;j<L;j++){
-	// 		std::cout << "\t"<< R[4].mask[i][j]; 
-	// 	}
-	// std :: cout <<"\n";
-	// }
+	 for (int i = 0; i < R[3].N; i++)
+ 	  {
+	 	std :: cout << i <<"\t(" << R[3].where(i)[0]<< ","<< R[3].where(i)[1] << ")\n";
+ 	 }
+
+	for (int i = 0; i < R[4].N; i++)
+ 	  {
+	 	std :: cout << i <<"\t(" << R[4].where(i)[0]<< ","<< R[4].where(i)[1] << ")\n";
+ 	 }
+
+
+	std :: cout<< "\n det 1 mask \n";
+	for ( int i = 0;i < L;i++){
+		for(int j =0;j<L;j++){
+			std::cout << "\t"<< R[0].mask[i][j]; 
+		}
+	std :: cout <<"\n";
+	}
+
+std :: cout<< "\n det 2 mask \n";
+	for ( int i = 0;i < L;i++){
+		for(int j =0;j<L;j++){
+			std::cout << "\t"<< R[1].mask[i][j]; 
+		}
+	std :: cout <<"\n";
+	}
+
+	std :: cout<< "\n det 3 mask \n";
+	for ( int i = 0;i < L;i++){
+		for(int j =0;j<L;j++){
+			std::cout << "\t"<< R[2].mask[i][j]; 
+		}
+	std :: cout <<"\n";
+	}
+
+
 	std :: cout<< "\n attachment mask\n";
 	for ( int i = 0;i < L;i++){
 		for(int j =0;j<L;j++){
