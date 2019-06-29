@@ -59,7 +59,7 @@ However if I do so the coupling between the two must happen in a separate routin
 
 
 //Define global variables
-const double  r0 =1, J=1, A= 1, F = 1;//Maybe some from input file?
+const double  J=1, A= 0.5, F = 0.1;//Maybe some from input file?
 const double PI = 3.14159265358979323846;
 const int n_classes = 5;
 int L;
@@ -111,6 +111,7 @@ int main(int argc, char **argv){
 	t1=clock();
 	float seconds;
 	int counter [n_classes];
+	const bool debug_mode = false;
 	
 // MPI stuff ------ 
 	/* Now replicate this process to create parallel processes.
@@ -142,7 +143,7 @@ int main(int argc, char **argv){
 		system(makeDir);
 		system(remove_old);
 		
-		//F_eq = r0*exp(-3.0*J/T);
+		
 
 	
 	
@@ -172,12 +173,12 @@ int main(int argc, char **argv){
 int i_rand =i_rand = rand() % 4 +1;
 std:: cout << i_rand;
 
-	L = 10;
-	n_steps = 10;
-	print_every = 1;
-	conc0 = 0.1;
-	radius = 2;
-	T =3;
+	L = 40;
+	n_steps = 10000;
+	print_every = 100;
+	conc0 = 0.6;
+	radius = 4;
+	T =0.1;
 
 
 // INITIALIZATION -----------------
@@ -242,20 +243,21 @@ std:: cout << i_rand;
 
 
 // CHECKS ------------------------------
-	std :: cout<< "\n island \n";
-	for ( int i = 0;i < L;i++){
-		for(int j =0;j<L;j++){
-			std::cout << "\t"<< island.matrix[i][j]; 
-		}
-		std :: cout <<"\n";
-	}
-	std :: cout<< "\n adatoms \n";
-	for ( int i = 0;i < L;i++){
-		for(int j =0;j<L;j++){
-			std::cout << "\t"<< adatom.matrix[i][j]; 
-		}
-		std :: cout <<"\n";
-	}
+if(proc_ID==0){
+	// std :: cout<< "\n island \n";
+	// for ( int i = 0;i < L;i++){
+	// 	for(int j =0;j<L;j++){
+	// 		std::cout << "\t"<< island.matrix[i][j]; 
+	// 	}
+	// 	std :: cout <<"\n";
+	// }
+	// std :: cout<< "\n adatoms \n";
+	// for ( int i = 0;i < L;i++){
+	// 	for(int j =0;j<L;j++){
+	// 		std::cout << "\t"<< adatom.matrix[i][j]; 
+	// 	}
+	// 	std :: cout <<"\n";
+	// }
 	std :: cout << "\n total number adatoms"<< (adatom.N) ;
 	std :: cout << "\n Elements in det class 1:  " << R[0].N << "\t elements in det class 2:  " << R[1].N << "\t elements in det class 3:  " << R[2].N  << "\n";
  	std :: cout << "\n Elements in att class:" << R[3].N << "\t elements in diffusion class" << R[4].N << "\n";
@@ -276,16 +278,16 @@ std:: cout << i_rand;
  	//  {
 	// 	std :: cout << i <<"\t(" << R[3].where(i)[0]<< ","<< R[3].where(i)[1] << ")\n";
  	// }
-	std :: cout<< "\n attachment mask\n";
-	for ( int i = 0;i < L;i++){
-		for(int j =0;j<L;j++){
-			std::cout << "\t"<< R[3].mask[i][j]; 
-		}
-	std :: cout <<"\n";
-	}
+	// std :: cout<< "\n attachment mask\n";
+	// for ( int i = 0;i < L;i++){
+	// 	for(int j =0;j<L;j++){
+	// 		std::cout << "\t"<< R[3].mask[i][j]; 
+	// 	}
+	// std :: cout <<"\n";
+	// }
 
 
-
+}
 
 
 
@@ -328,7 +330,8 @@ for (int k = 0; k < n_steps; k++)
 	}
 	
 
-
+if(proc_ID==0 &&debug_mode){
+	//CHECKS*********************
 	std :: cout<< "\n  " << k+1 <<"  KMC step \n";
 
 		std :: cout<< "\n island \n";
@@ -355,19 +358,39 @@ for (int k = 0; k < n_steps; k++)
 		}
 		std :: cout <<"\n";
 	}
-	std :: cout << "\n total number adatoms"<< (adatom.N) ;
+ 	std :: cout << "\n total number adatoms"<< (adatom.N) ;
 	std :: cout << "\n Elements in det class 1:  " << R[0].N << "\t elements in det class 2:  " << R[1].N << "\t elements in det class 3:  " << R[2].N  << "\n";
- 	std :: cout << "\n Elements in att class:" << R[3].N << "\t  elements in diffusion class" << R[4].N << "\n";
+	std :: cout << "\n Elements in att class:" << R[3].N << "\t  elements in diffusion class" << R[4].N << "\n";
 
-	 for (int i = 0; i < R[3].N; i++)
- 	  {
-	 	std :: cout << i <<"\t(" << R[3].where(i)[0]<< ","<< R[3].where(i)[1] << ")\n";
- 	 }
+// 	std :: cout << "\n detachment 1nn list \n";
+// 	 for (int i = 0; i < R[0].N; i++)
+//  	  {
+// 	 	std :: cout << i <<"\t(" << R[0].where(i)[0]<< ","<< R[0].where(i)[1] << ")\n";
+//  	 }
 
-	for (int i = 0; i < R[4].N; i++)
- 	  {
-	 	std :: cout << i <<"\t(" << R[4].where(i)[0]<< ","<< R[4].where(i)[1] << ")\n";
- 	 }
+// 	std :: cout << "\n detachment 2nn list \n";
+// 	 for (int i = 0; i < R[1].N; i++)
+//  	  {
+// 	 	std :: cout << i <<"\t(" << R[1].where(i)[0]<< ","<< R[1].where(i)[1] << ")\n";
+//  	 }
+
+// 	std :: cout << "\n detachment 3nn list \n";
+// 	 for (int i = 0; i < R[2].N; i++)
+//  	  {
+// 	 	std :: cout << i <<"\t(" << R[2].where(i)[0]<< ","<< R[2].where(i)[1] << ")\n";
+//  	 }
+
+	// std :: cout << "\n attachment list \n";
+	//  for (int i = 0; i < R[3].N; i++)
+ 	//   {
+	//  	std :: cout << i <<"\t(" << R[3].where(i)[0]<< ","<< R[3].where(i)[1] << ")\n";
+ 	//  }
+
+	// std :: cout << "\n diffusion list \n";
+	// for (int i = 0; i < R[4].N; i++)
+ 	//   {
+	//  	std :: cout << i <<"\t(" << R[4].where(i)[0]<< ","<< R[4].where(i)[1] << ")\n";
+ 	//  }
 
 
 	std :: cout<< "\n det 1 mask \n";
@@ -402,32 +425,26 @@ std :: cout<< "\n det 2 mask \n";
 		}
 	std :: cout <<"\n";
 	}
-
 }
-
-std :: cout << "\tDetachment # nn1= " << counter[0] << "\tDetachment # nn2= " << counter[1] <<"\tDetachment # nn3= " << counter[2] << "\tAttachment # = " << counter[3] << "\t Diffusion # = " << counter[4] ;
-
-
-
-
-//------------------
+}
+if(proc_ID==0){
+ 	std :: cout << "\tDetachment # nn1= " << counter[0] << "\tDetachment # nn2= " << counter[1] <<"\tDetachment # nn3= " << counter[2] << "\tAttachment # = " << counter[3] << "\t Diffusion # = " << counter[4] ;
 
 
-	
-	if(proc_ID==0){
-	
-		std :: cout << "\n Numeber of parallel KMCs ="<< n_proc<<"\n";
+
+
+	std :: cout << "\n Numeber of parallel KMCs ="<< n_proc<<"\n";
 		//output(av_obs,n_proc,"observables_F"+ std::to_string(F)+"_T"+std::to_string(T)+".txt",N_sim);
 		
 		//std :: cout << "\n  Averaged final physical time = "<< av_obs.time[M-1]/double(n_proc)<< std:: endl;
 		
 		//elapsed time for master (which is the last to finish since it does more stuff)
 		
-		t2 = clock();
-		seconds = ((float)t2-(float)t1)/ CLOCKS_PER_SEC;
-		std :: cout << "\n Elapsed time = " << seconds <<"s \n"<< std:: endl;
-		std :: cout << "-----------"<<"\n"<< std:: endl;
-	}
+	t2 = clock();
+	seconds = ((float)t2-(float)t1)/ CLOCKS_PER_SEC;
+	std :: cout << "\n Elapsed time = " << seconds <<"s \n"<< std:: endl;
+	std :: cout << "-----------"<<"\n"<< std:: endl;
+}
 
 //Consistency CHECK
 // int counter =0;

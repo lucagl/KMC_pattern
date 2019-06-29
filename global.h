@@ -17,7 +17,7 @@
 
 
 // GLOBAL VARIABLES 
-extern const double  J, PI,r0,A,F; //A = attachment const, F=adatom diffusion constant
+extern const double  J, PI,A,F; //A = attachment const, F=adatom diffusion constant
 extern int compute_every;
 extern int proc_ID;
 extern const int n_classes;

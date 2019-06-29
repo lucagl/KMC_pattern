@@ -171,7 +171,9 @@ int is_attSite(int x,int y,const Island& island){
 	left = x -1;
 	if(left == -1) left = L-1; 
 
-	contact = (island.matrix[bottom][x] | island.matrix[top][x] | island.matrix[y][left] | island.matrix[y][right])^island.matrix[y][x];
+	contact = ~island.matrix[y][x] &//not island 
+    ((island.matrix[bottom][x] | island.matrix[top][x] | island.matrix[y][left] | island.matrix[y][right]));
+    // or 
 	
 	return contact;
 }
@@ -231,7 +233,7 @@ DETACHEMENT EVENT AT A 1 NN SITE
  		x = R[0].where(index)[0];
 		y = R[0].where(index)[1];
 
-        std :: cout << "\n detachment event 1 , coordinate="<< x << " , " << y;
+     // std :: cout << "\n DETACHMENT event 1 , coordinate="<< x << " , " << y<< "\n \n";
 
 		R[0].destroy(index);
 		
@@ -318,7 +320,7 @@ DETACHEMENT EVENT AT A 1 NN SITE
 			else {
                 if(island.nn[top][x] ==0){
                // {std :: cout << "COMPLETE DISSOLUTION" ;
-                R[0].destroy_coordinates(top,x);
+                R[0].destroy_coordinates(x,top);
                // exit(EXIT_FAILURE);
                 }
                 //  else{
@@ -342,7 +344,7 @@ DETACHEMENT EVENT AT A 1 NN SITE
 			else {
                 if(island.nn[bottom][x] ==0){
               //  {std :: cout << "COMPLETE DISSOLUTION" ;
-                R[0].destroy_coordinates(bottom,x);
+                R[0].destroy_coordinates(x,bottom);
                 //exit(EXIT_FAILURE);
                 }
                 //  else{
@@ -352,11 +354,15 @@ DETACHEMENT EVENT AT A 1 NN SITE
 			}
 
 //********************************
+
+
 		//Attachment list update: dissolved island atom becomes an adatom on same site
+
+
         for(int i =0; i< adatom.matrix[y][x];i++){
             //for loop useful if another adatom above
-            R[3].populate(x,y);
-        }
+            R[3].populate(x,y); //I already updated # adatoms
+       }
 
         //Take care of deleting elements from R[3]
         if(R[3].exist(right,y)&& !is_attSite(right,y,island)){
@@ -398,7 +404,7 @@ DETACHEMENT EVENT AT A 2 NN SITE
 		x = R[1].where(index)[0];
 		y = R[1].where(index)[1];
 
-        std :: cout << "\n detachment event 2 , coordinate="<< x << " , " << y;
+       //std :: cout << "\n DETACHMENT event 2 , coordinate="<< x << " , " << y<< "\n \n";
 
 		R[1].destroy(index);
 
@@ -435,7 +441,7 @@ DETACHEMENT EVENT AT A 2 NN SITE
 			R[1].destroy_coordinates(right,y);
 		}
 
-        // strange case, maybe existing only for nearest neighbour. Furthermore clearly pose problems with det bal if I make of t an adatom.
+        // strange case, maybe existing only for nearest neighbour. Furthermore clearly pose problems with det bal if I make of it an adatom.
 
 		else if(island.nn[y][right] ==1){
 			
@@ -444,6 +450,27 @@ DETACHEMENT EVENT AT A 2 NN SITE
             island.nn[y][right] =0;
 		}
         //---------
+
+        if (island.nn[y][left] == 4)
+		{
+			 R[2].populate(left,y);
+		}
+		else if(island.nn[y][left] ==3){
+			R[1].populate(left,y);
+			R[2].destroy_coordinates(left,y);
+		}
+		else if(island.nn[y][left] ==2){
+			R[0].populate(left,y);
+			R[1].destroy_coordinates(left,y);
+		}
+
+        // strange case, maybe existing only for nearest neighbour. Furthermore clearly pose problems with det bal if I make of t an adatom.
+        else if(island.nn[y][left] ==1){
+			
+			R[0].destroy_coordinates(left,y);
+          //  R[4].populate(right,y); //add diffusing adatom which is for sure not on attachment site
+            island.nn[y][left] =0;
+		}
 
 		if(island.nn[top][x] ==4){
 			R[2].populate(x,top);
@@ -491,11 +518,9 @@ DETACHEMENT EVENT AT A 2 NN SITE
 		
 	//**********************************************
 	// Attachment list update 
-
-        for(int i =0;i< adatom.matrix[y][x];i++){
-            //for loop useful if another adatom above
+    for(int i =0; i< adatom.matrix[y][x];i++){
             R[3].populate(x,y);
-        }
+    }
 
 
         //Take care of deleting elements from R[3]
@@ -554,7 +579,7 @@ DETACHMENT EVENT AT A 3 NN SITE
 		x = R[2].where(index)[0];
 		y = R[2].where(index)[1];
 
-        std :: cout << "\n detachment event 3 , coordinate="<< x << " , " << y;
+     // std :: cout << "\n DETACHMENT event 3 , coordinate="<< x << " , " << y<< "\n \n";
 
 		R[2].destroy(index);
 		
@@ -577,40 +602,6 @@ DETACHMENT EVENT AT A 3 NN SITE
 		if(left == -1) left = L-1; 
 
 		
-//CHANGE!! REDO IS WRONG 
-		// if (!(island.matrix[top][x])){
-		// 	R[1].populate(left,y);
-		// 	R[1].populate(right,y);
-		// 	island.nn[y][left] = 2;
-		// 	island.nn[y][right] = 2;
-		// 	island.nn[bottom][x] =3;//a 3 neighbour site appears below detached element
-		// 	R[2].populate(x,bottom);
-		// }
-		// else if (!(island.matrix[bottom][x])){
-		// 	R[1].populate(left,y);
-		// 	R[1].populate(right,y);
-		// 	island.nn[y][left] = 2;
-		// 	island.nn[y][right] = 2;
-		// 	island.nn[top][x] =3;
-		// 	R[2].populate(x,top);
-		// }
-		// else if (!(island.matrix[y][right])){
-		// 	R[1].populate(x,top);
-		// 	R[1].populate(x,bottom);
-		// 	island.nn[top][x] = 2;
-		// 	island.nn[bottom][x] = 2;
-		// 	island.nn[y][left] = 3;
-		// 	R[2].populate(left,y);
-		// }
-		// else if (!(island.matrix[y][left])){
-		// 	R[1].populate(x,top);
-		// 	R[1].populate(x,bottom);
-		// 	island.nn[top][x] = 2;
-		// 	island.nn[bottom][x] = 2;
-		// 	island.nn[y][right] = 3;
-		// 	R[2].populate(right,y);
-		// }
-
     if (island.nn[y][left] == 4)
 		{
 			 R[2].populate(left,y);
@@ -732,8 +723,7 @@ DETACHMENT EVENT AT A 3 NN SITE
 		// island.nn[top][right] =  island.get_neighbours(right,top);
 // *********************************
  		//Attachemnt list update
-        for(int i =0; i< adatom.matrix[y][x]; i++){
-            //for loop useful if another adatom above
+        for(int i =0; i< adatom.matrix[y][x];i++){
             R[3].populate(x,y);
         }
 
@@ -778,10 +768,11 @@ ATTACHMENT EVENT
         x = R[3].where(index)[0];
 		y = R[3].where(index)[1];
 
-        std :: cout << "\n attachment event, coordinate="<< x << " , " << y;
+     //   std :: cout << "\n ATTACHMENT event, coordinate="<< x << " , " << y << "\n \n";
 
 
-		R[3].destroy(index);
+		//R[3].destroy(index); NO!! because all multiples adatoms are not on att site anymore!
+        R[3].destroy_coordinates(x,y);//I have to remove in this case all multiples adatoms on the site
         R[4].destroy_singleCoordinate(x,y);
 
         adatom.matrix[y][x]-=1;
@@ -805,25 +796,25 @@ ATTACHMENT EVENT
         //R[3]: new island site might imply new attachment site for neighbouring adatoms
         // if R[3] on site does not exist, populate if there are adatoms there.
         // If it already existed (it contains one or mutiple time) the coordinate: doesn't need to be added 
-        if(! R[3].exist(right,y)){
+        if(! R[3].exist(right,y)&& !island.matrix[y][right]){ //or use is_attSite
             for(int i =0; i < adatom.matrix[y][right];i++){
              R[3].populate(right,y);
              }
         }
-        if(!R[3].exist(left,y)){
+        if(!R[3].exist(left,y)&& !island.matrix[y][left]){
             for(int i =0; i < adatom.matrix[y][left];i++){
                 R[3].populate(left,y);
             }
         }
 
 
-        if(!R[3].exist(x,top)){
+        if(!R[3].exist(x,top)&& !island.matrix[top][x]){
             for(int i =0; i < adatom.matrix[top][x];i++){
                 R[3].populate(x,top);
             }
         }
 
-        if(!R[3].exist(x,bottom)){
+        if(!R[3].exist(x,bottom)&& !island.matrix[bottom][x]){
             for(int i =0; i < adatom.matrix[bottom][x];i++){
                 R[3].populate(x,bottom);
             }
@@ -849,7 +840,8 @@ ATTACHMENT EVENT
                 R[0].destroy_coordinates(right,y);
             }
             //other exotic case..
-             else if(island.nn[y][right]==0){
+            //island is there and no neighbours = isolated element
+             else if(island.nn[y][right]==0 && island.matrix[y][right]){
                 R[0].populate(right,y);
             }
             island.nn[y][x] +=1;
@@ -869,7 +861,7 @@ ATTACHMENT EVENT
                 R[0].destroy_coordinates(left,y);
             }
             //other exotic case..
-             else if(island.nn[y][left]==0){
+             else if(island.nn[y][left]==0 && island.matrix[y][left]){
                 R[0].populate(left,y);
             }
             island.nn[y][x] +=1;
@@ -889,7 +881,7 @@ ATTACHMENT EVENT
                 R[0].destroy_coordinates(x,top);
             }
             //other exotic case..
-            else if(island.nn[top][x]==0){
+            else if(island.nn[top][x]==0 && island.matrix[top][x]){
                 R[0].populate(x,top);
             }
             island.nn[y][x] +=1;
@@ -909,17 +901,20 @@ ATTACHMENT EVENT
                 R[0].destroy_coordinates(x,bottom);
             }
             //other exotic case..
-            else if(island.nn[bottom][x]==0){
+            else if(island.nn[bottom][x]==0 && island.matrix[bottom][x]){
                 R[0].populate(x,bottom);
             }
             island.nn[bottom][x] +=1;
             island.nn[y][x] +=1;
         }
-        R[s-1].populate(x,y);
-        if(s>3){
-            std :: cout << "Error in attachment. Badly recognized environment";
-            exit (EXIT_FAILURE);
+        
+        if(s<=3){
+            R[s-1].populate(x,y);
         }
+        //INTERESTING:
+        // else {
+        //     n_filledHoles +=1;
+        // }
     
      }
 
@@ -934,7 +929,7 @@ DIFFUSION EVENT
         count_d+=1;
         index = extract(R[4].N);
 
-        std :: cout << "\n *HERE*\n";
+        //std :: cout << "\n *HERE*\n";
  
         // std:: cout << "\n counter diff    " << count_d << "\n";
         
@@ -943,7 +938,7 @@ DIFFUSION EVENT
         x = R[4].where(index)[0];
 		y = R[4].where(index)[1];
 
-        std :: cout << "\n diffusion event , coordinate="<< x << " , " << y;
+     //  std :: cout << "\n\n DIFFUSION event , coordinate="<< x << " , " << y << "\n \n";
 
         R[4].destroy(index);
         adatom.matrix[y][x] -=1;
@@ -997,6 +992,7 @@ DIFFUSION EVENT
             adatom.matrix[y][left] += 1;
 
             if(is_attSite(left,y,island)){
+
                 R[3].populate(left,y);
             }
        }
