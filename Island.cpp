@@ -10,7 +10,7 @@
 
 
 
-void Island :: print(const std::string& file_name, int** mask1, int** mask2, int** mask3, double T){
+void Island :: print(const std::string& file_name, int**mask1,int**mask2,  int**mask3, double T){
 	
 	
 	
@@ -20,6 +20,7 @@ void Island :: print(const std::string& file_name, int** mask1, int** mask2, int
 		
 		//outfile << "#L\tT\n";
 		//outfile <<  L << "\t"<< T << "\t" << "\n";
+		outfile <<"#T = " << T << "\n";
 		outfile << "#Island\tsite1\tsite2\tsite3\n";
 		for ( int i = 0;i < L;i++){
 			for(int j =0;j<L;j++){
@@ -77,7 +78,7 @@ void Island :: init_neighbours(){
 }
 
 
-int Island :: get_neighbours(int x, int y){
+int Island :: get_neighbours(const int x,const int y){
 	//only of the island
 
 

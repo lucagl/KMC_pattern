@@ -15,7 +15,7 @@ void Events :: populate(int  x, int y){
 }
 void Events :: change(int i,int x, int y){
 
-    std :: list<std :: tuple<int, int>>::iterator it=element.begin();
+    auto it=element.begin();
     advance(it,i);
    // index -=1;
 	mask[std :: get<1>(*it)][std :: get<0>(*it)] -=1;
@@ -25,7 +25,7 @@ void Events :: change(int i,int x, int y){
 }
 void Events :: destroy(int i){
 
-    std :: list<std :: tuple<int, int>>::iterator it=element.begin();
+    auto it=element.begin();
     advance(it,i);
    // index -=1;
 	mask[std :: get<1>(*it)][std :: get<0>(*it)] -=1;
@@ -33,11 +33,11 @@ void Events :: destroy(int i){
     N = element.size();// updates N
 }
 void Events :: destroy_coordinates(int x, int y){
+
     int oldN;
     
     oldN = element.size();
-    std :: tuple <int,int> coordinate;
-    coordinate = std :: make_tuple(x,y);
+    auto coordinate = std :: make_tuple(x,y);
     element.remove(coordinate);//O(n) Tkink better way?
 	mask[std :: get<1>(coordinate)][std :: get<0>(coordinate)] =0;
 
@@ -45,7 +45,7 @@ void Events :: destroy_coordinates(int x, int y){
 
 
     if (oldN == N) {
-         std :: cout << "\n Old N =" <<oldN << "\t" << "new N =" << N;  
+        std :: cout << "\n Old N =" <<oldN << "\t" << "new N =" << N;  
         std :: cout << "\n Unsucesful attempt to remove"<<" x = " << x <<" y = " << y << "unexisting MULTIPLE OR SINGLE element in class list. \n";
         exit (EXIT_FAILURE);
     }
@@ -53,11 +53,11 @@ void Events :: destroy_coordinates(int x, int y){
 void Events :: destroy_singleCoordinate(int x, int y){
     
     int oldN;
-    std :: list<std :: tuple<int, int>>::iterator it;
     oldN = element.size();
-    std :: tuple <int,int> coordinate;
-    coordinate = std :: make_tuple(x,y);
-    it = std::find(element.begin(), element.end(), coordinate);
+    
+    auto coordinate = std :: make_tuple(x,y);
+    auto it = std::find(element.begin(), element.end(), coordinate);
+
     if (it == element.end()) {
         std :: cout << "\n Unsucesful attempt to remove"<<" x = " << x <<" y = " << y << "unexisting SINGLE element in class list. \n";
         exit (EXIT_FAILURE);
@@ -70,8 +70,8 @@ void Events :: destroy_singleCoordinate(int x, int y){
 bool Events :: exist (int x,int y){
     // return true if coordinate already present. More than one could be present
     bool answ;
-    std :: tuple <int,int> coordinate;
-    coordinate = std :: make_tuple(x,y);
+    
+    auto coordinate = std :: make_tuple(x,y);
     answ = std::find(element.begin(), element.end(), coordinate) != element.end();
     return answ;
 }
@@ -81,9 +81,10 @@ bool Events :: exist (int x,int y){
 //method to return human readable coordinate
 
 int * Events :: where (int i){
-    std :: list<std :: tuple<int, int>>::iterator it=element.begin();
-    static int coordinate[2];
 
+    auto it=element.begin();
+
+    static int coordinate[2];
 
     advance(it,i);
 

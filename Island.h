@@ -2,6 +2,8 @@
 #define ISLAND_H 
 #include "global.h"
 
+typedef const int * ptr_to_const_int;
+
 
 class Island {
 	//class members
@@ -10,12 +12,12 @@ private:
 public:
 	int ** matrix;
 	int ** nn;
-	int maxL;
+	int L;
 
-    void print(const std::string&, int** mask1, int** mask2, int** mask3,  double temperature);
+    void print(const std::string&, int**, int**, int**,  double temperature);
 
 	void init_neighbours ();
-	int get_neighbours( int x , int y );
+	int get_neighbours( const int x ,const  int y );
 
 	
 
@@ -25,9 +27,9 @@ public:
 	//class member constructor and destructor
 	
 	//constructor
-	Island(int radius){
+	void init(const int radius, const int L_in){
 
-		maxL = L;
+		L = L_in;
 
 		matrix = new int*[L];
 		nn = new int* [L];

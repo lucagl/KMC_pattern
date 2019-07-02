@@ -2,22 +2,28 @@
 #define ADATOM_H 
 #include "global.h"
 
+
+
+
 class Adatom {
     private :
 
     public:
         int ** matrix;
-        int maxL;
+        int L;
         int N;
         bool is_attSite(int x,int y);
-        void print(const std::string&, int** mask, double temperature);
+        void print(const std::string&,int**, double);
 
-        Adatom(double concentration){
+        void init (const double concentration, const int L_in ){
             int n_adatom, current_density = 1;
             int rand_inti,rand_intj;
 
+            L = L_in;
+            
+            // std :: cout << "L =" << L << "\n";
+            // std :: cout << "con =" << concentration << "\n";
             N = int(concentration*L*L);
-            maxL = L;
 
             matrix =new int*[L];
             for (int i =0;i<L;i++){
@@ -38,6 +44,7 @@ class Adatom {
             }
         }
 
+//Misses copy assignement and copy constructior (rule of three)
 
 
         ~Adatom(){

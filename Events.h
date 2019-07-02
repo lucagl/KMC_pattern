@@ -30,7 +30,7 @@ class Events {
 		int* where (int i);
 		double rate();
 
-		Events (int box_size){
+		void init (int box_size){
 
 		//L is the box size, to allocate the mask matrix
 			L = box_size;

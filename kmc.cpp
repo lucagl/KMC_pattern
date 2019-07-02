@@ -1,197 +1,47 @@
-/*############ 2D SURFACE EVOLUTION UNDER THE EFFECT OF A LOAD USING KMC ######################
-
- Author:								Luca Gagliardi IIT
- Copiright:				© 2019 Gagliardi IIT, ILM-CNRS
- 
- 
-###############################################################################################
-
- ------------ COMPILING INSTRUCTIONS ----------------
-place in working folder *.cpp and *.h
-compile: mpic++ *.cpp -o "executable".ex 
-run:  mpirun -np "cores number" executable.out
-input file: file Input.txt containing input informations must be present 
-
-------------------- CONVENTIONS -----------
-System of coordinates is x: left-right-wise and y: top-bottom wise. The indexe start with 0.
-
-
---------------------- TODO -----------------
-- give directly new value of nn without useless obvous computation ?
--change outmut format (directly make a 2d matrix or different columns for each L*L matrix)
-- A bit unatisfactory to not have to separate classes for adatom and island.
-However if I do so the coupling between the two must happen in a separate routine, but it can be done 
-- Spostare bordello di KMC_step in una funzione dedicata?
-- Add possibility to read from file
-- Would be faster if I already individuate contiguos elements between detachment 2 and 3
-- Sort the event list for better organization of data?
---------------------
-
-
-
-------------- CONTENT -------------------
-* parallelization over different replicas.
-
----------- QUESTIONS ------------------
-+ Interesting to do boolean operations with sort of masks?
-+ Shall I always update physical position ? (yes)
-+ What happens if 2 or more adatoms one on the other when this is close to an attachment site?
-	for now the chances of getting attached are highr (more adatom in the event list of attachment)
-
-
--------------------- NEWS--------------------
-
-
-################################################################################
-*/
-
 
 #include "global.h"
-#include "functions.h"
-#include "Island.h"
+#include "kmc.h"
 #include "Adatom.h"
+#include "Island.h"
 #include "Events.h"
-#include <vector>
-
-// --- PARALLELISATION
-#include <mpi.h>
-//------
-
-
-//Define global variables
-const double  J=1, A= 0.5, F = 0.1;//Maybe some from input file?
-const double PI = 3.14159265358979323846;
-const int n_classes = 5;
-int L;
-
-int n_proc,ierr;
-int proc_ID;
-
-
-
-
-// Useful stuff
-/*
-INLINE: command make speed up for short function. Indeed this tells to the 
-		compiler to expand the function inline when a call is made with significant speed-up
-TEMPLATE: to make function or classes versatile on different types
- "" string
- '' character
-*/
-
-
-
-// GLOBAL VARIABLES
-
-// use stat keyword in case this istance must not be accessible by linked files of the same project
 
 
 
 
 
-// #############################################
-//					MAIN	
-// #############################################
+KMC:: KMC(const double J_read, const double A_read, const double F_read){
+
+        if(proc_ID == 0){
+            std :: cout << "Starting KMC with " << n_classes << "classes of events";
+        }
+        J = J_read; // link strenght
+        A =A_read; // attachment rate
+        F =F_read; // diffusion constant
 
 
-	
-int main(int argc, char **argv){
-	
-	int print_every,n_steps;
-	int root_process=0;
-	int radius;
+}
 
+void KMC :: initialize (const int L_read, const int radius_read, const double conc_read, const double T0){
 
-	//int x,y; //just dummy variables fr clarity
-	double T,conc0;
-
-	int int_steps,frame;
-
-	clock_t t1,t2;
-	t1=clock();
-	float seconds;
-	int counter [n_classes];
-	const bool debug_mode = false;
-	
-// MPI stuff ------ 
-	/* Now replicate this process to create parallel processes.
-	 * From this point on, every process executes a seperate copy
-	 * of this program */
-	
-	ierr = MPI_Init(&argc, &argv);
-
-	MPI_Comm_size(MPI_COMM_WORLD, &n_proc);
-
-	MPI_Comm_rank(MPI_COMM_WORLD, &proc_ID);
-	
-	if(proc_ID == root_process){
-		std :: cout << "\n Number of processors= "<< n_proc << std :: endl ;
-	}
-// ----------------
-	
-
-	
+    L = L_read;
+    concentration = conc_read; //initial concentration
+    radius = radius_read;
+    current_T = T0;
     
-		
-		//read_input(&L,&T, &int_steps);
-		
-		std::string aString = "mkdir plots" + (std::to_string(proc_ID));
-		const char* makeDir = aString.c_str();
-		std::string path = "plots" + (std::to_string(proc_ID));
-		std::string bString ="rm " + path + "/island* " + path + "/adatom* ";
-		const char* remove_old = bString.c_str();
-		system(makeDir);
-		system(remove_old);
-		
-		
+    adatom.init(concentration, L);
+    island.init(radius, L);
 
-	
-	
-	
-	//RootID broadcast data to other processors
-	
-	//MPI_Bcast(&L, 1, MPI_INT, 0, MPI_COMM_WORLD);
-	//MPI_Bcast(&T, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-	//MPI_Bcast(&F, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-	//MPI_Bcast(&int_steps, 1, MPI_INT, 0, MPI_COMM_WORLD);
-	//MPI_Bcast(&compute_every, 1, MPI_INT, 0, MPI_COMM_WORLD);
-	//MPI_Bcast(&N_sim, 1, MPI_INT, 0, MPI_COMM_WORLD);
-	//MPI_Bcast(&pattern_type, 1, MPI_INT, 0, MPI_COMM_WORLD);
-	
-	
-	
-	// ++++++++++++ Class declarations ++++++++++++++++
-	//std :: cout <<"M="<< M << "\n"<<std :: endl;
+    for (int i = 0; i < n_classes; i++)
+    {
+        R[i].init(L);
+    }
+    R[0].D = energy(1);
+    R[1].D = energy(2);
+    R[2].D = energy(3);
+    R[3].D = A;
+    R[4].D = 4.0*F; //4 possible movements
 
-
-	//M=int_steps/compute_every;
-	
-	
-	srand (time(NULL)*(proc_ID+1));// initialise random generator differently for each thread
-	
-
-int i_rand =i_rand = rand() % 4 +1;
-std:: cout << i_rand;
-
-	L = 40;
-	n_steps = 10000;
-	print_every = 100;
-	conc0 = 0.6;
-	radius = 4;
-	T =0.1;
-
-
-// INITIALIZATION -----------------
-	Island island(radius);
-	Adatom adatom(conc0);
-
-	Events R[5] = {Events(L),Events(L),Events(L),Events(L),Events(L)};
-	R[0].D = energy(1,T,J);
-	R[1].D = energy(2,T,J);
-	R[2].D = energy(3,T,J);
-	R[3].D = A;
-	R[4].D = 4.0*F; //4 possible movements
-	island.init_neighbours(); 
+    island.init_neighbours(); 
 
 // Fill classes
 	for (int y = 0; y < L; y++){
@@ -209,132 +59,904 @@ std:: cout << i_rand;
 			for(int k=0; k<adatom.matrix[y][x]; k++){
 				// I consider possibility of multiple adatoms on top of each other 
 				R[4].populate(x,y);
-				if(is_attSite(x,y,island)) R[3].populate(x,y);
-			}
+				if(is_attSite(x,y)) R[3].populate(x,y);
 			}
 		}
-	
-// std :: cout << "\nTRYING EXIST\n" ;
-// int x =rand() %L;
-// int y =rand() %L;
-
-// std :: cout << "\n coordinate " << x <<" ,  "<< y << ":\t"<<R[4].exist(x,y) ;
-
-
-// -----------------------------------------
-
-
-	frame = 0;
-
-	//save in parallel images
-	
-	std :: ofstream outfile (path+"/configuration.txt");
-	if (outfile.is_open()){
-		outfile << L << "\t" << (n_steps/print_every);
 	}
-	outfile.close();
-
-	island.print(path + "/island" + std::to_string(frame) + ".txt" ,R[0].mask, R[1].mask, R[2].mask,T);
-	adatom.print(path + "/adatom" + std::to_string(frame)+ ".txt",R[3].mask,T);
-
-	//print configuration file..
-
-
-
-
-// CHECKS ------------------------------
-if(proc_ID==0){
-	// std :: cout<< "\n island \n";
-	// for ( int i = 0;i < L;i++){
-	// 	for(int j =0;j<L;j++){
-	// 		std::cout << "\t"<< island.matrix[i][j]; 
-	// 	}
-	// 	std :: cout <<"\n";
-	// }
-	// std :: cout<< "\n adatoms \n";
-	// for ( int i = 0;i < L;i++){
-	// 	for(int j =0;j<L;j++){
-	// 		std::cout << "\t"<< adatom.matrix[i][j]; 
-	// 	}
-	// 	std :: cout <<"\n";
-	// }
-	std :: cout << "\n total number adatoms"<< (adatom.N) ;
-	std :: cout << "\n Elements in det class 1:  " << R[0].N << "\t elements in det class 2:  " << R[1].N << "\t elements in det class 3:  " << R[2].N  << "\n";
- 	std :: cout << "\n Elements in att class:" << R[3].N << "\t elements in diffusion class" << R[4].N << "\n";
-
-	// for (int i = 0; i < R[3].N; i++)
- 	//  {
-	// 	std :: cout << i <<"\t(" << R[4].where(i)[0]<< ","<< R[4].where(i)[1] << ")\n";
- 	// }
-	// std :: cout<< "\n diffusion mask \n";
-	// for ( int i = 0;i < L;i++){
-	// 	for(int j =0;j<L;j++){
-	// 		std::cout << "\t"<< R[4].mask[i][j]; 
-	// 	}
-	// std :: cout <<"\n";
-	// }
-
-	// for (int i = 0; i < R[3].N; i++)
- 	//  {
-	// 	std :: cout << i <<"\t(" << R[3].where(i)[0]<< ","<< R[3].where(i)[1] << ")\n";
- 	// }
-	// std :: cout<< "\n attachment mask\n";
-	// for ( int i = 0;i < L;i++){
-	// 	for(int j =0;j<L;j++){
-	// 		std::cout << "\t"<< R[3].mask[i][j]; 
-	// 	}
-	// std :: cout <<"\n";
-	// }
-
 
 }
 
 
 
+double KMC ::  energy(const int nn){
 
-// 	std :: cout<< "\n neighbours \n";
-// 	for ( int i = 0;i <L;i++){
-// 		for(int j =0;j<L;j++){
-// 			std::cout << "\t"<< island.nn[i][j]; 
-// 			}
-// 		std :: cout <<"\n";
-// 		}
+    double rate;
+    rate = exp(-J*nn/current_T);
 
+    return rate;
+}
+
+double KMC :: cumulative (double* r){
+    
+    double R_sum =0;
+    r[0] = 0;
+    for (int i = 1; i <=n_classes; i++)
+    {
+        r[i] = r[i-1] + R[i-1].rate();
+    }
+    R_sum = r[n_classes];
+    return R_sum;
+}
+
+int KMC ::  extract (int N){
+
+    return (rand() % N);
+}
+
+
+
+bool KMC :: is_attSite(const int x,const int y){
 	
-// std :: cout << "\n Elements in the classes:" << R[0].N << ", \t" << R[1].N << ", \t" << R[2].N << "\n";
-// for (int i = 0; i < R[1].N; i++)
-//  {
-// 	std :: cout << i <<"\t(" << R[1].where(i)[0]<< ","<< R[1].where(i)[1] << ")\n";
-//  }
-//  std :: cout << "\n \n";
-// for (int i = 0; i < R[2].N; i++)
-//  {
-// 	std :: cout << i <<"\t(" << R[2].where(i)[0]<< ","<< R[2].where(i)[1] << ")\n";
-//  }
-
-//---------------------------
+	int contact = false ;
+	int top,bottom,left,right;
 
 
-// RUN KMC -----------------------------
+	top = y+1;
+	if(top==L) top = 0;
 
-T =1 ;
+	bottom = y-1;
+	if(bottom==-1) bottom = L-1;
 
-for (int k = 0; k < n_steps; k++)
-{
-	KMC_step(R, island, adatom, T, counter);
+	right = x+1;
+	if (right ==L) right = 0;
+	
+	left = x -1;
+	if(left == -1) left = L-1; 
 
-	if ((k%print_every)== 0){
-		frame+=1;
-		island.print(path + "/island" + std::to_string(frame) + ".txt" ,R[0].mask, R[1].mask, R[2].mask,T);
-		adatom.print(path + "/adatom" + std::to_string(frame)+ ".txt",R[3].mask,T);
+	contact = ~island.matrix[y][x] &//not island 
+    ((island.matrix[bottom][x] | island.matrix[top][x] | island.matrix[y][left] | island.matrix[y][right]));
+	
+	return contact;
+}
+
+
+void KMC :: print (int frame, int flag){
+
+    auto path = "plots" + (std::to_string(proc_ID));
+    auto name_a = path + "/adatom" + std::to_string(frame) + ".txt";
+    auto name_b = path + "/island" + std::to_string(frame) + ".txt";
+    if (flag==0){
+        adatom.print(name_a, R[3].mask,current_T);
+        island.print(name_b, R[0].mask,R[1].mask,R[2].mask,current_T);
+    }
+    else if (flag ==1){
+        island.print(name_b, R[0].mask,R[1].mask,R[2].mask,current_T);
+    }
+
+}
+
+ void KMC:: step(const double T, int* event_counter, const bool debug_mode){
+
+    static int count_dnn1=0,count_dnn2=0,count_dnn3=0,count_a=0,count_d=0;
+    static int k=0;
+   
+	int index,i_rand;
+	double R_sum,d_rand;
+	int left,right,top,bottom,x,y;
+    double r [n_classes+1];
+
+    
+
+    // update_rate(T)
+    current_T = T;
+
+ 	R_sum = cumulative(r); 
+
+    //std :: cout << "\n \n \n \n "<< r[0] <<  "\t" << r[1] << "\t"<< r[2] << "\t"<< r[3] << "\t"<< r[4] << "\t"<< r[5] << "\n";
+
+
+ 	d_rand =  ((double) rand() / (RAND_MAX)) * R_sum;
+
+   // std :: cout << "\n \n  " <<d_rand;
+
+
+
+/*===================================
+DETACHEMENT EVENT AT A 1 NN SITE
+===================================
+ */
+ 	if (r[0]<d_rand && d_rand<r[1]){
+
+        count_dnn1+=1;
+		index = extract(R[0].N);//simple uniform random generator
+		// locate event
+	     
+        // std:: cout << "\n counter 1    " << count_dnn1 << "\n";
+
+ 		x = R[0].where(index)[0];
+		y = R[0].where(index)[1];
+
+     // std :: cout << "\n DETACHMENT event 1 , coordinate="<< x << " , " << y<< "\n \n";
+
+		R[0].destroy(index);
+		
+		adatom.matrix[y][x] +=1;
+        adatom.N +=1;
+		island.matrix[y][x] =0;
+
+
+    // ****************************************
+
+		//update R3 and  neighbours
+		island.nn[y][x] = 0;
+		top = y+1;
+		if(top==L) top = 0;
+		bottom = y-1;
+		if(bottom==-1) bottom = L-1;
+		right = x+1;
+		if (right ==L) right = 0;
+		left = x -1;	
+		if(left == -1) left = L-1; 
+		
+
+		if(island.matrix[y][right]){
+			 island.nn[y][right] -= 1;
+            if(island.nn[y][right] ==1){
+			 	R[0].populate(right,y); 
+				R[1].destroy_coordinates(right,y); 
+			 }
+			 else if(island.nn[y][right] ==2){
+			 	R[1].populate(right,y); 
+				R[2].destroy_coordinates(right,y); 
+			 }
+			 else if(island.nn[y][right] ==3){
+				 R[2].populate(right,y); 
+			 }
+			 else {
+                 if(island.nn[y][right] ==0){
+              //   {std :: cout << "COMPLETE DISSOLUTION" ;
+                 R[0].destroy_coordinates(right,y);
+              //   exit(EXIT_FAILURE);
+                 }
+                //  else{
+                //  exit(EXIT_FAILURE);
+                //  }
+                }
+		}
+		else if(island.matrix[y][left]) {
+			island.nn[y][left] -= 1; 
+            if(island.nn[y][left] ==1){
+			 	R[0].populate(left,y); 
+				R[1].destroy_coordinates(left,y); 
+			 }
+			else if(island.nn[y][left] ==2){
+			 	R[1].populate(left,y); 
+				R[2].destroy_coordinates(left,y); 
+			 }
+			else if(island.nn[y][left] ==3){
+				 R[2].populate(left,y); 
+			 }
+			else {
+                 if(island.nn[y][left] ==0){
+              //   {std :: cout << "COMPLETE DISSOLUTION" ;
+                 R[0].destroy_coordinates(left,y);
+              //   exit(EXIT_FAILURE);
+                 }
+                //  else{
+                //  exit(EXIT_FAILURE);
+                //  }
+                }
+			}
+		else if(island.matrix[top][x]) {
+			island.nn[top][x] -= 1; 
+            if(island.nn[top][x] ==1){
+			 	R[0].populate(x,top); 
+				R[1].destroy_coordinates(x,top); 
+			 }
+			else if(island.nn[top][x] ==2){
+			 	R[1].populate(x,top); 
+				R[2].destroy_coordinates(x,top); 
+			 }
+			else if(island.nn[top][x] ==3){
+				 R[2].populate(x,top); 
+			 }
+			else {
+                if(island.nn[top][x] ==0){
+               // {std :: cout << "COMPLETE DISSOLUTION" ;
+                R[0].destroy_coordinates(x,top);
+               // exit(EXIT_FAILURE);
+                }
+                //  else{
+                //  exit(EXIT_FAILURE);
+                //  }
+                }
+			}
+		else if(island.matrix[bottom][x]){
+			island.nn[bottom][x] -= 1;
+            if(island.nn[bottom][x] ==1){
+			 	R[0].populate(x,bottom); 
+				R[1].destroy_coordinates(x,bottom); 
+			 } 
+			else if(island.nn[bottom][x] ==2){
+			 	R[1].populate(x,bottom); 
+				R[2].destroy_coordinates(x,bottom); 
+			 }
+			else if(island.nn[bottom][x] ==3){
+				 R[2].populate(x,bottom); 
+			 }
+			else {
+                if(island.nn[bottom][x] ==0){
+              //  {std :: cout << "COMPLETE DISSOLUTION" ;
+                R[0].destroy_coordinates(x,bottom);
+                //exit(EXIT_FAILURE);
+                }
+                //  else{
+                //  exit(EXIT_FAILURE);
+                //  }
+                }
+			}
+
+//********************************
+
+
+		//Attachment list update: dissolved island atom becomes an adatom on same site
+
+
+        for(int i =0; i< adatom.matrix[y][x];i++){
+            //for loop useful if another adatom above
+            R[3].populate(x,y); //I already updated # adatoms
+       }
+
+        //Take care of deleting elements from R[3]
+        if(R[3].exist(right,y)&& !is_attSite(right,y)){
+             R[3].destroy_coordinates(right,y);
+        }
+        if(R[3].exist(left,y)&& !is_attSite(left,y)){
+                R[3].destroy_coordinates(left,y);
+        }
+
+
+        if(R[3].exist(x,top)&& !is_attSite(x,top)){
+                R[3].destroy_coordinates(x,top);
+        }
+
+        if(R[3].exist(x,bottom)&& !is_attSite(x,bottom)){
+                R[3].destroy_coordinates(x,bottom);
+        }
+
+// ************************************
+        //Diffusion list upadate
+        R[4].populate(x,y);
+        
+
+
 	}
+/*===================================
+DETACHEMENT EVENT AT A 2 NN SITE
+===================================
+ */
+
+ 	else if (r[1]<d_rand && d_rand<r[2]){
+		count_dnn2+=1;
+
+		index = extract(R[1].N);
+	
+		// std:: cout << "\n counter 2    " << count_dnn2 << "\n";
+
+
+		x = R[1].where(index)[0];
+		y = R[1].where(index)[1];
+
+       //std :: cout << "\n DETACHMENT event 2 , coordinate="<< x << " , " << y<< "\n \n";
+
+		R[1].destroy(index);
+
+     //*******************************
+		//update R3, R2 and R1 and nn
 	
 
-if(proc_ID==0 &&debug_mode){
-	//CHECKS*********************
+		adatom.matrix[y][x] +=1;
+        adatom.N +=1;
+		island.matrix[y][x] =0;
+
+		top = y+1;
+		if(top==L) top = 0;
+		bottom = y-1;
+		if(bottom==-1) bottom = L-1;
+		right = x+1;
+		if (right ==L) right = 0;
+		left = x -1;	
+		if(left == -1) left = L-1; 
+
+		
+
+
+		if (island.nn[y][right] == 4)
+		{
+			 R[2].populate(right,y);
+		}
+		else if(island.nn[y][right] ==3){
+			R[1].populate(right,y);
+			R[2].destroy_coordinates(right,y);
+		}
+		else if(island.nn[y][right] ==2){
+			R[0].populate(right,y);
+			R[1].destroy_coordinates(right,y);
+		}
+
+        // strange case, maybe existing only for nearest neighbour. Furthermore clearly pose problems with det bal if I make of it an adatom.
+
+		else if(island.nn[y][right] ==1){
+			
+			R[0].destroy_coordinates(right,y);
+          //  R[4].populate(right,y); //add diffusing adatom which is for sure not on attachment site
+            island.nn[y][right] =0;
+		}
+        //---------
+
+        if (island.nn[y][left] == 4)
+		{
+			 R[2].populate(left,y);
+		}
+		else if(island.nn[y][left] ==3){
+			R[1].populate(left,y);
+			R[2].destroy_coordinates(left,y);
+		}
+		else if(island.nn[y][left] ==2){
+			R[0].populate(left,y);
+			R[1].destroy_coordinates(left,y);
+		}
+
+        // strange case, maybe existing only for nearest neighbour. Furthermore clearly pose problems with det bal if I make of t an adatom.
+        else if(island.nn[y][left] ==1){
+			
+			R[0].destroy_coordinates(left,y);
+          //  R[4].populate(right,y); //add diffusing adatom which is for sure not on attachment site
+            island.nn[y][left] =0;
+		}
+
+		if(island.nn[top][x] ==4){
+			R[2].populate(x,top);
+		}
+		else if(island.nn[top][x] ==3){
+			R[1].populate(x,top);
+			R[2].destroy_coordinates(x,top);
+		}
+		else if(island.nn[top][x] ==2){
+				R[0].populate(x,top);
+				R[1].destroy_coordinates(x,top);
+		}
+
+        // strange case, maybe existing only for nearest neighbour 
+
+		else if(island.nn[top][x] ==1){
+			
+			R[0].destroy_coordinates(x,top);
+        //    R[4].populate(x,top); //add diffusing adatom which is for sure not on attachment site
+            island.nn[top][x] =0;
+		}
+        //---------
+
+		if(island.nn[bottom][x] ==4){
+			R[2].populate(x,bottom);
+		}
+		else if(island.nn[bottom][x] ==3){
+				R[1].populate(x,bottom);
+				R[2].destroy_coordinates(x,bottom);
+		}
+		else if(island.nn[bottom][x] ==2){
+			R[0].populate(x,bottom);
+			R[1].destroy_coordinates(x,bottom);
+		}
+        // strange case, maybe existing only for nearest neighbour 
+
+		else if(island.nn[bottom][x] ==1){
+			
+			R[0].destroy_coordinates(x,bottom);
+           // R[4].populate(x,bottom); //add diffusing adatom which is for sure not on attachment site
+            island.nn[bottom][x] =0;
+		}
+        //---------
+		
+		
+	//**********************************************
+	// Attachment list update 
+    for(int i =0; i< adatom.matrix[y][x];i++){
+            R[3].populate(x,y);
+    }
+
+
+        //Take care of deleting elements from R[3]
+        if(R[3].exist(right,y)&& !is_attSite(right,y)){
+             R[3].destroy_coordinates(right,y);
+        }
+        if(R[3].exist(left,y)&& !is_attSite(left,y)){
+                R[3].destroy_coordinates(left,y);
+        }
+
+
+        if(R[3].exist(x,top)&& !is_attSite(x,top)){
+                R[3].destroy_coordinates(x,top);
+        }
+
+        if(R[3].exist(x,bottom)&& !is_attSite(x,bottom)){
+                R[3].destroy_coordinates(x,bottom);
+        }
+
+    // *******************************
+     //Diffusion list update
+
+        R[4].populate(x,y);
+
+    //*********************************
+
+	//Many possible combinations, this is why no specific update above*/
+
+		island.nn[y][x] = 0;
+		island.nn[top][x] = island.get_neighbours(x,top); 
+		island.nn[bottom][x] = island.get_neighbours(x,bottom); 
+
+		island.nn[y][left] =island.get_neighbours(left,y); 
+		island.nn[y][right] = island.get_neighbours(right,y); 
+
+		// island.nn[bottom][left] = island.get_neighbours(left,bottom);
+		// island.nn[bottom][right] =  island.get_neighbours(right,bottom);
+		// island.nn[top][left] = island.get_neighbours(left,top);
+		// island.nn[top][right] =  island.get_neighbours(right,top);
+
+
+	
+	}
+
+/*===================================
+DETACHMENT EVENT AT A 3 NN SITE
+===================================
+ */
+
+    // DETACHMENT AT 3 NN SITE
+	else if (r[2]<d_rand && d_rand<r[3]){
+		index = extract(R[2].N);
+		
+         count_dnn3+=1;
+
+		x = R[2].where(index)[0];
+		y = R[2].where(index)[1];
+
+     // std :: cout << "\n DETACHMENT event 3 , coordinate="<< x << " , " << y<< "\n \n";
+
+		R[2].destroy(index);
+		
+		adatom.matrix[y][x] +=1;
+        adatom.N +=1;
+		island.matrix[y][x] =0;
+
+//***************************************
+		// update R2 and R3 and nn
+
+		island.nn[y][x] =0;
+
+		top = y+1;
+		if(top==L) top = 0;
+		bottom = y-1;
+		if(bottom==-1) bottom = L-1;
+		right = x+1;
+		if (right ==L) right = 0;
+		left = x -1;	
+		if(left == -1) left = L-1; 
+
+		
+    if (island.nn[y][left] == 4)
+		{
+			 R[2].populate(left,y);
+             island.nn[y][left] -=1;
+		}
+		
+		else if(island.nn[y][left] ==3){
+			 R[1].populate(left,y);
+			 R[2].destroy_coordinates(left,y);
+             island.nn[y][left] -=1;
+		}
+		else if(island.nn[y][left] ==2){
+			R[0].populate(left,y);
+			R[1].destroy_coordinates(left,y);
+            island.nn[y][left] -=1;
+		}
+
+        // strange case, maybe existing only for nearest neighbour 
+
+		else if(island.nn[y][left] ==1){
+			
+			R[0].destroy_coordinates(left,y);
+         //   R[4].populate(left,y); //add diffusing adatom which is for sure not on attachment site
+            island.nn[y][left] =0;
+            // adatom.matrix[y][left] +=1;
+            // island.matrix[y][left] =0;
+		}
+
+
+        //---------
+        //Update other detch classes
+
+		if (island.nn[y][right] == 4)
+		{
+			 R[2].populate(right,y);
+		}
+		else if(island.nn[y][right] ==3){
+			R[1].populate(right,y);
+			R[2].destroy_coordinates(right,y);
+		}
+		else if(island.nn[y][right] ==2){
+			R[0].populate(right,y);
+			R[1].destroy_coordinates(right,y);
+		}
+
+        // strange case, maybe existing only for nearest neighbour 
+
+		else if(island.nn[y][right] ==1){
+			island.nn[y][right] =0;
+			R[0].destroy_coordinates(right,y);
+          //  R[4].populate(right,y); //add diffusing adatom which is for sure not on attachment site
+            
+            // adatom.matrix[y][right] +=1;
+            // island.matrix[y][right] =0;
+		}
+        //---------
+
+		if(island.nn[top][x] ==4){
+			R[2].populate(x,top);
+		}
+		else if(island.nn[top][x] ==3){
+			R[1].populate(x,top);
+			R[2].destroy_coordinates(x,top);
+		}
+		else if(island.nn[top][x] ==2){
+				R[0].populate(x,top);
+				R[1].destroy_coordinates(x,top);
+		}
+
+        // strange case, maybe existing only for nearest neighbour 
+
+		else if(island.nn[top][x] ==1){
+			island.nn[top][x] =0;
+			R[0].destroy_coordinates(x,top);
+            // R[4].populate(x,top); //add diffusing adatom which is for sure not on attachment site
+            // 
+            // adatom.matrix[top][x] +=1;
+            // island.matrix[top][x] =0;
+		}
+        //---------
+
+		if(island.nn[bottom][x] ==4){
+			R[2].populate(x,bottom);
+		}
+		else if(island.nn[bottom][x] ==3){
+				R[1].populate(x,bottom);
+				R[2].destroy_coordinates(x,bottom);
+		}
+		else if(island.nn[bottom][x] ==2){
+			R[0].populate(x,bottom);
+			R[1].destroy_coordinates(x,bottom);
+		}
+        // strange case, maybe existing only for nearest neighbour 
+
+		else if(island.nn[bottom][x] ==1){
+
+			island.nn[bottom][x] =0;
+			R[0].destroy_coordinates(x,bottom);
+            // R[4].populate(x,bottom); //add diffusing adatom which is for sure not on attachment site
+            // 
+            // adatom.matrix[bottom][x] +=1;
+            // island.matrix[bottom][x] =0;
+		}
+        //---------
+
+
+//Many possible combinations, this is why no specific update above*/
+
+		island.nn[top][x] = island.get_neighbours(x,top); 
+		island.nn[bottom][x] = island.get_neighbours(x,bottom); 
+
+		island.nn[y][left] =island.get_neighbours(left,y); 
+		island.nn[y][right] = island.get_neighbours(right,y); 
+
+//When second nearest..
+		// island.nn[bottom][left] = island.get_neighbours(left,bottom);
+		// island.nn[bottom][right] =  island.get_neighbours(right,bottom);
+		// island.nn[top][left] = island.get_neighbours(left,top);
+		// island.nn[top][right] =  island.get_neighbours(right,top);
+// *********************************
+ 		//Attachemnt list update
+        for(int i =0; i< adatom.matrix[y][x];i++){
+            R[3].populate(x,y);
+        }
+
+
+        //Take care of deleting elements from R[3]
+        if(R[3].exist(right,y)&& !is_attSite(right,y)){
+             R[3].destroy_coordinates(right,y);
+        }
+        if(R[3].exist(left,y)&& !is_attSite(left,y)){
+                R[3].destroy_coordinates(left,y);
+        }
+
+
+        if(R[3].exist(x,top)&& !is_attSite(x,top)){
+                R[3].destroy_coordinates(x,top);
+        }
+
+        if(R[3].exist(x,bottom)&& !is_attSite(x,bottom)){
+                R[3].destroy_coordinates(x,bottom);
+        }
+
+// ******************************
+        //Diffusion list update
+
+        R[4].populate(x,y);
+	}
+
+
+/*===================================
+ATTACHMENT EVENT
+===================================
+ */
+
+	else if (r[3]<d_rand && d_rand<r[4]){
+
+        count_a+=1;
+        index = extract(R[3].N);
+        
+        // std:: cout << "\n counter att    " << count_a << "\n";
+        
+
+        x = R[3].where(index)[0];
+		y = R[3].where(index)[1];
+
+     //   std :: cout << "\n ATTACHMENT event, coordinate="<< x << " , " << y << "\n \n";
+
+
+		//R[3].destroy(index); NO!! because all multiples adatoms are not on att site anymore!
+        R[3].destroy_coordinates(x,y);//I have to remove in this case all multiples adatoms on the site
+        R[4].destroy_singleCoordinate(x,y);
+
+        adatom.matrix[y][x]-=1;
+        adatom.N -=1.0;
+        island.matrix[y][x] = 1;
+
+// ****************************
+
+        // Update island classes involed and nn
+
+    
+        top = y+1;
+		if(top==L) top = 0;
+		bottom = y-1;
+		if(bottom==-1) bottom = L-1;
+		right = x+1;
+		if (right ==L) right = 0;
+		left = x -1;	
+		if(left == -1) left = L-1; 
+
+        //R[3]: new island site might imply new attachment site for neighbouring adatoms
+        // if R[3] on site does not exist, populate if there are adatoms there.
+        // If it already existed (it contains one or mutiple time) the coordinate: doesn't need to be added 
+        if(! R[3].exist(right,y)&& !island.matrix[y][right]){ //or use is_attSite
+            for(int i =0; i < adatom.matrix[y][right];i++){
+             R[3].populate(right,y);
+             }
+        }
+        if(!R[3].exist(left,y)&& !island.matrix[y][left]){
+            for(int i =0; i < adatom.matrix[y][left];i++){
+                R[3].populate(left,y);
+            }
+        }
+
+
+        if(!R[3].exist(x,top)&& !island.matrix[top][x]){
+            for(int i =0; i < adatom.matrix[top][x];i++){
+                R[3].populate(x,top);
+            }
+        }
+
+        if(!R[3].exist(x,bottom)&& !island.matrix[bottom][x]){
+            for(int i =0; i < adatom.matrix[bottom][x];i++){
+                R[3].populate(x,bottom);
+            }
+        }
+
+        
+
+    //*******************************
+
+        // Island classes :
+        int  s = 0;
+        if(island.matrix[y][right]){
+            s+=1;
+            if(island.nn[y][right]==3){
+                R[2].destroy_coordinates(right,y);
+            }
+            else if(island.nn[y][right]==2){
+                R[2].populate(right,y);
+                R[1].destroy_coordinates(right,y);
+            }
+            else if(island.nn[y][right]==1){
+                R[1].populate(right,y);
+                R[0].destroy_coordinates(right,y);
+            }
+            //other exotic case..
+            //island is there and no neighbours = isolated element
+             else if(island.nn[y][right]==0 && island.matrix[y][right]){
+                R[0].populate(right,y);
+            }
+            island.nn[y][x] +=1;
+            island.nn[y][right] +=1;
+        }
+        if(island.matrix[y][left]){
+            s+=1;
+            if(island.nn[y][left]==3){
+                R[2].destroy_coordinates(left,y);
+            }
+            else if(island.nn[y][left]==2){
+                R[2].populate(left,y);
+                R[1].destroy_coordinates(left,y);
+            }
+            else if(island.nn[y][left]==1){
+                R[1].populate(left,y);
+                R[0].destroy_coordinates(left,y);
+            }
+            //other exotic case..
+             else if(island.nn[y][left]==0 && island.matrix[y][left]){
+                R[0].populate(left,y);
+            }
+            island.nn[y][x] +=1;
+            island.nn[y][left] +=1;
+        }
+        if(island.matrix[top][x]){
+            s+=1;
+            if(island.nn[top][x]==3){
+                R[2].destroy_coordinates(x,top);
+            }
+            else if(island.nn[top][x]==2){
+                R[2].populate(x,top);
+                R[1].destroy_coordinates(x,top);
+            }
+            else if(island.nn[top][x]==1){
+                R[1].populate(x,top);
+                R[0].destroy_coordinates(x,top);
+            }
+            //other exotic case..
+            else if(island.nn[top][x]==0 && island.matrix[top][x]){
+                R[0].populate(x,top);
+            }
+            island.nn[y][x] +=1;
+            island.nn[top][x] +=1;
+        }
+        if(island.matrix[bottom][x]){
+            s+=1;
+            if(island.nn[bottom][x]==3){
+                R[2].destroy_coordinates(x,bottom);
+            }
+            else if(island.nn[bottom][x]==2){
+                R[2].populate(x,bottom);
+                R[1].destroy_coordinates(x,bottom);
+            }
+            else if(island.nn[bottom][x]==1){
+                R[1].populate(x,bottom);
+                R[0].destroy_coordinates(x,bottom);
+            }
+            //other exotic case..
+            else if(island.nn[bottom][x]==0 && island.matrix[bottom][x]){
+                R[0].populate(x,bottom);
+            }
+            island.nn[bottom][x] +=1;
+            island.nn[y][x] +=1;
+        }
+        
+        if(s<=3){
+            R[s-1].populate(x,y);
+        }
+        //INTERESTING:
+        // else {
+        //     n_filledHoles +=1;
+        // }
+    
+     }
+
+
+/*===================================
+DIFFUSION EVENT
+===================================
+ */
+
+	else if (r[4]<d_rand && d_rand<r[5]){
+
+        count_d+=1;
+        index = extract(R[4].N);
+
+        //std :: cout << "\n *HERE*\n";
+ 
+        // std:: cout << "\n counter diff    " << count_d << "\n";
+        
+
+
+        x = R[4].where(index)[0];
+		y = R[4].where(index)[1];
+
+     //  std :: cout << "\n\n DIFFUSION event , coordinate="<< x << " , " << y << "\n \n";
+
+        R[4].destroy(index);
+        adatom.matrix[y][x] -=1;
+        i_rand = rand() % 4 +1;
+
+        if(is_attSite(x,y)){
+        //remove if it was (in the previous position) on an attachment site
+            R[3].destroy_singleCoordinate(x,y);
+        }
+        
+        if(i_rand ==1){
+
+            top = y+1;
+            if(top==L) top = 0;
+            R[4].populate(x,top);
+            adatom.matrix[top][x] += 1;
+
+            if(is_attSite(x,top)){
+                R[3].populate(x,top);
+            }
+        }
+        else if(i_rand ==2){
+
+		    bottom = y-1;
+		    if(bottom==-1) bottom = L-1;
+            R[4].populate(x,bottom);
+            adatom.matrix[bottom][x] += 1;
+            
+            if(is_attSite(x,bottom)){
+                R[3].populate(x,bottom);
+            }
+       }
+        else if(i_rand ==3){
+
+		    right = x+1;
+		    if (right ==L) right = 0;
+
+            R[4].populate(right,y);
+            adatom.matrix[y][right] += 1;
+
+            if(is_attSite(right,y)){
+                R[3].populate(right,y);
+            }
+       }
+        else if(i_rand ==4){
+
+		    left = x -1;	
+		    if(left == -1) left = L-1; 
+
+            R[4].populate(left,y);
+            adatom.matrix[y][left] += 1;
+
+            if(is_attSite(left,y)){
+
+                R[3].populate(left,y);
+            }
+       }
+
+    }
+
+
+    event_counter[0] = count_dnn1;
+    event_counter[1] = count_dnn2;
+    event_counter[2] = count_dnn3;
+    event_counter[3] = count_a;
+    event_counter[4] = count_d;
+
+
+    if(proc_ID==0 && debug_mode){
+
+//CHECKS*********************
+
 	std :: cout<< "\n  " << k+1 <<"  KMC step \n";
 
-		std :: cout<< "\n island \n";
+	std :: cout<< "\n island \n";
 	for ( int i = 0;i < L;i++){
 		for(int j =0;j<L;j++){
 			std::cout << "\t"<< island.matrix[i][j]; 
@@ -362,35 +984,35 @@ if(proc_ID==0 &&debug_mode){
 	std :: cout << "\n Elements in det class 1:  " << R[0].N << "\t elements in det class 2:  " << R[1].N << "\t elements in det class 3:  " << R[2].N  << "\n";
 	std :: cout << "\n Elements in att class:" << R[3].N << "\t  elements in diffusion class" << R[4].N << "\n";
 
-// 	std :: cout << "\n detachment 1nn list \n";
-// 	 for (int i = 0; i < R[0].N; i++)
-//  	  {
-// 	 	std :: cout << i <<"\t(" << R[0].where(i)[0]<< ","<< R[0].where(i)[1] << ")\n";
-//  	 }
+	std :: cout << "\n detachment 1nn list \n";
+	 for (int i = 0; i < R[0].N; i++)
+ 	  {
+	 	std :: cout << i <<"\t(" << R[0].where(i)[0]<< ","<< R[0].where(i)[1] << ")\n";
+ 	 }
 
-// 	std :: cout << "\n detachment 2nn list \n";
-// 	 for (int i = 0; i < R[1].N; i++)
-//  	  {
-// 	 	std :: cout << i <<"\t(" << R[1].where(i)[0]<< ","<< R[1].where(i)[1] << ")\n";
-//  	 }
+	std :: cout << "\n detachment 2nn list \n";
+	 for (int i = 0; i < R[1].N; i++)
+ 	  {
+	 	std :: cout << i <<"\t(" << R[1].where(i)[0]<< ","<< R[1].where(i)[1] << ")\n";
+ 	 }
 
-// 	std :: cout << "\n detachment 3nn list \n";
-// 	 for (int i = 0; i < R[2].N; i++)
-//  	  {
-// 	 	std :: cout << i <<"\t(" << R[2].where(i)[0]<< ","<< R[2].where(i)[1] << ")\n";
-//  	 }
+	std :: cout << "\n detachment 3nn list \n";
+	 for (int i = 0; i < R[2].N; i++)
+ 	  {
+	 	std :: cout << i <<"\t(" << R[2].where(i)[0]<< ","<< R[2].where(i)[1] << ")\n";
+ 	 }
 
-	// std :: cout << "\n attachment list \n";
-	//  for (int i = 0; i < R[3].N; i++)
- 	//   {
-	//  	std :: cout << i <<"\t(" << R[3].where(i)[0]<< ","<< R[3].where(i)[1] << ")\n";
- 	//  }
+	std :: cout << "\n attachment list \n";
+	 for (int i = 0; i < R[3].N; i++)
+ 	  {
+	 	std :: cout << i <<"\t(" << R[3].where(i)[0]<< ","<< R[3].where(i)[1] << ")\n";
+ 	 }
 
-	// std :: cout << "\n diffusion list \n";
-	// for (int i = 0; i < R[4].N; i++)
- 	//   {
-	//  	std :: cout << i <<"\t(" << R[4].where(i)[0]<< ","<< R[4].where(i)[1] << ")\n";
- 	//  }
+	std :: cout << "\n diffusion list \n";
+	for (int i = 0; i < R[4].N; i++)
+ 	  {
+	 	std :: cout << i <<"\t(" << R[4].where(i)[0]<< ","<< R[4].where(i)[1] << ")\n";
+ 	 }
 
 
 	std :: cout<< "\n det 1 mask \n";
@@ -401,7 +1023,7 @@ if(proc_ID==0 &&debug_mode){
 	std :: cout <<"\n";
 	}
 
-std :: cout<< "\n det 2 mask \n";
+	std :: cout<< "\n det 2 mask \n";
 	for ( int i = 0;i < L;i++){
 		for(int j =0;j<L;j++){
 			std::cout << "\t"<< R[1].mask[i][j]; 
@@ -425,46 +1047,8 @@ std :: cout<< "\n det 2 mask \n";
 		}
 	std :: cout <<"\n";
 	}
+	}
+
+
+
 }
-}
-if(proc_ID==0){
- 	std :: cout << "\tDetachment # nn1= " << counter[0] << "\tDetachment # nn2= " << counter[1] <<"\tDetachment # nn3= " << counter[2] << "\tAttachment # = " << counter[3] << "\t Diffusion # = " << counter[4] ;
-
-
-
-
-	std :: cout << "\n Numeber of parallel KMCs ="<< n_proc<<"\n";
-		//output(av_obs,n_proc,"observables_F"+ std::to_string(F)+"_T"+std::to_string(T)+".txt",N_sim);
-		
-		//std :: cout << "\n  Averaged final physical time = "<< av_obs.time[M-1]/double(n_proc)<< std:: endl;
-		
-		//elapsed time for master (which is the last to finish since it does more stuff)
-		
-	t2 = clock();
-	seconds = ((float)t2-(float)t1)/ CLOCKS_PER_SEC;
-	std :: cout << "\n Elapsed time = " << seconds <<"s \n"<< std:: endl;
-	std :: cout << "-----------"<<"\n"<< std:: endl;
-}
-
-//Consistency CHECK
-// int counter =0;
-// 	for (int i = 0; i < L; i++){
-//         for (int j = 0; j < L; j++){
-//             counter += adatom.matrix[i][j];
-//         }
-//     }
-// 	if(counter != adatom.N){
-// 		std :: cout << "PROBLEM! Inconsistency 1";
-// 	}
-// MORE..?
-
-
-MPI_Finalize();
-
-
- return 0;
- 
-}
-
-
-

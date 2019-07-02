@@ -2,3 +2,4 @@
 *.ex
 readme*
 todo*
+.code*
