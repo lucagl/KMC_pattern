@@ -8,7 +8,7 @@
 
 
 
-void Adatom :: print(const std::string& file_name, int** mask, double T){
+void Adatom :: print(const std::string& file_name, unsigned short** mask, double T) const{
 	
 	
 	std :: ofstream outfile (file_name);

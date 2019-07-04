@@ -7,43 +7,47 @@
 
 class Adatom {
     private :
+        int L;
 
     public:
-        int ** matrix;
-        int L;
+        unsigned short ** matrix;
         int N;
-        bool is_attSite(int x,int y);
-        void print(const std::string&,int**, double);
-
-        void init (const double concentration, const int L_in ){
+        bool is_attSite(int ,int );
+        void print (const std::string&,unsigned short**, double) const;
+        // Adatom (){};
+        // Adatom(const int L_){
+        //     L = L_;
+        //     matrix =new unsigned short*[L];
+        //     for (int i =0;i<L;i++){
+        //         matrix[i] = new unsigned short [L] (); 
+        //     } 
+        // };
+        void init (const int L_in , const double concentration =0){
             int n_adatom, current_density = 1;
             int rand_inti,rand_intj;
 
             L = L_in;
-            
-            // std :: cout << "L =" << L << "\n";
-            // std :: cout << "con =" << concentration << "\n";
-            N = int(concentration*L*L);
-
-            matrix =new int*[L];
+            matrix =new unsigned short*[L];
             for (int i =0;i<L;i++){
-                matrix[i] = new int[L] (); 
+                matrix[i] = new unsigned short [L] (); 
             }
+
+            if(concentration!=0){
+                N = static_cast<int>(concentration*L*L);
+
+                for(int i =0;i<L; i++){
+                    for(int j =0;j<L;j++){
+                        if(current_density<=N){
+                            rand_inti=rand()% L;
+                            rand_intj=rand()% L;
+                            matrix[rand_inti][rand_intj] +=1; // can be on top of each other 
+                            current_density += 1;
+                        }
+                    }
+                }
             
-            
-            for(int i =0;i<L; i++){
-		
-                for(int j =0;j<L;j++){
-			        if(current_density<=N){
-                        rand_inti=rand()% L;
-                        rand_intj=rand()% L;
-                        matrix[rand_inti][rand_intj] +=1; // can be on top of each other 
-                        current_density += 1;
-		            }
-		        }
             }
         }
-
 //Misses copy assignement and copy constructior (rule of three)
 
 

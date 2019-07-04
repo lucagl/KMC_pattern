@@ -15,11 +15,14 @@ public:
 KMC(const double,const double,const double);
 
 
-void initialize (const int , const int , const double , const double);
+void init (const int , const int , const double , const double, const bool read_old = false);
 
 void step(const double , int * , const bool debug_mode  = false);
 
-void print(int frame, int flag =0 );
+void print(int, int flag =0 ) const;
+void print_final(int ) const;
+
+double get_concentration() const;
 
 private: 
 
@@ -36,11 +39,11 @@ double  concentration;
 Adatom adatom;
 Island island;
 Events R[n_classes];
-
-double energy(const int);
-double cumulative ( double * );
-int extract (const int );// extracts event
-bool is_attSite(const int , const int );
+ 
+double energy(const int) const;
+double cumulative ( double * ) ;// calls rate evaluation, so is not a constant member function
+int extract (const int ) const;// extracts event
+bool is_attSite(const int , const int ) const;
 
 };
 

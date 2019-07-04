@@ -8,28 +8,103 @@
 
 
 
-
 KMC:: KMC(const double J_read, const double A_read, const double F_read){
 
-        if(proc_ID == 0){
+        if(proc_ID == root_process){
             std :: cout << "Starting KMC with " << n_classes << "classes of events";
         }
         J = J_read; // link strenght
         A =A_read; // attachment rate
         F =F_read; // diffusion constant
 
+// not supposed to change if a read from previous conf file
 
 }
 
-void KMC :: initialize (const int L_read, const int radius_read, const double conc_read, const double T0){
+void KMC :: init (const int L_read, const int radius_read, const double conc_read, const double T0, const bool old_conf){
 
-    L = L_read;
-    concentration = conc_read; //initial concentration
-    radius = radius_read;
-    current_T = T0;
+
+    if (old_conf) {
+        std :: cout << "\n Insert full path to last configuration file \n";
+        std :: string filename,line;
+        std :: cin >> filename;
+       // std :: cout << filename;
+
+	    std :: ifstream finput(filename);
+        
+	
+	    if (finput.is_open()){
+
+            std :: getline(finput,line, '\t'); //extracts until character delimiter '\t'
+            L= std::stoi(line); //parse to integer
+            
+            island.init(L);
+            adatom.init(L);
+
+            std :: getline(finput,line, '\t'); //skip
+            std :: getline(finput,line, '\t'); 
+            current_T = std::stod(line);
+            //std :: cout << current_T<< "\n";
+
+            std :: getline(finput,line,'\t'); 
+            concentration = std::stod(line);
+            //std :: cout << concentration<< "\n";
+
+            std :: cout << "L = " << L << " T =" << current_T << "initial concentration = " << concentration << "\n"<< std::flush ;
+            std :: getline(finput,line);//skip one line
+        // read island and adatom from file
+            int dummy;
+            
+            for (int i = 0; i < L; i++){
+                
+                std :: getline(finput,line);
+                //std :: cout << line <<std::flush;
+                std::istringstream ss(line);
+                for (int j = 0; j < L; j++){              
+                    ss >> dummy;
+                    //std:: cout << dummy<<" " <<std::flush;
+                    island.matrix[i][j] =(dummy ? true : false);//a bit involved way to convert int to bool
+                    //island.matrix[i][j] =0;
+                   std:: cout << island.matrix[i][j]<<" " <<std::flush;
+                }
+                std:: cout <<"\n";
+            }
+
+std:: cout <<"\n\n";
+            std :: getline(finput,line);//empty line
+            int counter =0;
+            for (int i = 0; i < L; i++){
+                std :: getline(finput,line);
+                std::istringstream ss(line);
+                for (int j = 0; j < L; j++){
+                    ss>> adatom.matrix[i][j];
+                    std:: cout << adatom.matrix[i][j]<<" " <<std::flush;
+                    counter += adatom.matrix[i][j];
+                }
+                adatom.N = counter;
+                std:: cout <<"\n";
+            }
+        finput.close();
+        
+
+        }
+        else{
+        std :: cout << "input file not found. Abort \n";
+		exit(EXIT_FAILURE);
+        }
+    }
+
+    else{
+        L = L_read;
+        radius = radius_read;
+        current_T = T0;// initial temperature
+        concentration = conc_read; //initial concentration
+        island.init(L,radius);
+        adatom.init(L,concentration);
+    }
+
     
-    adatom.init(concentration, L);
-    island.init(radius, L);
+    
 
     for (int i = 0; i < n_classes; i++)
     {
@@ -44,31 +119,31 @@ void KMC :: initialize (const int L_read, const int radius_read, const double co
     island.init_neighbours(); 
 
 // Fill classes
-	for (int y = 0; y < L; y++){
-		for (int x = 0; x < L; x++){		
-			if (island.nn[y][x]==1){
-				R[0].populate(x,y);
-			}
-			if (island.nn[y][x]==2){
-				R[1].populate(x,y);
-			}
-			if (island.nn[y][x]==3){
-				R[2].populate(x,y);
-			}
-			
-			for(int k=0; k<adatom.matrix[y][x]; k++){
-				// I consider possibility of multiple adatoms on top of each other 
-				R[4].populate(x,y);
-				if(is_attSite(x,y)) R[3].populate(x,y);
-			}
-		}
-	}
+    for (int y = 0; y < L; y++){
+        for (int x = 0; x < L; x++){		
+            if (island.nn[y][x]==1){
+                R[0].populate(x,y);
+            }
+            if (island.nn[y][x]==2){
+                R[1].populate(x,y);
+            }
+            if (island.nn[y][x]==3){
+                R[2].populate(x,y);
+            }
+            
+            for(int k=0; k<adatom.matrix[y][x]; k++){
+                // I consider possibility of multiple adatoms on top of each other 
+                R[4].populate(x,y);
+                if(is_attSite(x,y)) R[3].populate(x,y);
+            }
+        }
+    }
 
+    
 }
+ 
 
-
-
-double KMC ::  energy(const int nn){
+double KMC ::  energy(const int nn) const{
 
     double rate;
     rate = exp(-J*nn/current_T);
@@ -88,14 +163,14 @@ double KMC :: cumulative (double* r){
     return R_sum;
 }
 
-int KMC ::  extract (int N){
+int KMC ::  extract (int N) const{
 
     return (rand() % N);
 }
 
 
 
-bool KMC :: is_attSite(const int x,const int y){
+bool KMC :: is_attSite(const int x,const int y) const{
 	
 	int contact = false ;
 	int top,bottom,left,right;
@@ -119,12 +194,16 @@ bool KMC :: is_attSite(const int x,const int y){
 	return contact;
 }
 
+double KMC :: get_concentration() const {
+    return concentration;
+}
 
-void KMC :: print (int frame, int flag){
+void KMC :: print (int frame, int flag) const{
 
     auto path = "plots" + (std::to_string(proc_ID));
     auto name_a = path + "/adatom" + std::to_string(frame) + ".txt";
     auto name_b = path + "/island" + std::to_string(frame) + ".txt";
+
     if (flag==0){
         adatom.print(name_a, R[3].mask,current_T);
         island.print(name_b, R[0].mask,R[1].mask,R[2].mask,current_T);
@@ -135,10 +214,41 @@ void KMC :: print (int frame, int flag){
 
 }
 
+void KMC :: print_final (const int n_frames) const{
+
+    auto path = "plots" + (std::to_string(proc_ID));
+	std :: ofstream outfile (path+"/configuration.txt");
+ 
+
+	if (outfile.is_open()){
+
+        outfile << L << "\t" << n_frames << "\t" << current_T << "\t" << concentration << "\t" << "\n";
+
+        for ( int i = 0;i < L;i++){
+            for(int j =0;j<L;j++){
+                outfile << "\t"<< island.matrix[i][j]; 
+            }
+            outfile <<"\n";
+	    }
+        outfile <<"\n";
+        for ( int i = 0;i < L;i++){
+            for(int j =0;j<L;j++){
+                outfile << "\t"<< adatom.matrix[i][j]; 
+            }
+            outfile <<"\n";
+	    }
+    }
+    
+    
+    outfile.close();
+}
+
+
  void KMC:: step(const double T, int* event_counter, const bool debug_mode){
 
     static int count_dnn1=0,count_dnn2=0,count_dnn3=0,count_a=0,count_d=0;
     static int k=0;
+    int who;
    
 	int index,i_rand;
 	double R_sum,d_rand;
@@ -166,6 +276,8 @@ DETACHEMENT EVENT AT A 1 NN SITE
 ===================================
  */
  	if (r[0]<d_rand && d_rand<r[1]){
+
+         who = 0;
 
         count_dnn1+=1;
 		index = extract(R[0].N);//simple uniform random generator
@@ -337,7 +449,11 @@ DETACHEMENT EVENT AT A 2 NN SITE
  */
 
  	else if (r[1]<d_rand && d_rand<r[2]){
-		count_dnn2+=1;
+
+        who = 1;
+
+
+	    count_dnn2+=1;
 
 		index = extract(R[1].N);
 	
@@ -515,9 +631,12 @@ DETACHMENT EVENT AT A 3 NN SITE
 
     // DETACHMENT AT 3 NN SITE
 	else if (r[2]<d_rand && d_rand<r[3]){
-		index = extract(R[2].N);
+
+        who = 2;
+
+	    index = extract(R[2].N);
 		
-         count_dnn3+=1;
+        count_dnn3+=1;
 
 		x = R[2].where(index)[0];
 		y = R[2].where(index)[1];
@@ -702,6 +821,8 @@ ATTACHMENT EVENT
 
 	else if (r[3]<d_rand && d_rand<r[4]){
 
+        who = 3;
+
         count_a+=1;
         index = extract(R[3].N);
         
@@ -719,7 +840,7 @@ ATTACHMENT EVENT
         R[4].destroy_singleCoordinate(x,y);
 
         adatom.matrix[y][x]-=1;
-        adatom.N -=1.0;
+        adatom.N -=1;
         island.matrix[y][x] = 1;
 
 // ****************************
@@ -869,6 +990,8 @@ DIFFUSION EVENT
 
 	else if (r[4]<d_rand && d_rand<r[5]){
 
+        who = 4;
+
         count_d+=1;
         index = extract(R[4].N);
 
@@ -949,12 +1072,31 @@ DIFFUSION EVENT
     event_counter[3] = count_a;
     event_counter[4] = count_d;
 
+    concentration = static_cast<double>(adatom.N)/(L*L);//update average concentration of adatoms
 
-    if(proc_ID==0 && debug_mode){
+    if(proc_ID==root_process && debug_mode){
 
 //CHECKS*********************
 
 	std :: cout<< "\n  " << k+1 <<"  KMC step \n";
+
+    if(who==0){
+        std :: cout << "\n DETACHMENT event 1, coordinate="<< x << " , " << y << "\n \n";
+    }
+    else if(who==1){
+        std :: cout << "\n DETACHMENT event 2, coordinate="<< x << " , " << y << "\n \n";
+    }
+    else if(who==2){
+        std :: cout << "\n DETACHMENT event 3, coordinate="<< x << " , " << y << "\n \n";
+    }
+    else if(who==3){
+        std :: cout << "\n ATTACHMENT event, coordinate="<< x << " , " << y << "\n \n";
+    }    
+    else if(who==4){
+        std :: cout << "\n DIFFUSION event, coordinate="<< x << " , " << y << "\n \n";
+    }
+
+
 
 	std :: cout<< "\n island \n";
 	for ( int i = 0;i < L;i++){

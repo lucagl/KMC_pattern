@@ -19,25 +19,25 @@ class Events {
 		double D; // constant rate
 		std::tuple<int, int> coordinate(int i); //return a tuple
 		int N=0; // elements in the class
-		int ** mask; //better to make it boolean
-		void coordinate_in (int i, int x, int y); //change coordinate element, to keep track changes. Maybe input a touple
-		void destroy(int i); //must take care of reduction of elements. When called mask[][] must also set to 0 concerned element
-		void destroy_coordinates (int x,int y);
-		void destroy_singleCoordinate (int x,int y);
-		void populate (int x, int y);
-		void change (int i, int x, int y);
-		bool exist (int x, int y);
-		int* where (int i);
+		unsigned short ** mask; 
+		
+		void destroy(int i); //destroy ith element
+		void destroy_coordinates (const int ,const int );//destroy ALL elements with that coordinate
+		void destroy_singleCoordinate (const int , const int ); // destroy only one occurrence of that coordinate
+		void populate (const int , const int );
+		void change (const int , const int , const int );// could be useful: changes coordinate of a specific element in the list
+		bool exist (const int ,const int ) const;// checks existence of the element in the list based on its coordinate
+		int* where (const int ) const; //returns coordinate of the element
 		double rate();
 
-		void init (int box_size){
+		void init (const int box_size){
 
 		//L is the box size, to allocate the mask matrix
 			L = box_size;
-			mask = new int*[L];
+			mask = new unsigned short*[L];
 		
 			for (int i =0;i<L;i++){
-				mask[i] = new int[L] (); 
+				mask[i] = new unsigned short[L] (); 
 			}
 
 

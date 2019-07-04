@@ -1,7 +1,7 @@
-/*############ 2D SURFACE EVOLUTION UNDER THE EFFECT OF A LOAD USING KMC ######################
+/*######################### 2D SINGLE LAYER CLUSTER GROWTH COUPLED TO A CONCENTRATION FIELD ######################
 
  Author:								Luca Gagliardi IIT
- Copiright:				© 2019 Gagliardi IIT, ILM-CNRS
+ Copiright:							© 2019 Gagliardi IIT, ILM-CNRS
  
  
 ###############################################################################################
@@ -19,7 +19,12 @@ System of coordinates is x: left-right-wise and y: top-bottom wise. The indexe s
 --------------------- TODO -----------------
 - Time computation 
 - Add possibility to read from file <--
-- give directly new value of nn without useless obvous computation ?
+-add final prints and method to get useful data from kmc class
+- new class with 0 neighbours <--
+
+- program architecture can be improved.. for instance L in both master and dependent classes is redundant.
+
+- give directly new value of nn without useless obvious computation ?
 
 - Spostare bordello di KMC_step in una funzione dedicata?
 
@@ -61,7 +66,7 @@ TEMPLATE: to make function or classes versatile on different types
 // #############################################
 #include "global.h"
 #include "kmc.h"
-
+#include "functions.h"
 
 // --- PARALLELISATION
 #include <mpi.h>
@@ -70,31 +75,27 @@ TEMPLATE: to make function or classes versatile on different types
 
 //Define global variables
 const double PI = 3.14159265358979323846;
+const int root_process=0;
 int proc_ID;
-
+int ierr,n_proc;
 	
 int main(int argc, char **argv){
 	
-	int print_every,n_steps;
-	int root_process=0;
-	int radius;
 
-	const double  J=1, A= 0.1, F = 0.025;//Maybe some from input file?
+//	const double  J=1, A= 0.1, F = 0.025;//Maybe some from input file?
 
-	int L;
 
-	int n_proc,ierr;
 	
 
 	//int x,y; //just dummy variables fr clarity
-	double T0,conc0;
+	
 
-	int int_steps,frame;
+	
 
 	clock_t t1,t2;
 	t1=clock();
 	float seconds;
-	int counter [n_classes];
+	
 
 	
 	ierr = MPI_Init(&argc, &argv);
@@ -103,37 +104,53 @@ int main(int argc, char **argv){
 
 	MPI_Comm_rank(MPI_COMM_WORLD, &proc_ID);
 	
-// read from input file and broadcast	
-	L = 40;
-	n_steps = 20000;
-	print_every = 200;
-	conc0 = 0.6;
-	radius = 4;
-	T0 =0.4;
-		
-		//read_input(&L,&T, &int_steps);
-		
+
+
+	const double J =1.0;
+
+	double T0,conc0, A, F;
+	int L,radius, n_steps;
+	int frame, print_every;
+	int counter [n_classes];
+	bool read_old;
 	
-	
+	if(proc_ID == root_process){
+		// read from input file and broadcast	
+
+		read_input(&L, &T0,& conc0, &radius, &F, &A, &n_steps, &print_every, &read_old);
+
+		std :: cout << "\n L= "<< L<< " T =" << T0 <<" concentration = "<< conc0 <<
+		 " radius = "<< radius <<  " F =" << F <<  " A =" << A<<" kmc steps =" << n_steps<<
+		" print each =" << print_every << " read old file? =" << read_old;
+	}
+	// A= 0.1;
+	// F = 0.025;
+	// L = 40;
+	// n_steps = 20000;
+	// print_every = 200;
+	// conc0 = 0.6;
+	// radius = 4;
+	// T0 =0.4;
+
 	//RootID broadcast data to other processors
-	
-	//MPI_Bcast(&L, 1, MPI_INT, 0, MPI_COMM_WORLD);
-	//MPI_Bcast(&T, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-	//MPI_Bcast(&F, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-	//MPI_Bcast(&int_steps, 1, MPI_INT, 0, MPI_COMM_WORLD);
-	//MPI_Bcast(&compute_every, 1, MPI_INT, 0, MPI_COMM_WORLD);
-	//MPI_Bcast(&N_sim, 1, MPI_INT, 0, MPI_COMM_WORLD);
-	//MPI_Bcast(&pattern_type, 1, MPI_INT, 0, MPI_COMM_WORLD);
+	MPI_Bcast(&L, 1, MPI_INT, 0, MPI_COMM_WORLD);
+	MPI_Bcast(&T0, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	MPI_Bcast(&conc0, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	MPI_Bcast(&radius, 1, MPI_INT, 0, MPI_COMM_WORLD);
+	MPI_Bcast(&F, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	MPI_Bcast(&A, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	MPI_Bcast(&n_steps, 1, MPI_INT, 0, MPI_COMM_WORLD);
+	MPI_Bcast(&print_every, 1, MPI_INT, 0, MPI_COMM_WORLD);
+	MPI_Bcast(&read_old, 1, MPI_C_BOOL, 0, MPI_COMM_WORLD);
 	
 		
-		
+		 
 	if(proc_ID == root_process){
 		std :: cout << "\n Number of processors= "<< n_proc << std :: endl ;
 	// 	//SOME messages
 	}
 
 
-	
 	auto aString = "mkdir plots" + (std::to_string(proc_ID));
 	const char* makeDir = aString.c_str();
 	auto path = "plots" + (std::to_string(proc_ID));
@@ -141,20 +158,13 @@ int main(int argc, char **argv){
 	const char* remove_old = bString.c_str();
 	system(makeDir);
 	system(remove_old);
-    std :: ofstream outfile (path+"/configuration.txt");
-    if (outfile.is_open()){
-        outfile << L << "\t" << (n_steps/print_every);
-    }
-    outfile.close();
-
-
 
 
 // 	___________________INITIALIZATION _____________________________
 
 	srand (time(NULL)*(proc_ID+1));// initialise random generator differently for each thread
 	KMC kmc(J,A,F);
-	kmc.initialize(L,radius,conc0,T0);
+	kmc.init(L,radius,conc0,T0, read_old);
 	kmc.print(0);
 
 // create a file with information useful for plotting in each directory containing plots
@@ -220,6 +230,16 @@ if(proc_ID==0){
 
 	//Other final messages like physical time
 }
+
+// _______________ FINAL PRINTS ___________________________
+
+	kmc.print_final(n_steps/print_every);
+    // std :: ofstream outfile (path+"/configuration.txt");
+    // if (outfile.is_open()){
+    //     outfile << L << "\t" << (n_steps/print_every);
+    // }
+    // outfile.close();
+
 
 //Consistency CHECK
 // int counter =0;

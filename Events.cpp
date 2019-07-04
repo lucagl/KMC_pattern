@@ -4,7 +4,7 @@
 #include<tuple>
 #include<algorithm>
 
-void Events :: populate(int  x, int y){
+void Events :: populate(const int  x,const int y){
     element.push_back(std::make_tuple(x,y));
    // index +=1;//useless
 	mask[y][x] +=1; //keep trck of having more than 1 adatom on a site: useful only for adatom class
@@ -13,7 +13,7 @@ void Events :: populate(int  x, int y){
     // std :: cout << "\n"<< index;
     // if(N!=index) N=0;
 }
-void Events :: change(int i,int x, int y){
+void Events :: change(const int i,const int x, const int y){
 
     auto it=element.begin();
     advance(it,i);
@@ -23,7 +23,7 @@ void Events :: change(int i,int x, int y){
 
     mask[y][x] +=1;
 }
-void Events :: destroy(int i){
+void Events :: destroy(const int i){
 
     auto it=element.begin();
     advance(it,i);
@@ -32,7 +32,7 @@ void Events :: destroy(int i){
     element.erase(it);
     N = element.size();// updates N
 }
-void Events :: destroy_coordinates(int x, int y){
+void Events :: destroy_coordinates(const int x, const int y){
 
     int oldN;
     
@@ -50,7 +50,7 @@ void Events :: destroy_coordinates(int x, int y){
         exit (EXIT_FAILURE);
     }
 }
-void Events :: destroy_singleCoordinate(int x, int y){
+void Events :: destroy_singleCoordinate(const int x, const int y){
     
     int oldN;
     oldN = element.size();
@@ -67,7 +67,7 @@ void Events :: destroy_singleCoordinate(int x, int y){
 
     N = element.size();//also updates N
 }
-bool Events :: exist (int x,int y){
+bool Events :: exist (const int x,const int y) const{
     // return true if coordinate already present. More than one could be present
     bool answ;
     
@@ -80,7 +80,7 @@ bool Events :: exist (int x,int y){
 
 //method to return human readable coordinate
 
-int * Events :: where (int i){
+int * Events :: where (const int i) const{
 
     auto it=element.begin();
 

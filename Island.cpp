@@ -10,7 +10,7 @@
 
 
 
-void Island :: print(const std::string& file_name, int**mask1,int**mask2,  int**mask3, double T){
+void Island :: print(const std::string& file_name, unsigned short**mask1,unsigned short**mask2,  unsigned short**mask3, double T) const {
 	
 	
 	

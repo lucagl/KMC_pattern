@@ -1,102 +1,75 @@
-void read_input(int* L, double* T, double* F, int* pattern_type,int* N_add, int* N_integration, int* Number_sim, int* diffusionOnly){
+#include "global.h"
+#include "functions.h"
 
-	double sigma,E;
-	std :: string line,dummy;
+void read_input(int* L, double* T, double* c, int* radius, double* F, double* A, int* n_steps, int* print_every, bool* read_old){
+
 	std :: ifstream finput("Input.txt");
+    std :: string line;
 	
+
 	if (finput.is_open()){
-		std :: getline(finput,line, '\t'); //extracts until character delimiter '\t'
-		std :: getline(finput,dummy, '\n');
+		std :: getline(finput,line); 
+		
 		*L= std::stoi(line); //parse to integer
 		
-		std :: getline(finput,line, '\t'); 
-		std :: getline(finput,dummy, '\n');
-		
-		*T= std::stod(line);//parse to double
-		
-		std :: getline(finput,line, '\t');
-		std :: getline(finput,dummy, '\n');
-		
-		*F= std::stod(line); //deposition rate (constant)
-		
-		std :: getline(finput,line, '\t'); 
-		std :: getline(finput,dummy, '\n');
-		
-		load= std::stod(line);
-		
-		std :: getline(finput,line, '\t'); 
-		std :: getline(finput,dummy, '\n');
-		
-		*pattern_type= std::stoi(line);
-		
-		std :: getline(finput,line, '\t'); 
-		std :: getline(finput,dummy, '\n');
-		
-		*N_add= std::stoi(line);
-		
-		if (*N_add>=((*L)*(*L))) {
-			std :: cout << "Number of additives must be lower than total number. Abort\n";
-			exit(EXIT_FAILURE);
-		}
-		
-		std :: getline(finput,line, '\t'); 
-		std :: getline(finput,dummy, '\n');
-		
-		*N_integration= std::stoi(line);
-		
-		std :: getline(finput,line, '\t'); 
-		std :: getline(finput,dummy, '\n');
-		
-		compute_every= std::stoi(line);
-		
-		std :: getline(finput,line, '\t'); 
-		std :: getline(finput,dummy, '\n');
-		
-		print_surface= std::stoi(line);//used only by root_ID
-		
-		std :: getline(finput,line, '\t'); 
-		std :: getline(finput,dummy, '\n');
-		
-		*Number_sim = std::stoi(line);
 
-		std :: getline(finput,line, '\t'); 
-		std :: getline(finput,dummy, '\n');
+		std :: getline(finput,line); 
+
+		*T= std::stod(line);//initial temperature
+        
+        std :: getline(finput,line); 
 		
-		*diffusionOnly = std::stoi(line);
+		*c= std::stod(line);//initial concentration
+
+        std :: getline(finput,line); 
+        
+		*radius= std::stoi(line);//initial concentration
+		
+		std :: getline(finput,line);
+		
+		*F= std::stod(line); //diffusion rate (constant)
+		
+		std :: getline(finput,line); 
+		
+		*A= std::stod(line);//attachment rate
+		
+		std :: getline(finput,line); 
+		
+		*n_steps= std::stoi(line); // kmc steps
+		
+		std :: getline(finput,line); 
+		
+		*print_every= std::stoi(line);
+		
+		std :: getline(finput,line, ' '); 
+		
+		auto answ = line;
+    
+        *read_old = false;
+        if (answ == "yes"){
+            std:: cout << "\n Reading from last configuration. L, and temperature (and concentration) will be overwritten \n";
+            *read_old = true;
+        }
+		finput.close();
 	}
 	else {
-		std :: cout << "input file not existing. Abort\n";
+		std :: cout << "input file not existing. Abort \n";
 		exit(EXIT_FAILURE);
 	}
 	
-	sigma = 1;
-	E=1;	
-	A =(1+sigma)*(2*sigma-1)*sigma/(4*PI*PI*E);	
 	
-	std :: cout << "Size of the box is "<< *L<< " X "<< *L << "\n";
-	std :: cout << "Temperature " << *T << "\n";
-	std :: cout << "Density of impurities " << double(*N_add)/double((*L)*(*L))<< "\n";
-	//std :: cout << "Interaction strenght " << J << "\n";
-	if (!(*pattern_type==0)) {
-	std :: cout << "Pattern type " << *pattern_type << "\n";
-	std :: cout << "Load " << load << "\n";
-	std :: cout << "Elastic strenght " << A << "\n";
-	}
-	else {std :: cout << "No indent, Load =0 " << "\n"; }
-	//std :: cout << "Young modulus " << E << "\n";
-	//std :: cout << "Poisson ratio " << sigma << "\n";
-	if (*diffusionOnly ==1)
-	{
-	std :: cout << "Only surface diffusion \n";
-	}
-	else{
-	std :: cout << "Deposition rate " << *F << "\n";
-	}
+	// std :: cout << "Size of the box is "<< *L<< " X "<< *L << "\n";
+	// std :: cout << "Temperature " << *T << "\n";
+	// std :: cout << "Density of adatoms " << << "\n";
+    // std :: cout << "Attachment rate " <<  << "\n";
+    // std :: cout << "Diffusion rate (per direction) " <<  << "\n";
+	
+	
 
-	std :: cout << "Number of KMC steps " << *N_integration << "\n";
-	std :: cout << "Frequency observable update " << compute_every << "\n";
-	std :: cout << "Frequency surface plot " << print_surface << "\n";
-	std :: cout << "Simulation per core " << *Number_sim << "\n";
+	// std :: cout << "Number of KMC steps " << *N_integration << "\n";
+	// std :: cout << "Frequency plot " << print_every << "\n";
+
+
 	if(((*L)*(*L))>RAND_MAX){
 		std :: cout << "L too big . Abort\n";
 		exit(EXIT_FAILURE);
