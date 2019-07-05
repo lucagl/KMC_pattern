@@ -18,13 +18,10 @@ System of coordinates is x: left-right-wise and y: top-bottom wise. The indexe s
 
 --------------------- TODO -----------------
 - Time computation 
-- Add possibility to read from file <--
--add final prints and method to get useful data from kmc class
-- new class with 0 neighbours <--
+-second nn implementation and new parameter given by ratio J/J'
 
 - program architecture can be improved.. for instance L in both master and dependent classes is redundant.
 
-- give directly new value of nn without useless obvious computation ?
 
 - Spostare bordello di KMC_step in una funzione dedicata?
 
@@ -37,8 +34,7 @@ System of coordinates is x: left-right-wise and y: top-bottom wise. The indexe s
 
 ---------- QUESTIONS ------------------
 
-+ New class for 0 neighbours island sites?
-+ second nn implementation
+
 
 
 
@@ -106,21 +102,21 @@ int main(int argc, char **argv){
 	
 
 
-	const double J =1.0;
+	const double J =0.1;
 
-	double T0,conc0, A, F;
+	double T0,conc0, A;
 	int L,radius, n_steps;
 	int frame, print_every;
-	int counter [n_classes];
+	
 	bool read_old;
 	
 	if(proc_ID == root_process){
 		// read from input file and broadcast	
 
-		read_input(&L, &T0,& conc0, &radius, &F, &A, &n_steps, &print_every, &read_old);
+		read_input(&L, &T0,& conc0, &radius, &A, &n_steps, &print_every, &read_old);
 
 		std :: cout << "\n L= "<< L<< " T =" << T0 <<" concentration = "<< conc0 <<
-		 " radius = "<< radius <<  " F =" << F <<  " A =" << A<<" kmc steps =" << n_steps<<
+		 " radius = "<< radius <<  " 'attachment parameter ' =" << A<<" kmc steps =" << n_steps<<
 		" print each =" << print_every << " read old file? =" << read_old;
 	}
 	// A= 0.1;
@@ -137,7 +133,6 @@ int main(int argc, char **argv){
 	MPI_Bcast(&T0, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	MPI_Bcast(&conc0, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	MPI_Bcast(&radius, 1, MPI_INT, 0, MPI_COMM_WORLD);
-	MPI_Bcast(&F, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	MPI_Bcast(&A, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	MPI_Bcast(&n_steps, 1, MPI_INT, 0, MPI_COMM_WORLD);
 	MPI_Bcast(&print_every, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -163,7 +158,7 @@ int main(int argc, char **argv){
 // 	___________________INITIALIZATION _____________________________
 
 	srand (time(NULL)*(proc_ID+1));// initialise random generator differently for each thread
-	KMC kmc(J,A,F);
+	KMC kmc(J,A);
 	kmc.init(L,radius,conc0,T0, read_old);
 	kmc.print(0);
 
@@ -207,7 +202,7 @@ frame = 0;
 for (int k = 0; k < n_steps; k++){
 	// Temperature function..
 
-	kmc.step(T0,counter);
+	kmc.step(T0);
 
 	if ((k%print_every)== 0){
 		frame+=1;
@@ -217,7 +212,10 @@ for (int k = 0; k < n_steps; k++){
 
 //__________________ FINAL MESSAGES ____________________________
 if(proc_ID==0){
- 	std :: cout << "\tDetachment # nn1= " << counter[0] << "\tDetachment # nn2= " << counter[1] <<"\tDetachment # nn3= " << counter[2] << "\tAttachment # = " << counter[3] << "\t Diffusion # = " << counter[4] ;
+	int * counter;
+	counter = kmc.get_nevents();
+ 	std :: cout << "\tDetachment # nn0= " << counter[0] << "\tDetachment # nn1= " << counter[1] <<"\tDetachment # nn2= " 
+	 << counter[2]<<"\tDetachment # nn3= " << counter[3] << "\tAttachment # = " << counter[4] << "\t Diffusion # = " << counter[5] ;
 
 
 	std :: cout << "\n Numeber of parallel KMCs ="<< n_proc<<"\n";

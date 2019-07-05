@@ -32,8 +32,8 @@ void Events :: destroy(const int i){
     element.erase(it);
     N = element.size();// updates N
 }
-void Events :: destroy_coordinates(const int x, const int y){
-
+bool Events :: destroy_coordinates(const int x, const int y){
+    int error =0;
     int oldN;
     
     oldN = element.size();
@@ -47,11 +47,13 @@ void Events :: destroy_coordinates(const int x, const int y){
     if (oldN == N) {
         std :: cout << "\n Old N =" <<oldN << "\t" << "new N =" << N;  
         std :: cout << "\n Unsucesful attempt to remove"<<" x = " << x <<" y = " << y << "unexisting MULTIPLE OR SINGLE element in class list. \n";
-        exit (EXIT_FAILURE);
+        //exit (EXIT_FAILURE);
+        error=1;
     }
+    return error;
 }
-void Events :: destroy_singleCoordinate(const int x, const int y){
-    
+bool Events :: destroy_singleCoordinate(const int x, const int y){
+    int error =0;
     int oldN;
     oldN = element.size();
     
@@ -60,12 +62,14 @@ void Events :: destroy_singleCoordinate(const int x, const int y){
 
     if (it == element.end()) {
         std :: cout << "\n Unsucesful attempt to remove"<<" x = " << x <<" y = " << y << "unexisting SINGLE element in class list. \n";
-        exit (EXIT_FAILURE);
+        // exit (EXIT_FAILURE);
+        error = 1;
     }
     element.erase(it);
 	mask[std :: get<1>(coordinate)][std :: get<0>(coordinate)] -=1;
 
-    N = element.size();//also updates N
+    N = element.size();// updates N
+    return error;
 }
 bool Events :: exist (const int x,const int y) const{
     // return true if coordinate already present. More than one could be present

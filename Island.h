@@ -51,7 +51,7 @@ public:
 	}
 
 
-    void print(const std::string&, unsigned short**, unsigned short**, unsigned short**,  double temperature) const;
+    void print(const std::string&, unsigned short**, unsigned short**, unsigned short**,  const double, const double ) const;
 
 	void init_neighbours ();
 	int get_neighbours( const int  ,const  int  );

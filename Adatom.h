@@ -13,7 +13,7 @@ class Adatom {
         unsigned short ** matrix;
         int N;
         bool is_attSite(int ,int );
-        void print (const std::string&,unsigned short**, double) const;
+        void print (const std::string&,unsigned short**, const double, const double) const;
         // Adatom (){};
         // Adatom(const int L_){
         //     L = L_;

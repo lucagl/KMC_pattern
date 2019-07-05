@@ -22,8 +22,8 @@ class Events {
 		unsigned short ** mask; 
 		
 		void destroy(int i); //destroy ith element
-		void destroy_coordinates (const int ,const int );//destroy ALL elements with that coordinate
-		void destroy_singleCoordinate (const int , const int ); // destroy only one occurrence of that coordinate
+		bool destroy_coordinates (const int ,const int );//destroy ALL elements with that coordinate
+		bool  destroy_singleCoordinate (const int , const int ); // destroy only one occurrence of that coordinate
 		void populate (const int , const int );
 		void change (const int , const int , const int );// could be useful: changes coordinate of a specific element in the list
 		bool exist (const int ,const int ) const;// checks existence of the element in the list based on its coordinate

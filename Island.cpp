@@ -10,7 +10,7 @@
 
 
 
-void Island :: print(const std::string& file_name, unsigned short**mask1,unsigned short**mask2,  unsigned short**mask3, double T) const {
+void Island :: print(const std::string& file_name, unsigned short**mask1,unsigned short**mask2,  unsigned short**mask3, const double T, const double c) const {
 	
 	
 	
@@ -20,7 +20,7 @@ void Island :: print(const std::string& file_name, unsigned short**mask1,unsigne
 		
 		//outfile << "#L\tT\n";
 		//outfile <<  L << "\t"<< T << "\t" << "\n";
-		outfile <<"#T = " << T << "\n";
+		outfile <<"#T = " << T <<"\tc ="<<c <<"\n";;
 		outfile << "#Island\tsite1\tsite2\tsite3\n";
 		for ( int i = 0;i < L;i++){
 			for(int j =0;j<L;j++){

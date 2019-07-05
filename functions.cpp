@@ -1,7 +1,7 @@
 #include "global.h"
 #include "functions.h"
 
-void read_input(int* L, double* T, double* c, int* radius, double* F, double* A, int* n_steps, int* print_every, bool* read_old){
+void read_input(int* L, double* T, double* c, int* radius, double* A, int* n_steps, int* print_every, bool* read_old){
 
 	std :: ifstream finput("Input.txt");
     std :: string line;
@@ -27,11 +27,11 @@ void read_input(int* L, double* T, double* c, int* radius, double* F, double* A,
 		
 		std :: getline(finput,line);
 		
-		*F= std::stod(line); //diffusion rate (constant)
+		// *F= std::stod(line); //diffusion rate (constant)
 		
-		std :: getline(finput,line); 
+		// std :: getline(finput,line); 
 		
-		*A= std::stod(line);//attachment rate
+		*A= std::stod(line);//attachment parameter
 		
 		std :: getline(finput,line); 
 		
