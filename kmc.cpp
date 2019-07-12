@@ -11,7 +11,7 @@
 KMC:: KMC(const double J_read, const double A_read){
 
         if(proc_ID == root_process){
-            std :: cout << "Starting KMC with " << n_classes << " classes of events";
+            std :: cout << "\n Starting KMC with " << n_classes << " classes of events \n";
         }
         J = J_read; // link strenght
         A =A_read; // attachment over diffusion parameter >0 =few attachement, <0 many attachement (diffusion dominated)
@@ -65,12 +65,12 @@ void KMC :: init (const int L_read, const int radius_read, const double conc_rea
                     //std:: cout << dummy<<" " <<std::flush;
                     island.matrix[i][j] =(dummy ? true : false);//a bit involved way to convert int to bool
                     //island.matrix[i][j] =0;
-                   std:: cout << island.matrix[i][j]<<" " <<std::flush;
+                 //  std:: cout << island.matrix[i][j]<<" " <<std::flush;
                 }
-                std:: cout <<"\n";
+                //std:: cout <<"\n";
             }
 
-std:: cout <<"\n\n";
+
             std :: getline(finput,line);//empty line
             int counter =0;
             for (int i = 0; i < L; i++){
@@ -78,11 +78,11 @@ std:: cout <<"\n\n";
                 std::istringstream ss(line);
                 for (int j = 0; j < L; j++){
                     ss>> adatom.matrix[i][j];
-                    std:: cout << adatom.matrix[i][j]<<" " <<std::flush;
+                   // std:: cout << adatom.matrix[i][j]<<" " <<std::flush;
                     counter += adatom.matrix[i][j];
                 }
                 adatom.N = counter;
-                std:: cout <<"\n";
+                //std:: cout <<"\n";
             }
         finput.close();
         

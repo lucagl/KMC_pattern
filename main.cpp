@@ -34,7 +34,7 @@ System of coordinates is x: left-right-wise and y: top-bottom wise. The indexe s
 
 ---------- QUESTIONS ------------------
 
-
+- How to derive c_eq ?
 
 
 
@@ -102,7 +102,7 @@ int main(int argc, char **argv){
 	
 
 
-	const double J =0.1;
+	const double J =0.2;
 
 	double T0,conc0, A;
 	int L,radius, n_steps;
@@ -112,21 +112,13 @@ int main(int argc, char **argv){
 	
 	if(proc_ID == root_process){
 		// read from input file and broadcast	
-
+		std :: cout << "\n Number of processors= "<< n_proc << std :: endl ;
 		read_input(&L, &T0,& conc0, &radius, &A, &n_steps, &print_every, &read_old);
 
-		std :: cout << "\n L= "<< L<< " T =" << T0 <<" concentration = "<< conc0 <<
+		std :: cout << "\n J= " << J << "  L= "<< L<< " T =" << T0 <<" concentration = "<< conc0 <<
 		 " radius = "<< radius <<  " 'attachment parameter ' =" << A<<" kmc steps =" << n_steps<<
-		" print each =" << print_every << " read old file? =" << read_old;
+		" print each =" << print_every << " read old file? =" << read_old<<"\n";
 	}
-	// A= 0.1;
-	// F = 0.025;
-	// L = 40;
-	// n_steps = 20000;
-	// print_every = 200;
-	// conc0 = 0.6;
-	// radius = 4;
-	// T0 =0.4;
 
 	//RootID broadcast data to other processors
 	MPI_Bcast(&L, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -137,14 +129,8 @@ int main(int argc, char **argv){
 	MPI_Bcast(&n_steps, 1, MPI_INT, 0, MPI_COMM_WORLD);
 	MPI_Bcast(&print_every, 1, MPI_INT, 0, MPI_COMM_WORLD);
 	MPI_Bcast(&read_old, 1, MPI_C_BOOL, 0, MPI_COMM_WORLD);
-	
-		
-		 
-	if(proc_ID == root_process){
-		std :: cout << "\n Number of processors= "<< n_proc << std :: endl ;
-	// 	//SOME messages
-	}
 
+	// make directories for each thread
 
 	auto aString = "mkdir plots" + (std::to_string(proc_ID));
 	const char* makeDir = aString.c_str();
@@ -162,37 +148,6 @@ int main(int argc, char **argv){
 	kmc.init(L,radius,conc0,T0, read_old);
 	kmc.print(0);
 
-// create a file with information useful for plotting in each directory containing plots
-
-
-
-
-
-// CHECKS ------------------------------
-
-// 	std :: cout<< "\n neighbours \n";
-// 	for ( int i = 0;i <L;i++){
-// 		for(int j =0;j<L;j++){
-// 			std::cout << "\t"<< island.nn[i][j]; 
-// 			}
-// 		std :: cout <<"\n";
-// 		}
-
-	
-// std :: cout << "\n Elements in the classes:" << R[0].N << ", \t" << R[1].N << ", \t" << R[2].N << "\n";
-// for (int i = 0; i < R[1].N; i++)
-//  {
-// 	std :: cout << i <<"\t(" << R[1].where(i)[0]<< ","<< R[1].where(i)[1] << ")\n";
-//  }
-//  std :: cout << "\n \n";
-// for (int i = 0; i < R[2].N; i++)
-//  {
-// 	std :: cout << i <<"\t(" << R[2].where(i)[0]<< ","<< R[2].where(i)[1] << ")\n";
-//  }
-
-
-
-
 
 // _________________________RUN KMC ___________________________
 
@@ -208,13 +163,16 @@ for (int k = 0; k < n_steps; k++){
 		frame+=1;
 		kmc.print(frame);
 	}
+	if(k%(n_steps/10)==0&&proc_ID == root_process){
+		std :: cout  << " | "<< std :: flush;
+		}
 }
 
 //__________________ FINAL MESSAGES ____________________________
 if(proc_ID==0){
 	int * counter;
 	counter = kmc.get_nevents();
- 	std :: cout << "\tDetachment # nn0= " << counter[0] << "\tDetachment # nn1= " << counter[1] <<"\tDetachment # nn2= " 
+ 	std :: cout << "\n\nDetachment # nn0= " << counter[0] << "\tDetachment # nn1= " << counter[1] <<"\tDetachment # nn2= " 
 	 << counter[2]<<"\tDetachment # nn3= " << counter[3] << "\tAttachment # = " << counter[4] << "\t Diffusion # = " << counter[5] ;
 
 
@@ -232,25 +190,6 @@ if(proc_ID==0){
 // _______________ FINAL PRINTS ___________________________
 
 	kmc.print_final(n_steps/print_every);
-    // std :: ofstream outfile (path+"/configuration.txt");
-    // if (outfile.is_open()){
-    //     outfile << L << "\t" << (n_steps/print_every);
-    // }
-    // outfile.close();
-
-
-//Consistency CHECK
-// int counter =0;
-// 	for (int i = 0; i < L; i++){
-//         for (int j = 0; j < L; j++){
-//             counter += adatom.matrix[i][j];
-//         }
-//     }
-// 	if(counter != adatom.N){
-// 		std :: cout << "PROBLEM! Inconsistency 1";
-// 	}
-// MORE..?
-
 
 MPI_Finalize();
 
