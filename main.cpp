@@ -18,7 +18,11 @@ System of coordinates is x: left-right-wise and y: top-bottom wise. The indexe s
 
 --------------------- TODO -----------------
 - Time computation 
--second nn implementation and new parameter given by ratio J/J'
+-Build 2nn counter function and test it
+- BEFORE FOLLOWING: update nn1 when necessary within the ifs instead of all of them and the end of det. class update
+-pass to 24 det classes and define all updating behaviors.
+- change attachment site criteria based on being on the diagonal
+-new parameter given by ratio J/J'
 
 - program architecture can be improved.. for instance L in both master and dependent classes is redundant.
 
@@ -157,7 +161,7 @@ frame = 0;
 for (int k = 0; k < n_steps; k++){
 	// Temperature function..
 
-	kmc.step(T0);
+	kmc.step(T0,true);
 
 	if ((k%print_every)== 0){
 		frame+=1;

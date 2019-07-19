@@ -122,16 +122,16 @@ void KMC :: init (const int L_read, const int radius_read, const double conc_rea
 // Fill classes
     for (int y = 0; y < L; y++){
         for (int x = 0; x < L; x++){
-            if (island.nn[y][x]==0&&island.matrix[y][x]){
+            if (island.nn1[y][x]==0&&island.matrix[y][x]){
                 R[0].populate(x,y);
             }		
-            if (island.nn[y][x]==1){
+            if (island.nn1[y][x]==1){
                 R[1].populate(x,y);
             }
-            if (island.nn[y][x]==2){
+            if (island.nn1[y][x]==2){
                 R[2].populate(x,y);
             }
-            if (island.nn[y][x]==3){
+            if (island.nn1[y][x]==3){
                 R[3].populate(x,y);
             }
             
@@ -348,7 +348,7 @@ if (r[0]<d_rand && d_rand<r[1]){
  
 
 /*===================================
-DETACHEMENT EVENT AT A 1 NN SITE
+DETACHEMENT EVENT AT A 1 NN1 and 0 NN2 SITE
 ===================================
  */
 else if (r[1]<d_rand && d_rand<r[2]){
@@ -376,7 +376,7 @@ else if (r[1]<d_rand && d_rand<r[2]){
     // ****************************************
 
 		//update R3 and  neighbours
-		island.nn[y][x] = 0;
+		island.nn1[y][x] = 0;
 		top = y+1;
 		if(top==L) top = 0;
 		bottom = y-1;
@@ -388,20 +388,20 @@ else if (r[1]<d_rand && d_rand<r[2]){
 		
 
 		if(island.matrix[y][right]){
-			 island.nn[y][right] -= 1;
-            if(island.nn[y][right] ==1){
+			 island.nn1[y][right] -= 1;
+            if(island.nn1[y][right] ==1){
 			 	R[1].populate(right,y); 
 				error=R[2].destroy_coordinates(right,y); 
 			 }
-			 else if(island.nn[y][right] ==2){
+			 else if(island.nn1[y][right] ==2){
 			 	R[2].populate(right,y); 
 				error=R[3].destroy_coordinates(right,y); 
 			 }
-			 else if(island.nn[y][right] ==3){
+			 else if(island.nn1[y][right] ==3){
 				 R[3].populate(right,y); 
 			 }
 			 else {
-                 if(island.nn[y][right] ==0){
+                 if(island.nn1[y][right] ==0){
                 error= R[1].destroy_coordinates(right,y);
                  R[0].populate(right,y);
               //   exit(EXIT_FAILURE);
@@ -412,20 +412,20 @@ else if (r[1]<d_rand && d_rand<r[2]){
                 }
 		}
 		else if(island.matrix[y][left]) {
-			island.nn[y][left] -= 1; 
-            if(island.nn[y][left] ==1){
+			island.nn1[y][left] -= 1; 
+            if(island.nn1[y][left] ==1){
 			 	R[1].populate(left,y); 
 				error=R[2].destroy_coordinates(left,y); 
 			 }
-			else if(island.nn[y][left] ==2){
+			else if(island.nn1[y][left] ==2){
 			 	R[2].populate(left,y); 
 				error=R[3].destroy_coordinates(left,y); 
 			 }
-			else if(island.nn[y][left] ==3){
+			else if(island.nn1[y][left] ==3){
 				 R[3].populate(left,y); 
 			 }
 			else {
-                 if(island.nn[y][left] ==0){
+                 if(island.nn1[y][left] ==0){
               //   {std :: cout << "COMPLETE DISSOLUTION" ;
                 error= R[1].destroy_coordinates(left,y);
                  R[0].populate(left,y);
@@ -437,20 +437,20 @@ else if (r[1]<d_rand && d_rand<r[2]){
                 }
 			}
 		else if(island.matrix[top][x]) {
-			island.nn[top][x] -= 1; 
-            if(island.nn[top][x] ==1){
+			island.nn1[top][x] -= 1; 
+            if(island.nn1[top][x] ==1){
 			 	R[1].populate(x,top); 
 				error=R[2].destroy_coordinates(x,top); 
 			 }
-			else if(island.nn[top][x] ==2){
+			else if(island.nn1[top][x] ==2){
 			 	R[2].populate(x,top); 
 				error=R[3].destroy_coordinates(x,top); 
 			 }
-			else if(island.nn[top][x] ==3){
+			else if(island.nn1[top][x] ==3){
 				 R[3].populate(x,top); 
 			 }
 			else {
-                if(island.nn[top][x] ==0){
+                if(island.nn1[top][x] ==0){
                // {std :: cout << "COMPLETE DISSOLUTION" ;
                error= R[1].destroy_coordinates(x,top);
                 R[0].populate(x,top);
@@ -462,20 +462,20 @@ else if (r[1]<d_rand && d_rand<r[2]){
                 }
 			}
 		else if(island.matrix[bottom][x]){
-			island.nn[bottom][x] -= 1;
-            if(island.nn[bottom][x] ==1){
+			island.nn1[bottom][x] -= 1;
+            if(island.nn1[bottom][x] ==1){
 			 	R[1].populate(x,bottom); 
 				error=R[2].destroy_coordinates(x,bottom); 
 			 } 
-			else if(island.nn[bottom][x] ==2){
+			else if(island.nn1[bottom][x] ==2){
 			 	R[2].populate(x,bottom); 
 				error=R[3].destroy_coordinates(x,bottom); 
 			 }
-			else if(island.nn[bottom][x] ==3){
+			else if(island.nn1[bottom][x] ==3){
 				 R[3].populate(x,bottom); 
 			 }
 			else {
-                if(island.nn[bottom][x] ==0){
+                if(island.nn1[bottom][x] ==0){
               
                error= R[1].destroy_coordinates(x,bottom);
                 R[0].populate(x,bottom);
@@ -485,6 +485,14 @@ else if (r[1]<d_rand && d_rand<r[2]){
                 //  }
                 }
 			}
+
+        //provvisional, just to update correctly 2nn
+        island.nn2[y][x] = 0;
+        island.nn2[top][right] = island.get_neighbours2(right,top);
+        island.nn2[top][left] = island.get_neighbours2(left,top);
+        island.nn2[bottom][right] = island.get_neighbours2(right,bottom);
+        island.nn2[bottom][left] = island.get_neighbours2(left,bottom);
+
 
 //********************************
 
@@ -522,7 +530,7 @@ else if (r[1]<d_rand && d_rand<r[2]){
 
 	}
 /*===================================
-DETACHEMENT EVENT AT A 2 NN SITE
+DETACHEMENT EVENT AT A 2 NN1 SITE AND 0 NN2 SITE
 ===================================
  */
 
@@ -544,14 +552,15 @@ DETACHEMENT EVENT AT A 2 NN SITE
        //std :: cout << "\n DETACHMENT event 2 , coordinate="<< x << " , " << y<< "\n \n";
 
 		R[2].destroy(index);
+        adatom.matrix[y][x] +=1;
+        adatom.N +=1;
+		island.matrix[y][x] =0;
 
      //*******************************
 		//update R3, R2 and R1 and nn
 	
 
-		adatom.matrix[y][x] +=1;
-        adatom.N +=1;
-		island.matrix[y][x] =0;
+
 
 		top = y+1;
 		if(top==L) top = 0;
@@ -563,87 +572,97 @@ DETACHEMENT EVENT AT A 2 NN SITE
 		if(left == -1) left = L-1; 
 
 		
+        island.nn1[y][x] = 0;
 
-
-		if (island.nn[y][right] == 4)
-		{
-			 R[3].populate(right,y);
+		if (island.nn1[y][right] == 4){
+            island.nn1[y][right] -=1;
+			R[3].populate(right,y);
 		}
-		else if(island.nn[y][right] ==3){
+		else if(island.nn1[y][right] ==3){
+            island.nn1[y][right] -=1;
 			R[2].populate(right,y);
-		error=	R[3].destroy_coordinates(right,y);
+		    error=	R[3].destroy_coordinates(right,y);
 		}
-		else if(island.nn[y][right] ==2){
+		else if(island.nn1[y][right] ==2){
+            island.nn1[y][right] -=1;
 			R[1].populate(right,y);
-		error=	R[2].destroy_coordinates(right,y);
+		    error=	R[2].destroy_coordinates(right,y);
 		}
 
         // strange case, maybe existing only for nearest neighbour. //note I cannot make it directly an adatom
-		else if(island.nn[y][right] ==1){
-			
-		error=	R[1].destroy_coordinates(right,y);
+		else if(island.nn1[y][right] ==1){
+			island.nn1[y][right] -=1;
+		    error=	R[1].destroy_coordinates(right,y);
           //island.nn[y][right] =0; not needed, updates of nn later
             R[0].populate(right,y);
 		}
         //---------
 
-        if (island.nn[y][left] == 4)
-		{
-			 R[3].populate(left,y);
+        if (island.nn1[y][left] == 4){
+            island.nn1[y][left] -=1;
+			R[3].populate(left,y);
 		}
-		else if(island.nn[y][left] ==3){
+		else if(island.nn1[y][left] ==3){
+            island.nn1[y][left] -=1;
 			R[2].populate(left,y);
 		    error=R[3].destroy_coordinates(left,y);
 		}
-		else if(island.nn[y][left] ==2){
+		else if(island.nn1[y][left] ==2){
+            island.nn1[y][left] -=1;
 			R[1].populate(left,y);
 		    error=R[2].destroy_coordinates(left,y);
 		}
 
         // strange case, maybe existing only for nearest neighbour. Furthermore clearly pose problems with det bal if I make of t an adatom.
-        else if(island.nn[y][left] ==1){
-			
+        else if(island.nn1[y][left] ==1){
+			island.nn1[y][left] -=1;
 		    error=R[1].destroy_coordinates(left,y);
             R[0].populate(left,y);
 
 		}
 
-		if(island.nn[top][x] ==4){
+		if(island.nn1[top][x] ==4){
+            island.nn1[top][x] -=1;
 			R[3].populate(x,top);
 		}
-		else if(island.nn[top][x] ==3){
+		else if(island.nn1[top][x] ==3){
+            island.nn1[top][x] -=1;
 			R[2].populate(x,top);
 		    error=R[3].destroy_coordinates(x,top);
 		}
-		else if(island.nn[top][x] ==2){
-				R[1].populate(x,top);
-			    error=R[2].destroy_coordinates(x,top);
+		else if(island.nn1[top][x] ==2){
+            island.nn1[top][x] -=1;
+			R[1].populate(x,top);
+			error=R[2].destroy_coordinates(x,top);
 		}
 
         // strange case, maybe existing only for nearest neighbour 
 
-		else if(island.nn[top][x] ==1){
-			
+		else if(island.nn1[top][x] ==1){
+			island.nn1[top][x] -=1;
 		    error=R[1].destroy_coordinates(x,top);
             R[0].populate(x,top);
 		}
         //---------
 
-		if(island.nn[bottom][x] ==4){
+		if(island.nn1[bottom][x] ==4){
+            island.nn1[bottom][x] -=1;
 			R[3].populate(x,bottom);
 		}
-		else if(island.nn[bottom][x] ==3){
+		else if(island.nn1[bottom][x] ==3){
+                island.nn1[bottom][x] -=1;
 				R[2].populate(x,bottom);
 		        error=R[3].destroy_coordinates(x,bottom);
 		}
-		else if(island.nn[bottom][x] ==2){
+		else if(island.nn1[bottom][x] ==2){
+            island.nn1[bottom][x] -=1;
 			R[1].populate(x,bottom);
 			error=R[2].destroy_coordinates(x,bottom);
 		}
         // strange case, maybe existing only for nearest neighbour 
 
-		else if(island.nn[bottom][x] ==1){
-			
+		else if(island.nn1[bottom][x] ==1){
+			island.nn1[bottom][x] -=1;
 			error=R[1].destroy_coordinates(x,bottom);
             R[0].populate(x,bottom);
 
@@ -682,14 +701,21 @@ DETACHEMENT EVENT AT A 2 NN SITE
 
     //*********************************
 
-	//neighbours update
+	//neighbours update, displace within ifs case per case 
 
-		island.nn[y][x] = 0;
-		island.nn[top][x] = island.get_neighbours(x,top); 
-		island.nn[bottom][x] = island.get_neighbours(x,bottom); 
+		// island.nn1[y][x] = 0;
+		// island.nn1[top][x] = island.get_neighbours1(x,top); 
+		// island.nn1[bottom][x] = island.get_neighbours1(x,bottom); 
 
-		island.nn[y][left] =island.get_neighbours(left,y); 
-		island.nn[y][right] = island.get_neighbours(right,y); 
+		// island.nn1[y][left] =island.get_neighbours1(left,y); 
+		// island.nn1[y][right] = island.get_neighbours1(right,y); 
+
+        //PROVVISORIO
+        island.nn2[y][x] = 0;
+        island.nn2[top][right] = island.get_neighbours2(right,top);
+        island.nn2[top][left] = island.get_neighbours2(left,top);
+        island.nn2[bottom][right] = island.get_neighbours2(right,bottom);
+        island.nn2[bottom][left] = island.get_neighbours2(left,bottom);
 
 		// island.nn[bottom][left] = island.get_neighbours(left,bottom);
 		// island.nn[bottom][right] =  island.get_neighbours(right,bottom);
@@ -701,7 +727,7 @@ DETACHEMENT EVENT AT A 2 NN SITE
 	}
 
 /*===================================
-DETACHMENT EVENT AT A 3 NN SITE
+DETACHMENT EVENT AT A 3 NN1 SITE AND 0 NN2 site
 ===================================
  */
 
@@ -724,11 +750,12 @@ DETACHMENT EVENT AT A 3 NN SITE
 		adatom.matrix[y][x] +=1;
         adatom.N +=1;
 		island.matrix[y][x] =0;
+        
 
 //***************************************
 		// update R2 and R3 and nn
 
-		island.nn[y][x] =0;
+		island.nn1[y][x] =0;
 
 		top = y+1;
 		if(top==L) top = 0;
@@ -740,20 +767,24 @@ DETACHMENT EVENT AT A 3 NN SITE
 		if(left == -1) left = L-1; 
 
 		
-        if (island.nn[y][left] == 4){
+        if (island.nn1[y][left] == 4){
+            island.nn1[y][left]-=1;
             R[3].populate(left,y);
             }
             
-        else if(island.nn[y][left] ==3){
+        else if(island.nn1[y][left] ==3){
+            island.nn1[y][left]-=1;
             R[2].populate(left,y);
             error=R[3].destroy_coordinates(left,y);
         }
-        else if(island.nn[y][left] ==2){
+        else if(island.nn1[y][left] ==2){
+            island.nn1[y][left]-=1;
             R[1].populate(left,y);
             error=R[2].destroy_coordinates(left,y);
         }
         // strange case, maybe existing only for nearest neighbour 
-        else if(island.nn[y][left] ==1){		
+        else if(island.nn1[y][left] ==1){
+            island.nn1[y][left]-=1;		
             error=R[1].destroy_coordinates(left,y);
             R[0].populate(left,y);
         }
@@ -762,68 +793,88 @@ DETACHMENT EVENT AT A 3 NN SITE
         //---------
         //Update other detch classes
 
-		if (island.nn[y][right] == 4){
+		if (island.nn1[y][right] == 4){
+            island.nn1[y][right]-=1;
 			 R[3].populate(right,y);
 		}
-		else if(island.nn[y][right] ==3){
+		else if(island.nn1[y][right] ==3){
+            island.nn1[y][right]-=1;
 			R[2].populate(right,y);
 			error=R[3].destroy_coordinates(right,y);
 		}
-		else if(island.nn[y][right] ==2){
+		else if(island.nn1[y][right] ==2){
+            island.nn1[y][right]-=1;
 			R[1].populate(right,y);
 			error=R[2].destroy_coordinates(right,y);
 		}
 
         // strange case, maybe existing only for nearest neighbour 
 
-		else if(island.nn[y][right] ==1){
+		else if(island.nn1[y][right] ==1){
+            island.nn1[y][right]-=1;
 			error=R[1].destroy_coordinates(right,y);
             R[0].populate(right,y);
 		}
         //---------
 
-		if(island.nn[top][x] ==4){
+		if(island.nn1[top][x] ==4){
+            island.nn1[top][x]-=1;
 			R[3].populate(x,top);
 		}
-		else if(island.nn[top][x] ==3){
+		else if(island.nn1[top][x] ==3){
+            island.nn1[top][x]-=1;
 			R[2].populate(x,top);
 			error=R[3].destroy_coordinates(x,top);
 		}
-		else if(island.nn[top][x] ==2){
-				R[1].populate(x,top);
-				error=R[2].destroy_coordinates(x,top);
+		else if(island.nn1[top][x] ==2){
+            island.nn1[top][x]-=1;
+			R[1].populate(x,top);
+			error=R[2].destroy_coordinates(x,top);
 		}
-		else if(island.nn[top][x] ==1){
+		else if(island.nn1[top][x] ==1){
+            island.nn1[top][x]-=1;
 			error=R[1].destroy_coordinates(x,top);
             R[0].populate(x,top);
 		}
         //---------
 
-		if(island.nn[bottom][x] ==4){
+		if(island.nn1[bottom][x] ==4){
+            island.nn1[bottom][x]-=1;
 			R[3].populate(x,bottom);
 		}
-		else if(island.nn[bottom][x] ==3){
-				R[2].populate(x,bottom);
-				error=R[3].destroy_coordinates(x,bottom);
+		else if(island.nn1[bottom][x] ==3){
+            island.nn1[bottom][x]-=1;
+			R[2].populate(x,bottom);
+			error=R[3].destroy_coordinates(x,bottom);
 		}
-		else if(island.nn[bottom][x] ==2){
+		else if(island.nn1[bottom][x] ==2){
+            island.nn1[bottom][x]-=1;
 			R[1].populate(x,bottom);
 			error=R[2].destroy_coordinates(x,bottom);
 		}
-		else if(island.nn[bottom][x] ==1){
+		else if(island.nn1[bottom][x] ==1){
+            island.nn1[bottom][x]-=1;
 			error=R[1].destroy_coordinates(x,bottom);
             R[0].populate(x,bottom);
 		}
         //---------
 
 
-// neighbours update
+		// island.nn1[top][x] = island.get_neighbours1(x,top); 
+		// island.nn1[bottom][x] = island.get_neighbours1(x,bottom); 
 
-		island.nn[top][x] = island.get_neighbours(x,top); 
-		island.nn[bottom][x] = island.get_neighbours(x,bottom); 
+		// island.nn1[y][left] =island.get_neighbours1(left,y); 
+		// island.nn1[y][right] = island.get_neighbours1(right,y); 
 
-		island.nn[y][left] =island.get_neighbours(left,y); 
-		island.nn[y][right] = island.get_neighbours(right,y); 
+        //provvisional, just to update correctly 2nn
+        island.nn2[y][x] = 0;
+        island.nn2[top][right] = island.get_neighbours2(right,top);
+        island.nn2[top][left] = island.get_neighbours2(left,top);
+        island.nn2[bottom][right] = island.get_neighbours2(right,bottom);
+        island.nn2[bottom][left] = island.get_neighbours2(left,bottom);
+
+
+
 
 //When second nearest..
 		// island.nn[bottom][left] = island.get_neighbours(left,bottom);
@@ -939,88 +990,90 @@ ATTACHMENT EVENT
         int  s = 0;
         if(island.matrix[y][right]){
             s+=1;
-            if(island.nn[y][right]==3){
+            if(island.nn1[y][right]==3){
                 error=R[3].destroy_coordinates(right,y);
             }
-            else if(island.nn[y][right]==2){
+            else if(island.nn1[y][right]==2){
                 R[3].populate(right,y);
                 error=R[2].destroy_coordinates(right,y);
             }
-            else if(island.nn[y][right]==1){
+            else if(island.nn1[y][right]==1){
                 R[2].populate(right,y);
                 error=R[1].destroy_coordinates(right,y);
             }
             //other exotic case..
             //island is there and no neighbours = isolated element
-             else if(island.nn[y][right]==0 && island.matrix[y][right]){
+             else if(island.nn1[y][right]==0 && island.matrix[y][right]){
                 R[1].populate(right,y);
                 error=R[0].destroy_coordinates(right,y);
             }
-            island.nn[y][x] +=1;
-            island.nn[y][right] +=1;
+            //island.nn1[y][x] +=1;
+            island.nn1[y][right] +=1;
+            
+
         }
         if(island.matrix[y][left]){
             s+=1;
-            if(island.nn[y][left]==3){
+            if(island.nn1[y][left]==3){
                error= R[3].destroy_coordinates(left,y);
             }
-            else if(island.nn[y][left]==2){
+            else if(island.nn1[y][left]==2){
                 R[3].populate(left,y);
                 error=R[2].destroy_coordinates(left,y);
             }
-            else if(island.nn[y][left]==1){
+            else if(island.nn1[y][left]==1){
                 R[2].populate(left,y);
                error= R[1].destroy_coordinates(left,y);
             }
             //other exotic case..
-             else if(island.nn[y][left]==0 && island.matrix[y][left]){
+             else if(island.nn1[y][left]==0 && island.matrix[y][left]){
                 R[1].populate(left,y);
                 error=R[0].destroy_coordinates(left,y);
             }
-            island.nn[y][x] +=1;
-            island.nn[y][left] +=1;
+            //island.nn1[y][x] +=1;
+            island.nn1[y][left] +=1;
         }
         if(island.matrix[top][x]){
             s+=1;
-            if(island.nn[top][x]==3){
+            if(island.nn1[top][x]==3){
                 error=R[3].destroy_coordinates(x,top);
             }
-            else if(island.nn[top][x]==2){
+            else if(island.nn1[top][x]==2){
                 R[3].populate(x,top);
                 error=R[2].destroy_coordinates(x,top);
             }
-            else if(island.nn[top][x]==1){
+            else if(island.nn1[top][x]==1){
                 R[2].populate(x,top);
                 error=R[1].destroy_coordinates(x,top);
             }
             //other exotic case..
-            else if(island.nn[top][x]==0 && island.matrix[top][x]){
+            else if(island.nn1[top][x]==0 && island.matrix[top][x]){
                 R[1].populate(x,top);
                 error=R[0].destroy_coordinates(x,top);
             }
-            island.nn[y][x] +=1;
-            island.nn[top][x] +=1;
+            //island.nn1[y][x] +=1;
+            island.nn1[top][x] +=1;
         }
         if(island.matrix[bottom][x]){
             s+=1;
-            if(island.nn[bottom][x]==3){
+            if(island.nn1[bottom][x]==3){
                 error=R[3].destroy_coordinates(x,bottom);
             }
-            else if(island.nn[bottom][x]==2){
+            else if(island.nn1[bottom][x]==2){
                 R[3].populate(x,bottom);
                 error=R[2].destroy_coordinates(x,bottom);
             }
-            else if(island.nn[bottom][x]==1){
+            else if(island.nn1[bottom][x]==1){
                 R[2].populate(x,bottom);
                 error=R[1].destroy_coordinates(x,bottom);
             }
             //other exotic case..
-            else if(island.nn[bottom][x]==0 && island.matrix[bottom][x]){
+            else if(island.nn1[bottom][x]==0 && island.matrix[bottom][x]){
                 R[1].populate(x,bottom);
                 error=R[0].destroy_coordinates(x,bottom);
             }
-            island.nn[bottom][x] +=1;
-            island.nn[y][x] +=1;
+            island.nn1[bottom][x] +=1;
+            //island.nn1[y][x] +=1;
         }
         
         if(s<=3){
@@ -1029,10 +1082,16 @@ ATTACHMENT EVENT
         if(s==0){
             std :: cout << "Problem, tried to attach adatom not on att site";
             exit(EXIT_FAILURE);}
-        //INTERESTING:
-        // else {
-        //     n_filledHoles +=1;
-        // }
+
+        // new ------
+            island.nn1[y][x] = island.get_neighbours1(x,y);
+            island.nn2[y][x] = island.get_neighbours2(x,y);
+            // PROVVISORIO
+            island.nn2[bottom][right] = island.get_neighbours2(right,bottom);
+            island.nn2[bottom][left] = island.get_neighbours2(left,bottom);
+            island.nn2[top][right] = island.get_neighbours2(right,top);
+            island.nn2[top][left] = island.get_neighbours2(left,top);
+            // ------
     
      }
 
@@ -1160,11 +1219,18 @@ DIFFUSION EVENT
 		std :: cout <<"\n";
 	}
 
-	std :: cout<< "\n neighbours \n";
+	std :: cout<< "\n First neighbours \n";
 
 	for ( int i = 0;i <L;i++){
 		for(int j =0;j<L;j++){
-			std::cout << "\t"<< island.nn[i][j]; 
+			std::cout << "\t"<< island.nn1[i][j]; 
+			}
+		std :: cout <<"\n";
+		}
+std :: cout<< "\n Second neighbours \n";
+    for ( int i = 0;i <L;i++){
+		for(int j =0;j<L;j++){
+			std::cout << "\t"<< island.nn2[i][j]; 
 			}
 		std :: cout <<"\n";
 		}

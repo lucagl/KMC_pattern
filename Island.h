@@ -9,7 +9,8 @@ private:
 	int L;
 public:
 	bool ** matrix;
-	unsigned short ** nn;
+	unsigned short ** nn1;
+	unsigned short ** nn2;
 	// Island(){};
 	// Island(const int L_){
 	// 	std :: cout <<" Initializing island \n"<< std::flush ;
@@ -29,11 +30,13 @@ public:
 		L = L_in;
 
 		matrix = new bool*[L];
-		nn = new unsigned short* [L];
+		nn1 = new unsigned short* [L];
+		nn2 = new unsigned short* [L];
 
 		for (int i =0;i<L;i++){ 
 			matrix[i] = new bool[L] ();
-			nn[i] = new unsigned short[L] ();
+			nn1[i] = new unsigned short[L] ();
+			nn2[i] = new unsigned short[L] ();
 		}
 		
 		if (radius!=0){
@@ -53,17 +56,21 @@ public:
 
     void print(const std::string&, unsigned short**, unsigned short**, unsigned short**,  const double, const double ) const;
 
-	void init_neighbours ();
-	int get_neighbours( const int  ,const  int  );
+	void init_neighbours ();//init first and second neighbours
+	int get_neighbours1( const int  ,const  int  );
+	int get_neighbours2( const int  ,const  int  );
 
 	// destructor
 	~Island(){
 		for(int i = 0; i < L; ++i) {
 			delete [] matrix[i];
-			delete [] nn[i];
+			delete [] nn1[i];
+			delete [] nn2[i];
 		}
 		delete [] matrix;
-		delete [] nn;	
+		delete [] nn1;	
+		delete [] nn2
+		;	
 	}
 };
 
