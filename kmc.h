@@ -5,7 +5,7 @@
 #include "Adatom.h"
 
 
-const int n_classes = 6 ;
+const int n_classes = 26 ;
 
 
 class KMC {

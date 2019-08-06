@@ -7,6 +7,7 @@
 ###############################################################################################
 
  ------------ COMPILING INSTRUCTIONS ----------------
+ -riscrivi print e debugs flags
 place in working folder *.cpp and *.h
 compile: mpic++ *.cpp -o "executable".ex 
 run:  mpirun -np "cores number" executable.out
@@ -18,18 +19,18 @@ System of coordinates is x: left-right-wise and y: top-bottom wise. The indexe s
 
 --------------------- TODO -----------------
 - Time computation 
--Build 2nn counter function and test it
+-Build 2nn counter function and test it. OK
 - BEFORE FOLLOWING: update nn1 when necessary within the ifs instead of all of them and the end of det. class update
 -pass to 24 det classes and define all updating behaviors.
+	-diverso tratamento per nn1=0 nn2 =1 come fatto per nn1=1, nn2=0 ?
+	-riscrivi print e debugs flags
 - change attachment site criteria based on being on the diagonal
--new parameter given by ratio J/J'
+-new energy and parameter given by ratio J/J'
 
 - program architecture can be improved.. for instance L in both master and dependent classes is redundant.
 
 
 - Spostare bordello di KMC_step in una funzione dedicata?
-
-
 
 - Would be faster if I already individuate contiguos elements between detachment 2 and 3
 - Sort the event list for better organization of data?
