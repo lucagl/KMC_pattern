@@ -26,7 +26,7 @@ double get_concentration() const;
 int* get_nevents() const;
 
 private: 
-int count_dnn0=0,count_dnn1=0,count_dnn2=0,count_dnn3=0,count_a=0,count_d=0;
+int event_counter[n_classes];
 int L;
 int radius;
 double  concentration;

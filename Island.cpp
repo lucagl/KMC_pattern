@@ -55,8 +55,6 @@ void Island :: print(const std::string& file_name, unsigned short**mask1,unsigne
 void Island :: init_neighbours(){
 	//only of the island
 
-
-	int local_neighbour;
 	int left, right,bottom,top;
 	
 	for (int i = 0; i < L; i++){
@@ -107,7 +105,7 @@ int Island :: get_neighbours1(const int x,const int y){
 	local_neighbour = (matrix[y][right]&matrix[y][x]) + (matrix[y][left]&matrix[y][x])
 	+ (matrix[top][x]&matrix[y][x]) + (matrix[bottom][x]&matrix[y][x]);
 
-	//nn[i][j] = local_neighbour;
+	nn1[y][x] = local_neighbour;
 
 return local_neighbour;
 
@@ -139,7 +137,7 @@ int Island :: get_neighbours2(const int x,const int y){
 	local_neighbour = (matrix[top][right]&matrix[y][x]) + (matrix[top][left]&matrix[y][x])
 	+ (matrix[bottom][right]&matrix[y][x]) + (matrix[bottom][left]&matrix[y][x]);
 
-	//nn[i][j] = local_neighbour;
+	nn2[y][x] = local_neighbour;
 
 return local_neighbour;
 

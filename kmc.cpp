@@ -326,14 +326,12 @@ double KMC :: get_concentration() const {
 }
 
 int* KMC :: get_nevents() const {
-    static int event_counter [n_classes];
-    event_counter[0] = count_dnn0;
-    event_counter[1] = count_dnn1;
-    event_counter[2] = count_dnn2;
-    event_counter[3] = count_dnn3;
-    event_counter[4] = count_a;
-    event_counter[5] = count_d;
-    return event_counter;
+    static int counter[n_classes];
+    for (int i = 0; i < n_classes; i++)
+    {
+        counter[i] =event_counter[i]; 
+    }
+    return counter;
 }
 
 
@@ -419,13 +417,13 @@ DETACHEMENT EVENT AT A NN1=0, NN2 =0 SITE
 
 if (r[0]<d_rand && d_rand<r[1]){
 
-    who = 0;
-    count_dnn0 ++;
-    index = extract(R[0].N);//simple uniform random generator
-    x = R[0].where(index)[0];
-    y = R[0].where(index)[1];
+    who = _0x0;
+    event_counter[_0x0] +=1;
+    index = extract(R[_0x0].N);//simple uniform random generator
+    x = R[_0x0].where(index)[0];
+    y = R[_0x0].where(index)[1];
 
-    R[0].destroy(index);//delete from list
+    R[_0x0].destroy(index);//delete from list
     adatom.matrix[y][x] +=1;
     adatom.N +=1;
     island.matrix[y][x] =0;
@@ -465,22 +463,22 @@ if (r[0]<d_rand && d_rand<r[1]){
 DETACHEMENT EVENT AT A 1 NN1 and 0 NN2 SITE
 ===================================
  */
-else if (r[1]<d_rand && d_rand<r[2]){
+else if (r[_1x0]<d_rand && d_rand<r[_2x0]){
 
-         who = 1;
+         who = _1x0;
 
-        count_dnn1+=1;
-		index = extract(R[1].N);//simple uniform random generator
+        event_counter[_1x0] +=1;
+		index = extract(R[_1x0].N);//simple uniform random generator
 		// locate event
 	     
         // std:: cout << "\n counter 1    " << count_dnn1 << "\n";
 
- 		x = R[1].where(index)[0];
-		y = R[1].where(index)[1];
+ 		x = R[_1x0].where(index)[0];
+		y = R[_1x0].where(index)[1];
 
      // std :: cout << "\n DETACHMENT event 1 , coordinate="<< x << " , " << y<< "\n \n";
 
-		R[1].destroy(index);
+		R[_1x0].destroy(index);
 		
 		adatom.matrix[y][x] +=1;
         adatom.N +=1;
@@ -491,6 +489,7 @@ else if (r[1]<d_rand && d_rand<r[2]){
 
 		//update R3 and  neighbours
 		island.nn1[y][x] = 0;
+
 		top = y+1;
 		if(top==L) top = 0;
 		bottom = y-1;
@@ -500,39 +499,106 @@ else if (r[1]<d_rand && d_rand<r[2]){
 		left = x -1;	
 		if(left == -1) left = L-1; 
 		
-
+//In this scenario I can be more specific and use else if for exclusive situations (rest of island touch detaching element only top, lef, bottom, or right)
 		if(island.matrix[y][right]){
 			island.nn1[y][right] -= 1;
+            // In the following neighbour already updated
             if(island.nn1[y][right] ==1){
                 if(island.nn2[y][right]==0){
-                    R[1].populate(right,y); 
-                    error=R[2].destroy_coordinates(right,y); 
+                    R[_1x0].populate(right,y); 
+                    error=R[_2x0].destroy_coordinates(right,y); 
                 }
+                else if(island.nn2[y][right]==1){
+                    R[_1x1].populate(right,y); 
+                    error=R[_2x1].destroy_coordinates(right,y); 
+                }
+                else if(island.nn2[y][right]==2){
+                    R[_1x2].populate(right,y); 
+                    error=R[_2x2].destroy_coordinates(right,y); 
+                }
+                else if(island.nn2[y][right]==3){
+                    R[_1x3].populate(right,y); 
+                    error=R[_2x3].destroy_coordinates(right,y); 
+                }
+                else if(island.nn2[y][right]==4){
+                    R[_1x4].populate(right,y); 
+                    error=R[_2x4].destroy_coordinates(right,y); 
+                }
+
 			 }
 			 else if(island.nn1[y][right] ==2){
                  if(island.nn2[y][right]==0){
-                    R[2].populate(right,y); 
-                    error=R[3].destroy_coordinates(right,y); 
+                    R[_2x0].populate(right,y); 
+                    error=R[_3x0].destroy_coordinates(right,y); 
+                }
+                else if(island.nn2[y][right]==1){
+                    R[_2x1].populate(right,y); 
+                    error=R[_3x1].destroy_coordinates(right,y); 
+                }
+                else if(island.nn2[y][right]==2){
+                    R[_2x2].populate(right,y); 
+                    error=R[_3x2].destroy_coordinates(right,y); 
+                }
+                else if(island.nn2[y][right]==3){
+                    R[_2x3].populate(right,y); 
+                    error=R[_3x3].destroy_coordinates(right,y); 
+                }
+                else if(island.nn2[y][right]==4){
+                    R[_2x4].populate(right,y); 
+                    error=R[_3x4].destroy_coordinates(right,y); 
                 }
 			 }
 			 else if(island.nn1[y][right] ==3){
                  if(island.nn2[y][right]==0){
-				    R[3].populate(right,y); 
-                    //error=R[_4x0].destroy..
+				    R[_3x0].populate(right,y); 
+                    error=R[_4x0].destroy(right,y);
                  }
+                 else if(island.nn2[y][right]==1){
+                    R[_3x1].populate(right,y); 
+                    error=R[_4x1].destroy_coordinates(right,y); 
+                }
+                else if(island.nn2[y][right]==2){
+                    R[_3x2].populate(right,y); 
+                    error=R[_4x2].destroy_coordinates(right,y); 
+                }
+                else if(island.nn2[y][right]==3){
+                    R[_3x3].populate(right,y); 
+                    error=R[_4x3].destroy_coordinates(right,y); 
+                }
+                else if(island.nn2[y][right]==4){
+                    R[_3x4].populate(right,y); 
+                }
 			 }
-			 else {
-                if(island.nn1[y][right] ==0){
+			 
+             else if(island.nn1[y][right] ==0){
                     if(island.nn2[y][right]==0){
-                    error= R[1].destroy_coordinates(right,y);
-                    R[0].populate(right,y);
+                        R[_0x0].populate(right,y);
+                        error= R[_1x0].destroy_coordinates(right,y);
                     }
-                 }
+                    else if(island.nn2[y][right]==1){
+                    R[_0x1].populate(right,y); 
+                    error=R[_1x1].destroy_coordinates(right,y); 
+                    }
+                    else if(island.nn2[y][right]==2){
+                        R[_0x2].populate(right,y); 
+                        error=R[_1x2].destroy_coordinates(right,y); 
+                    }
+                    else if(island.nn2[y][right]==3){
+                        R[_0x3].populate(right,y); 
+                        error=R[_1x3].destroy_coordinates(right,y); 
+                    }
+                    else if(island.nn2[y][right]==4){
+                        R[_0x4].populate(right,y); 
+                        error=R[_1x4].destroy_coordinates(right,y); 
+                    }
+                }
                 //  else{
                 //  exit(EXIT_FAILURE);
                 //  }
-                }
+                
 		}
+
+        |||||||||||||||||||||||||| CONTINUE HERE
 		else if(island.matrix[y][left]){
 			island.nn1[y][left] -= 1; 
             if(island.nn2[y][left]==0){
@@ -628,11 +694,12 @@ else if (r[1]<d_rand && d_rand<r[2]){
 		}
 
         //provvisional, just to update correctly 2nn
-        island.nn2[y][x] = 0;
-        island.nn2[top][right] = island.get_neighbours2(right,top);
-        island.nn2[top][left] = island.get_neighbours2(left,top);
-        island.nn2[bottom][right] = island.get_neighbours2(right,bottom);
-        island.nn2[bottom][left] = island.get_neighbours2(left,bottom);
+        // USELESS : NO EFFECT ON DIAGONAL ELEMENTS BECAUSE I KNOW ALREADY I DO NOT HAVE ANY DIAGONAL NEIGHBOUR
+        //island.nn2[x][y] =0;
+        // island.nn2[top][right] = island.get_neighbours2(right,top);
+        // island.nn2[top][left] = island.get_neighbours2(left,top);
+        // island.nn2[bottom][right] = island.get_neighbours2(right,bottom);
+        // island.nn2[bottom][left] = island.get_neighbours2(left,bottom);
 
 
 //********************************
@@ -677,21 +744,21 @@ DETACHEMENT EVENT AT A 2 NN1 SITE AND 0 NN2 SITE
 
  	else if (r[2]<d_rand && d_rand<r[3]){
 
-        who = 2;
+        who = _2x0;
 
-	    count_dnn2+=1;
+	    event_counter[_2x0] +=1;
 
-		index = extract(R[2].N);
+		index = extract(R[_2x0].N);
 	
 		// std:: cout << "\n counter 2    " << count_dnn2 << "\n";
 
 
-		x = R[2].where(index)[0];
-		y = R[2].where(index)[1];
+		x = R[_2x0].where(index)[0];
+		y = R[_2x0].where(index)[1];
 
        //std :: cout << "\n DETACHMENT event 2 , coordinate="<< x << " , " << y<< "\n \n";
 
-		R[2].destroy(index);
+		R[_2x0].destroy(index);
         adatom.matrix[y][x] +=1;
         adatom.N +=1;
 		island.matrix[y][x] =0;
@@ -874,21 +941,6 @@ DETACHEMENT EVENT AT A 2 NN1 SITE AND 0 NN2 SITE
 
     //*********************************
 
-//Now within ifs
-		// island.nn1[y][x] = 0;
-		// island.nn1[top][x] = island.get_neighbours1(x,top); 
-		// island.nn1[bottom][x] = island.get_neighbours1(x,bottom); 
-
-		// island.nn1[y][left] =island.get_neighbours1(left,y); 
-		// island.nn1[y][right] = island.get_neighbours1(right,y); 
-
-        //PROVVISORIO
-        island.nn2[y][x] = 0;
-        island.nn2[top][right] = island.get_neighbours2(right,top);
-        island.nn2[top][left] = island.get_neighbours2(left,top);
-        island.nn2[bottom][right] = island.get_neighbours2(right,bottom);
-        island.nn2[bottom][left] = island.get_neighbours2(left,bottom);
-
 	}
 
 /*===================================
@@ -897,20 +949,20 @@ DETACHMENT EVENT AT A 3 NN1 SITE AND 0 NN2 site
  */
 
     // DETACHMENT AT 3 NN SITE
-	else if (r[3]<d_rand && d_rand<r[4]){
+	else if (r[_3x0]<d_rand && d_rand<r[_4x0]){
 
-        who = 3;
+        who = _3x0;
 
-	    index = extract(R[3].N);
+	    index = extract(R[_3x0].N);
 		
-        count_dnn3+=1;
+        event_counter[_3x0] +=1;
 
-		x = R[3].where(index)[0];
-		y = R[3].where(index)[1];
+		x = R[_3x0].where(index)[0];
+		y = R[_3x0].where(index)[1];
 
      // std :: cout << "\n DETACHMENT event 3 , coordinate="<< x << " , " << y<< "\n \n";
 
-		R[3].destroy(index);
+		R[_3x0].destroy(index);
 		
 		adatom.matrix[y][x] +=1;
         adatom.N +=1;
@@ -935,7 +987,7 @@ DETACHMENT EVENT AT A 3 NN1 SITE AND 0 NN2 site
         if (island.nn1[y][left] == 4){
             island.nn1[y][left]-=1;
             if(island.nn2[y][left]==0){
-                R[3].populate(left,y);
+                R[_3x0].populate(left,y);
                 //error=R[_4x0].destroy_coordinates(left,y)
             }
         }
@@ -963,8 +1015,7 @@ DETACHMENT EVENT AT A 3 NN1 SITE AND 0 NN2 site
         }
 
 
-        //---------
-        //Update other detch classes
+
 
 		if (island.nn1[y][right] == 4){
             island.nn1[y][right]-=1;
@@ -988,7 +1039,7 @@ DETACHMENT EVENT AT A 3 NN1 SITE AND 0 NN2 site
             }
 		}
 
-        // strange case, maybe existing only for nearest neighbour 
+
 
 		else if(island.nn1[y][right] ==1){
             island.nn1[y][right]-=1;
@@ -1061,27 +1112,13 @@ DETACHMENT EVENT AT A 3 NN1 SITE AND 0 NN2 site
         //---------
 
 
-		// island.nn1[top][x] = island.get_neighbours1(x,top); 
-		// island.nn1[bottom][x] = island.get_neighbours1(x,bottom); 
-
-		// island.nn1[y][left] =island.get_neighbours1(left,y); 
-		// island.nn1[y][right] = island.get_neighbours1(right,y); 
-
-        //provvisional, just to update correctly 2nn
-        island.nn2[y][x] = 0;
-        island.nn2[top][right] = island.get_neighbours2(right,top);
-        island.nn2[top][left] = island.get_neighbours2(left,top);
-        island.nn2[bottom][right] = island.get_neighbours2(right,bottom);
-        island.nn2[bottom][left] = island.get_neighbours2(left,bottom);
-
-
  		//Attachemnt list update
         for(int i =0; i< adatom.matrix[y][x];i++){
             R[attachment].populate(x,y);
         }
 
 
-        //Take care of deleting elements from R[3]
+        //Take care of deleting elements from attachment class
         if(R[attachment].exist(right,y)&& !is_attSite(right,y)){
              error=R[attachment].destroy_coordinates(right,y);
         }
@@ -1112,9 +1149,9 @@ ATTACHMENT EVENT
 
 	else if (r[attachment]<d_rand && d_rand<r[diffusion]){
 
-        who = 4;
+        who = attachment;
 
-        count_a+=1;
+        event_counter[attachment]+=1;
         index = extract(R[attachment].N);
         
         // std:: cout << "\n counter att    " << count_a << "\n";
@@ -1128,7 +1165,7 @@ ATTACHMENT EVENT
 
 		//R[3].destroy(index); NO!! because all multiples adatoms are not on att site anymore!
         error=R[attachment].destroy_coordinates(x,y);//I have to remove in this case all multiples adatoms on the site
-        error=R[diffusion].destroy_singleCoordinate(x,y);// remove a diffusion event on same coordinate
+        error=R[diffusion].destroy_singleCoordinate(x,y);// remove a single diffusion event on same coordinate
 
         adatom.matrix[y][x]-=1;
         adatom.N -=1;
@@ -1183,20 +1220,20 @@ ATTACHMENT EVENT
         }
 
         
-        if(! R[attachment].exist(right,bottom)&& !island.matrix[bottom][right]){ //or use is_attSite
+        if(! R[attachment].exist(right,bottom)&& !island.matrix[bottom][right]){ 
             for(int i =0; i < adatom.matrix[bottom][right];i++){
              R[attachment].populate(right,bottom);
              }
         }
 
         
-        if(! R[attachment].exist(left,top)&& !island.matrix[top][left]){ //or use is_attSite
+        if(! R[attachment].exist(left,top)&& !island.matrix[top][left]){ 
             for(int i =0; i < adatom.matrix[top][left];i++){
              R[attachment].populate(left,top);
              }
         }
 
-        if(! R[attachment].exist(left,bottom)&& !island.matrix[bottom][left]){ //or use is_attSite
+        if(! R[attachment].exist(left,bottom)&& !island.matrix[bottom][left]){ 
             for(int i =0; i < adatom.matrix[bottom][left];i++){
              R[attachment].populate(left,bottom);
              }
@@ -1208,122 +1245,771 @@ ATTACHMENT EVENT
 
         // Island classes :
 
-//new =============
 
-/*
-island.nn1[y][x]=island.get_neighbours1(x,y);
-island.nn2[y][x]=island.get_neighbours2(x,y);
-for(int k=0;k<=island.nn1[y][x];k++){
-for(int j=0;j<=island.nn2[y][x];j++){
-    if(island.nn1[y][x] + island.nn2[y][x]<4){
-         R[k+j].populate(x,y);
-    }
-}
-// update R on island according to their previous value..
- */
-
-//===============
-
-        int  s = 0;
-        int d = 0;
-        if(island.matrix[y][right]){
-            s+=1;
-            if(island.nn1[y][right]==3 && island.nn2[y][right]==0){
-                error=R[3].destroy_coordinates(right,y);
-            }
-            else if(island.nn1[y][right]==2 && island.nn2[y][right] ==0){
-                R[3].populate(right,y);
-                error=R[2].destroy_coordinates(right,y);
-            }
-            else if(island.nn1[y][right]==1 && island.nn2[y][right] ==0){
-                R[2].populate(right,y);
-                error=R[1].destroy_coordinates(right,y);
-            }
-            //other exotic case..
-            //island is there and no neighbours = isolated element
-             else if(island.nn1[y][right]==0 && island.matrix[y][right] && island.nn2[y][right] ==0){
-                R[1].populate(right,y);
-                error=R[0].destroy_coordinates(right,y);
-            }
-            //island.nn1[y][x] +=1;
-            island.nn1[y][right] +=1;
-            
-
-        }
-        if(island.matrix[y][left]){
-            s+=1;
-            if(island.nn1[y][left]==3 && island.nn2[y][left] ==0){
-               error= R[3].destroy_coordinates(left,y);
-            }
-            else if(island.nn1[y][left]==2 && island.nn2[y][left] ==0){
-                R[3].populate(left,y);
-                error=R[2].destroy_coordinates(left,y);
-            }
-            else if(island.nn1[y][left]==1 && island.nn2[y][left] ==0){
-                R[2].populate(left,y);
-               error= R[1].destroy_coordinates(left,y);
-            }
-             else if(island.nn1[y][left]==0 && island.matrix[y][left] && island.nn2[y][left] ==0){
-                R[1].populate(left,y);
-                error=R[0].destroy_coordinates(left,y);
-            }
-            //island.nn1[y][x] +=1;
-            island.nn1[y][left] +=1;
-        }
-        if(island.matrix[top][x]){
-            s+=1;
-            if(island.nn1[top][x]==3 && island.nn2[top][x] ==0){
-                error=R[3].destroy_coordinates(x,top);
-            }
-            else if(island.nn1[top][x]==2 && island.nn2[top][x] ==0){
-                R[3].populate(x,top);
-                error=R[2].destroy_coordinates(x,top);
-            }
-            else if(island.nn1[top][x]==1 && island.nn2[top][x] ==0){
-                R[2].populate(x,top);
-                error=R[1].destroy_coordinates(x,top);
-            }
-            //other exotic case..
-            else if(island.nn1[top][x]==0 && island.matrix[top][x] && island.nn2[top][x] ==0){
-                R[1].populate(x,top);
-                error=R[0].destroy_coordinates(x,top);
-            }
-            //island.nn1[y][x] +=1;
-            island.nn1[top][x] +=1;
-        }
-        if(island.matrix[bottom][x]){
-            s+=1;
-            if(island.nn1[bottom][x]==3 && island.nn2[bottom][x] ==0){
-                error=R[3].destroy_coordinates(x,bottom);
-            }
-            else if(island.nn1[bottom][x]==2 && island.nn2[bottom][x] ==0){
-                R[3].populate(x,bottom);
-                error=R[2].destroy_coordinates(x,bottom);
-            }
-            else if(island.nn1[bottom][x]==1 && island.nn2[bottom][x] ==0){
-                R[2].populate(x,bottom);
-                error=R[1].destroy_coordinates(x,bottom);
-            }
-            //other exotic case..
-            else if(island.nn1[bottom][x]==0 && island.matrix[bottom][x] && island.nn2[bottom][x] ==0){
-                R[1].populate(x,bottom);
-                error=R[0].destroy_coordinates(x,bottom);
-            }
-            island.nn1[bottom][x] +=1;
-            //island.nn1[y][x] +=1;
-        }
         
+        //number of neighbours not updated yet
+        //changes in nn1 only on first neighbours 
+        // changes in nn2 only in second neighbours (diagonal)
+
+        //-----------    nn1  class changes ------------------
+
+        if(island.nn1[y][right]==3){
+            if(island.nn2[y][right] ==0){
+                R[_4x0].populate(right,y);
+                error=R[_3x0].destroy_coordinates(right,y);
+            }
+            else if(island.nn2[y][right] ==1){
+                R[_4x1].populate(right,y);
+                error=R[_3x1].destroy_coordinates(right,y);
+            }  
+            else if(island.nn2[y][right] ==2){
+                R[_4x2].populate(right,y);
+                error=R[_3x2].destroy_coordinates(right,y);
+            }
+            else if(island.nn2[y][right] ==3){
+                R[_4x3].populate(right,y);
+                error=R[_3x3].destroy_coordinates(right,y);
+            }
+            else if(island.nn2[y][right] ==4){
+                error=R[_3x4].destroy_coordinates(right,y);
+            }      
+        }
+        else if(island.nn1[y][right]==2){
+            if(island.nn2[y][right] ==0){
+                R[_3x0].populate(right,y);
+                error=R[_2x0].destroy_coordinates(right,y);
+            }
+            else if(island.nn2[y][right] ==1){
+                R[_3x1].populate(right,y);
+                error=R[_2x1].destroy_coordinates(right,y);
+            }  
+            else if(island.nn2[y][right] ==2){
+                R[_3x2].populate(right,y);
+                error=R[_2x2].destroy_coordinates(right,y);
+            }
+            else if(island.nn2[y][right] ==3){
+                R[_3x3].populate(right,y);
+                error=R[_2x3].destroy_coordinates(right,y);
+            }
+            else if(island.nn2[y][right] ==4){
+                R[_3x4].populate(right,y);
+                error=R[_2x4].destroy_coordinates(right,y);
+            }      
+        }
+
+        else if(island.nn1[y][right]==1){
+            if(island.nn2[y][right] ==0){
+                R[_2x0].populate(right,y);
+                error=R[_1x0].destroy_coordinates(right,y);
+            }
+            else if(island.nn2[y][right] ==1){
+                R[_2x1].populate(right,y);
+                error=R[_1x1].destroy_coordinates(right,y);
+            }  
+            else if(island.nn2[y][right] ==2){
+                R[_2x2].populate(right,y);
+                error=R[_1x2].destroy_coordinates(right,y);
+            }
+            else if(island.nn2[y][right] ==3){
+                R[_2x3].populate(right,y);
+                error=R[_1x3].destroy_coordinates(right,y);
+            }
+            else if(island.nn2[y][right] ==4){
+                R[_2x4].populate(right,y);
+                error=R[_1x4].destroy_coordinates(right,y);
+            }  
+        }
+
+        else if(island.nn1[y][right]==0 ){
+            if(island.nn2[y][right] ==0 && island.matrix[y][right]){
+                R[_1x0].populate(right,y);
+                error=R[_0x0].destroy_coordinates(right,y);
+            }
+            else if(island.nn2[y][right] ==1){
+                R[_1x1].populate(right,y);
+                error=R[_0x1].destroy_coordinates(right,y);
+            }  
+            else if(island.nn2[y][right] ==2){
+                R[_1x2].populate(right,y);
+                error=R[_0x2].destroy_coordinates(right,y);
+            }
+            else if(island.nn2[y][right] ==3){
+                R[_1x3].populate(right,y);
+                error=R[_0x3].destroy_coordinates(right,y);
+            }
+            else if(island.nn2[y][right] ==4){
+                R[_1x4].populate(right,y);
+                error=R[_0x4].destroy_coordinates(right,y);
+            } 
+        }
+        //+++++++++++++++++ LEFT ++++++++++++++
+        if(island.nn1[y][left]==3){
+            if(island.nn2[y][left] ==0){
+                R[_4x0].populate(left,y);
+                error=R[_3x0].destroy_coordinates(left,y);
+            }
+            else if(island.nn2[y][left] ==1){
+                R[_4x1].populate(left,y);
+                error=R[_3x1].destroy_coordinates(left,y);
+            }  
+            else if(island.nn2[y][left] ==2){
+                R[_4x2].populate(left,y);
+                error=R[_3x2].destroy_coordinates(left,y);
+            }
+            else if(island.nn2[y][left] ==3){
+                R[_4x3].populate(left,y);
+                error=R[_3x3].destroy_coordinates(left,y);
+            }
+            else if(island.nn2[y][left] ==4){
+                error=R[_3x4].destroy_coordinates(left,y);
+            }      
+        }
+        else if(island.nn1[y][left]==2){
+            if(island.nn2[y][left] ==0){
+                R[_3x0].populate(left,y);
+                error=R[_2x0].destroy_coordinates(left,y);
+            }
+            else if(island.nn2[y][left] ==1){
+                R[_3x1].populate(left,y);
+                error=R[_2x1].destroy_coordinates(left,y);
+            }  
+            else if(island.nn2[y][left] ==2){
+                R[_3x2].populate(left,y);
+                error=R[_2x2].destroy_coordinates(left,y);
+            }
+            else if(island.nn2[y][left] ==3){
+                R[_3x3].populate(left,y);
+                error=R[_2x3].destroy_coordinates(left,y);
+            }
+            else if(island.nn2[y][left] ==4){
+                R[_3x4].populate(left,y);
+                error=R[_2x4].destroy_coordinates(left,y);
+            }      
+        }
+
+        else if(island.nn1[y][left]==1){
+            if(island.nn2[y][left] ==0){
+                R[_2x0].populate(left,y);
+                error=R[_1x0].destroy_coordinates(left,y);
+            }
+            else if(island.nn2[y][left] ==1){
+                R[_2x1].populate(left,y);
+                error=R[_1x1].destroy_coordinates(left,y);
+            }  
+            else if(island.nn2[y][left] ==2){
+                R[_2x2].populate(left,y);
+                error=R[_1x2].destroy_coordinates(left,y);
+            }
+            else if(island.nn2[y][left] ==3){
+                R[_2x3].populate(left,y);
+                error=R[_1x3].destroy_coordinates(left,y);
+            }
+            else if(island.nn2[y][left] ==4){
+                R[_2x4].populate(left,y);
+                error=R[_1x4].destroy_coordinates(left,y);
+            }  
+        }
+
+        else if(island.nn1[y][left]==0 ){
+            if(island.nn2[y][left] ==0 && island.matrix[y][left]){
+                R[_1x0].populate(left,y);
+                error=R[_0x0].destroy_coordinates(left,y);
+            }
+            else if(island.nn2[y][left] ==1){
+                R[_1x1].populate(left,y);
+                error=R[_0x1].destroy_coordinates(left,y);
+            }  
+            else if(island.nn2[y][left] ==2){
+                R[_1x2].populate(left,y);
+                error=R[_0x2].destroy_coordinates(left,y);
+            }
+            else if(island.nn2[y][left] ==3){
+                R[_1x3].populate(left,y);
+                error=R[_0x3].destroy_coordinates(left,y);
+            }
+            else if(island.nn2[y][left] ==4){
+                R[_1x4].populate(left,y);
+                error=R[_0x4].destroy_coordinates(left,y);
+            } 
+        }
+
+        //+++++++++++++++++++++++++++++++++++++++++++++++++++++
+        //++++++++++    TOP     +++++++++++++++++++++++++
+
+        if(island.nn1[top][x]==3){
+            if(island.nn2[top][x] ==0){
+                R[_4x0].populate(x,top);
+                error=R[_3x0].destroy_coordinates(x,top);
+            }
+            else if(island.nn2[top][x] ==1){
+                R[_4x1].populate(x,top);
+                error=R[_3x1].destroy_coordinates(x,top);
+            }  
+            else if(island.nn2[top][x] ==2){
+                R[_4x2].populate(x,top);
+                error=R[_3x2].destroy_coordinates(x,top);
+            }
+            else if(island.nn2[top][x] ==3){
+                R[_4x3].populate(x,top);
+                error=R[_3x3].destroy_coordinates(x,top);
+            }
+            else if(island.nn2[top][x] ==4){
+                error=R[_3x4].destroy_coordinates(x,top);
+            }      
+        }
+        else if(island.nn1[top][x]==2){
+            if(island.nn2[top][x] ==0){
+                R[_3x0].populate(x,top);
+                error=R[_2x0].destroy_coordinates(x,top);
+            }
+            else if(island.nn2[top][x] ==1){
+                R[_3x1].populate(x,top);
+                error=R[_2x1].destroy_coordinates(x,top);
+            }  
+            else if(island.nn2[top][x] ==2){
+                R[_3x2].populate(x,top);
+                error=R[_2x2].destroy_coordinates(x,top);
+            }
+            else if(island.nn2[top][x] ==3){
+                R[_3x3].populate(x,top);
+                error=R[_2x3].destroy_coordinates(x,top);
+            }
+            else if(island.nn2[top][x] ==4){
+                R[_3x4].populate(x,top);
+                error=R[_2x4].destroy_coordinates(x,top);
+            }      
+        }
+
+        else if(island.nn1[top][x]==1){
+            if(island.nn2[top][x] ==0){
+                R[_2x0].populate(x,top);
+                error=R[_1x0].destroy_coordinates(x,top);
+            }
+            else if(island.nn2[top][x] ==1){
+                R[_2x1].populate(x,top);
+                error=R[_1x1].destroy_coordinates(x,top);
+            }  
+            else if(island.nn2[top][x] ==2){
+                R[_2x2].populate(x,top);
+                error=R[_1x2].destroy_coordinates(x,top);
+            }
+            else if(island.nn2[top][x] ==3){
+                R[_2x3].populate(x,top);
+                error=R[_1x3].destroy_coordinates(x,top);
+            }
+            else if(island.nn2[top][x] ==4){
+                R[_2x4].populate(x,top);
+                error=R[_1x4].destroy_coordinates(x,top);
+            }  
+        }
+
+        else if(island.nn1[top][x]==0 ){
+            if(island.nn2[top][x] ==0 && island.matrix[top][x]){
+                R[_1x0].populate(x,top);
+                error=R[_0x0].destroy_coordinates(x,top);
+            }
+            else if(island.nn2[top][x] ==1){
+                R[_1x1].populate(x,top);
+                error=R[_0x1].destroy_coordinates(x,top);
+            }  
+            else if(island.nn2[top][x] ==2){
+                R[_1x2].populate(x,top);
+                error=R[_0x2].destroy_coordinates(x,top);
+            }
+            else if(island.nn2[top][x] ==3){
+                R[_1x3].populate(x,top);
+                error=R[_0x3].destroy_coordinates(x,top);
+            }
+            else if(island.nn2[top][x] ==4){
+                R[_1x4].populate(x,top);
+                error=R[_0x4].destroy_coordinates(x,top);
+            } 
+        }
+//+++++++++++++++++++++++++++++++++++++++
+        //++++++++++++ BOTTOM ++++++++++++++++++++++++++
+       if(island.nn1[bottom][x]==3){
+            if(island.nn2[bottom][x] ==0){
+                R[_4x0].populate(x,bottom);
+                error=R[_3x0].destroy_coordinates(x,bottom);
+            }
+            else if(island.nn2[bottom][x] ==1){
+                R[_4x1].populate(x,bottom);
+                error=R[_3x1].destroy_coordinates(x,bottom);
+            }  
+            else if(island.nn2[bottom][x] ==2){
+                R[_4x2].populate(x,bottom);
+                error=R[_3x2].destroy_coordinates(x,bottom);
+            }
+            else if(island.nn2[bottom][x] ==3){
+                R[_4x3].populate(x,bottom);
+                error=R[_3x3].destroy_coordinates(x,bottom);
+            }
+            else if(island.nn2[bottom][x] ==4){
+                error=R[_3x4].destroy_coordinates(x,bottom);
+            }      
+        }
+        else if(island.nn1[bottom][x]==2){
+            if(island.nn2[bottom][x] ==0){
+                R[_3x0].populate(x,bottom);
+                error=R[_2x0].destroy_coordinates(x,bottom);
+            }
+            else if(island.nn2[bottom][x] ==1){
+                R[_3x1].populate(x,bottom);
+                error=R[_2x1].destroy_coordinates(x,bottom);
+            }  
+            else if(island.nn2[bottom][x] ==2){
+                R[_3x2].populate(x,bottom);
+                error=R[_2x2].destroy_coordinates(x,bottom);
+            }
+            else if(island.nn2[bottom][x] ==3){
+                R[_3x3].populate(x,bottom);
+                error=R[_2x3].destroy_coordinates(x,bottom);
+            }
+            else if(island.nn2[bottom][x] ==4){
+                R[_3x4].populate(x,bottom);
+                error=R[_2x4].destroy_coordinates(x,bottom);
+            }      
+        }
+
+        else if(island.nn1[bottom][x]==1){
+            if(island.nn2[bottom][x] ==0){
+                R[_2x0].populate(x,bottom);
+                error=R[_1x0].destroy_coordinates(x,bottom);
+            }
+            else if(island.nn2[bottom][x] ==1){
+                R[_2x1].populate(x,bottom);
+                error=R[_1x1].destroy_coordinates(x,bottom);
+            }  
+            else if(island.nn2[bottom][x] ==2){
+                R[_2x2].populate(x,bottom);
+                error=R[_1x2].destroy_coordinates(x,bottom);
+            }
+            else if(island.nn2[bottom][x] ==3){
+                R[_2x3].populate(x,bottom);
+                error=R[_1x3].destroy_coordinates(x,bottom);
+            }
+            else if(island.nn2[bottom][x] ==4){
+                R[_2x4].populate(x,bottom);
+                error=R[_1x4].destroy_coordinates(x,bottom);
+            }  
+        }
+
+        else if(island.nn1[bottom][x]==0 ){
+            if(island.nn2[bottom][x] ==0 && island.matrix[bottom][x]){
+                R[_1x0].populate(x,bottom);
+                error=R[_0x0].destroy_coordinates(x,bottom);
+            }
+            else if(island.nn2[bottom][x] ==1){
+                R[_1x1].populate(x,bottom);
+                error=R[_0x1].destroy_coordinates(x,bottom);
+            }  
+            else if(island.nn2[bottom][x] ==2){
+                R[_1x2].populate(x,bottom);
+                error=R[_0x2].destroy_coordinates(x,bottom);
+            }
+            else if(island.nn2[bottom][x] ==3){
+                R[_1x3].populate(x,bottom);
+                error=R[_0x3].destroy_coordinates(x,bottom);
+            }
+            else if(island.nn2[bottom][x] ==4){
+                R[_1x4].populate(x,bottom);
+                error=R[_0x4].destroy_coordinates(x,bottom);
+            } 
+        }
+        //--------------------
+        //--------------- nn2 class changes --------------------
+        // --------- TOP RIGHT -----------------------------
+        if(island.nn2[top][right]==3){
+            if(island.nn1[top][right] ==0){
+                R[_0x4].populate(right,top);
+                error=R[_0x3].destroy_coordinates(right,top);
+            }
+            else if(island.nn1[top][right] ==1){
+                R[_1x4].populate(right,top);
+                error=R[_1x3].destroy_coordinates(right,top);
+            }  
+            else if(island.nn1[top][right] ==2){
+                R[_2x4].populate(right,top);
+                error=R[_2x3].destroy_coordinates(right,top);
+            }
+            else if(island.nn1[top][right] ==3){
+                R[_3x4].populate(right,top);
+                error=R[_3x3].destroy_coordinates(right,top);
+            }
+            else if(island.nn1[top][right] ==4){
+                error=R[_4x3].destroy_coordinates(right,top);
+            }      
+        }
+        else if(island.nn2[top][right]==2){
+            if(island.nn1[top][right] ==0){
+                R[_0x3].populate(right,top);
+                error=R[_0x2].destroy_coordinates(right,top);
+            }
+            else if(island.nn1[top][right] ==1){
+                R[_1x3].populate(right,top);
+                error=R[_1x2].destroy_coordinates(right,top);
+            }  
+            else if(island.nn1[top][right] ==2){
+                R[_2x3].populate(right,top);
+                error=R[_2x2].destroy_coordinates(right,top);
+            }
+            else if(island.nn1[top][right] ==3){
+                R[_3x3].populate(right,top);
+                error=R[_3x2].destroy_coordinates(right,top);
+            }
+            else if(island.nn1[top][right] ==4){
+                R[_4x3].populate(right,top);
+                error=R[_4x2].destroy_coordinates(right,top);
+            }      
+        }
+
+        else if(island.nn2[top][right]==1){
+            if(island.nn1[top][right] ==0){
+                R[_0x2].populate(right,top);
+                error=R[_0x1].destroy_coordinates(right,top);
+            }
+            else if(island.nn1[top][right] ==1){
+                R[_1x2].populate(right,top);
+                error=R[_1x1].destroy_coordinates(right,top);
+            }  
+            else if(island.nn1[top][right] ==2){
+                R[_2x2].populate(right,top);
+                error=R[_2x1].destroy_coordinates(right,top);
+            }
+            else if(island.nn1[top][right] ==3){
+                R[_3x2].populate(right,top);
+                error=R[_3x1].destroy_coordinates(right,top);
+            }
+            else if(island.nn1[top][right] ==4){
+                R[_4x2].populate(right,top);
+                error=R[_4x1].destroy_coordinates(right,top);
+            }      
+        }
+
+        else if(island.nn2[top][right]==0){
+            if(island.nn1[top][right] ==0 && island.matrix[top][right]){
+                R[_0x1].populate(right,top);
+                error=R[_0x0].destroy_coordinates(right,top);
+            }
+            else if(island.nn1[top][right] ==1){
+                R[_1x1].populate(right,top);
+                error=R[_1x0].destroy_coordinates(right,top);
+            }  
+            else if(island.nn1[top][right] ==2){
+                R[_2x1].populate(right,top);
+                error=R[_2x0].destroy_coordinates(right,top);
+            }
+            else if(island.nn1[top][right] ==3){
+                R[_3x1].populate(right,top);
+                error=R[_3x0].destroy_coordinates(right,top);
+            }
+            else if(island.nn1[top][right] ==4){
+                R[_4x1].populate(right,top);
+                error=R[_4x0].destroy_coordinates(right,top);
+            }      
+        }
+        //+++++++++++++++++ TOP LEFT ++++++++++++++
+        if(island.nn2[top][left]==3){
+            if(island.nn1[top][left] ==0){
+                R[_0x4].populate(left,top);
+                error=R[_0x3].destroy_coordinates(left,top);
+            }
+            else if(island.nn1[top][left] ==1){
+                R[_1x4].populate(left,top);
+                error=R[_1x3].destroy_coordinates(left,top);
+            }  
+            else if(island.nn1[top][left] ==2){
+                R[_2x4].populate(left,top);
+                error=R[_2x3].destroy_coordinates(left,top);
+            }
+            else if(island.nn1[top][left] ==3){
+                R[_3x4].populate(left,top);
+                error=R[_3x3].destroy_coordinates(left,top);
+            }
+            else if(island.nn1[top][left] ==4){
+                error=R[_4x3].destroy_coordinates(left,top);
+            }      
+        }
+        else if(island.nn2[top][left]==2){
+            if(island.nn1[top][left] ==0){
+                R[_0x3].populate(left,top);
+                error=R[_0x2].destroy_coordinates(left,top);
+            }
+            else if(island.nn1[top][left] ==1){
+                R[_1x3].populate(left,top);
+                error=R[_1x2].destroy_coordinates(left,top);
+            }  
+            else if(island.nn1[top][left] ==2){
+                R[_2x3].populate(left,top);
+                error=R[_2x2].destroy_coordinates(left,top);
+            }
+            else if(island.nn1[top][left] ==3){
+                R[_3x3].populate(left,top);
+                error=R[_3x2].destroy_coordinates(left,top);
+            }
+            else if(island.nn1[top][left] ==4){
+                R[_4x3].populate(left,top);
+                error=R[_4x2].destroy_coordinates(left,top);
+            }      
+        }
+
+        else if(island.nn2[top][left]==1){
+            if(island.nn1[top][left] ==0){
+                R[_0x2].populate(left,top);
+                error=R[_0x1].destroy_coordinates(left,top);
+            }
+            else if(island.nn1[top][left] ==1){
+                R[_1x2].populate(left,top);
+                error=R[_1x1].destroy_coordinates(left,top);
+            }  
+            else if(island.nn1[top][left] ==2){
+                R[_2x2].populate(left,top);
+                error=R[_2x1].destroy_coordinates(left,top);
+            }
+            else if(island.nn1[top][left] ==3){
+                R[_3x2].populate(left,top);
+                error=R[_3x1].destroy_coordinates(left,top);
+            }
+            else if(island.nn1[top][left] ==4){
+                R[_4x2].populate(left,top);
+                error=R[_4x1].destroy_coordinates(left,top);
+            }      
+        }
+
+        else if(island.nn2[top][left]==0){
+            if(island.nn1[top][left] ==0 && island.matrix[top][left]){
+                R[_0x1].populate(left,top);
+                error=R[_0x0].destroy_coordinates(left,top);
+            }
+            else if(island.nn1[top][left] ==1){
+                R[_1x1].populate(left,top);
+                error=R[_1x0].destroy_coordinates(left,top);
+            }  
+            else if(island.nn1[top][left] ==2){
+                R[_2x1].populate(left,top);
+                error=R[_2x0].destroy_coordinates(left,top);
+            }
+            else if(island.nn1[top][left] ==3){
+                R[_3x1].populate(left,top);
+                error=R[_3x0].destroy_coordinates(left,top);
+            }
+            else if(island.nn1[top][left] ==4){
+                R[_4x1].populate(left,top);
+                error=R[_4x0].destroy_coordinates(left,top);
+            }      
+        }
+
+        //+++++++++++++++++++++++++++++++++++++++++++++++++++++
+        //++++++++++    BOTTOM RIGHT     +++++++++++++++++++++++++
+
+        if(island.nn2[bottom][right]==3){
+            if(island.nn1[bottom][right] ==0){
+                R[_0x4].populate(right,bottom);
+                error=R[_0x3].destroy_coordinates(right,bottom);
+            }
+            else if(island.nn1[bottom][right] ==1){
+                R[_1x4].populate(right,bottom);
+                error=R[_1x3].destroy_coordinates(right,bottom);
+            }  
+            else if(island.nn1[bottom][right] ==2){
+                R[_2x4].populate(right,bottom);
+                error=R[_2x3].destroy_coordinates(right,bottom);
+            }
+            else if(island.nn1[bottom][right] ==3){
+                R[_3x4].populate(right,bottom);
+                error=R[_3x3].destroy_coordinates(right,bottom);
+            }
+            else if(island.nn1[bottom][right] ==4){
+                error=R[_4x3].destroy_coordinates(right,bottom);
+            }      
+        }
+        else if(island.nn2[bottom][right]==2){
+            if(island.nn1[bottom][right] ==0){
+                R[_0x3].populate(right,bottom);
+                error=R[_0x2].destroy_coordinates(right,bottom);
+            }
+            else if(island.nn1[bottom][right] ==1){
+                R[_1x3].populate(right,bottom);
+                error=R[_1x2].destroy_coordinates(right,bottom);
+            }  
+            else if(island.nn1[bottom][right] ==2){
+                R[_2x3].populate(right,bottom);
+                error=R[_2x2].destroy_coordinates(right,bottom);
+            }
+            else if(island.nn1[bottom][right] ==3){
+                R[_3x3].populate(right,bottom);
+                error=R[_3x2].destroy_coordinates(right,bottom);
+            }
+            else if(island.nn1[bottom][right] ==4){
+                R[_4x3].populate(right,bottom);
+                error=R[_4x2].destroy_coordinates(right,bottom);
+            }      
+        }
+
+        else if(island.nn2[bottom][right]==1){
+            if(island.nn1[bottom][right] ==0){
+                R[_0x2].populate(right,bottom);
+                error=R[_0x1].destroy_coordinates(right,bottom);
+            }
+            else if(island.nn1[bottom][right] ==1){
+                R[_1x2].populate(right,bottom);
+                error=R[_1x1].destroy_coordinates(right,bottom);
+            }  
+            else if(island.nn1[bottom][right] ==2){
+                R[_2x2].populate(right,bottom);
+                error=R[_2x1].destroy_coordinates(right,bottom);
+            }
+            else if(island.nn1[bottom][right] ==3){
+                R[_3x2].populate(right,bottom);
+                error=R[_3x1].destroy_coordinates(right,bottom);
+            }
+            else if(island.nn1[bottom][right] ==4){
+                R[_4x2].populate(right,bottom);
+                error=R[_4x1].destroy_coordinates(right,bottom);
+            }      
+        }
+
+        else if(island.nn2[bottom][right]==0){
+            if(island.nn1[bottom][right] ==0 && island.matrix[bottom][right]){
+                R[_0x1].populate(right,bottom);
+                error=R[_0x0].destroy_coordinates(right,bottom);
+            }
+            else if(island.nn1[bottom][right] ==1){
+                R[_1x1].populate(right,bottom);
+                error=R[_1x0].destroy_coordinates(right,bottom);
+            }  
+            else if(island.nn1[bottom][right] ==2){
+                R[_2x1].populate(right,bottom);
+                error=R[_2x0].destroy_coordinates(right,bottom);
+            }
+            else if(island.nn1[bottom][right] ==3){
+                R[_3x1].populate(right,bottom);
+                error=R[_3x0].destroy_coordinates(right,bottom);
+            }
+            else if(island.nn1[bottom][right] ==4){
+                R[_4x1].populate(right,bottom);
+                error=R[_4x0].destroy_coordinates(right,bottom);
+            }      
+        }
+//+++++++++++++++++++++++++++++++++++++++
+        //++++++++++++ BOTTOM LEFT++++++++++++++++++++++++++
+
+       if(island.nn2[bottom][left]==3){
+            if(island.nn1[bottom][left] ==0){
+                R[_0x4].populate(left,left);
+                error=R[_0x3].destroy_coordinates(left,left);
+            }
+            else if(island.nn1[bottom][left] ==1){
+                R[_1x4].populate(left,bottom);
+                error=R[_1x3].destroy_coordinates(left,bottom);
+            }  
+            else if(island.nn1[bottom][left] ==2){
+                R[_2x4].populate(left,bottom);
+                error=R[_2x3].destroy_coordinates(left,bottom);
+            }
+            else if(island.nn1[bottom][left] ==3){
+                R[_3x4].populate(left,bottom);
+                error=R[_3x3].destroy_coordinates(left,bottom);
+            }
+            else if(island.nn1[bottom][left] ==4){
+                error=R[_4x3].destroy_coordinates(left,bottom);
+            }      
+        }
+        else if(island.nn2[bottom][left]==2){
+            if(island.nn1[bottom][left] ==0){
+                R[_0x3].populate(left,bottom);
+                error=R[_0x2].destroy_coordinates(left,bottom);
+            }
+            else if(island.nn1[bottom][left] ==1){
+                R[_1x3].populate(left,bottom);
+                error=R[_1x2].destroy_coordinates(left,bottom);
+            }  
+            else if(island.nn1[bottom][left] ==2){
+                R[_2x3].populate(left,bottom);
+                error=R[_2x2].destroy_coordinates(left,bottom);
+            }
+            else if(island.nn1[bottom][left] ==3){
+                R[_3x3].populate(left,bottom);
+                error=R[_3x2].destroy_coordinates(left,bottom);
+            }
+            else if(island.nn1[bottom][left] ==4){
+                R[_4x3].populate(left,bottom);
+                error=R[_4x2].destroy_coordinates(left,bottom);
+            }      
+        }
+
+        else if(island.nn2[bottom][left]==1){
+            if(island.nn1[bottom][left] ==0){
+                R[_0x2].populate(left,bottom);
+                error=R[_0x1].destroy_coordinates(left,bottom);
+            }
+            else if(island.nn1[bottom][left] ==1){
+                R[_1x2].populate(left,bottom);
+                error=R[_1x1].destroy_coordinates(left,bottom);
+            }  
+            else if(island.nn1[bottom][left] ==2){
+                R[_2x2].populate(left,bottom);
+                error=R[_2x1].destroy_coordinates(left,bottom);
+            }
+            else if(island.nn1[bottom][left] ==3){
+                R[_3x2].populate(left,bottom);
+                error=R[_3x1].destroy_coordinates(left,bottom);
+            }
+            else if(island.nn1[bottom][left] ==4){
+                R[_4x2].populate(left,bottom);
+                error=R[_4x1].destroy_coordinates(left,bottom);
+            }      
+        }
+
+        else if(island.nn2[bottom][left]==0){
+            if(island.nn1[bottom][left] ==0 && island.matrix[bottom][left]){
+                R[_0x1].populate(left,bottom);
+                error=R[_0x0].destroy_coordinates(left,bottom);
+            }
+            else if(island.nn1[bottom][left] ==1){
+                R[_1x1].populate(left,bottom);
+                error=R[_1x0].destroy_coordinates(left,bottom);
+            }  
+            else if(island.nn1[bottom][left] ==2){
+                R[_2x1].populate(left,bottom);
+                error=R[_2x0].destroy_coordinates(left,bottom);
+            }
+            else if(island.nn1[bottom][left] ==3){
+                R[_3x1].populate(left,bottom);
+                error=R[_3x0].destroy_coordinates(left,bottom);
+            }
+            else if(island.nn1[bottom][left] ==4){
+                R[_4x1].populate(left,bottom);
+                error=R[_4x0].destroy_coordinates(left,bottom);
+            }      
+        }
+
+       
+
+//***************************************************************
+//      ASSIGN CORRECT DETACHMENT CLASS TO NEWLY ATTACHED ADATOM
+//----------------------------------------------------------------
+
+        int s = island.get_neighbours1(x,y);
+        int d = island.get_neighbours2(x,y);
         if((s+d)<8){
             R[s+ 5*d].populate(x,y);
         }
-        if(s==0){
-            std :: cout << "Problem, tried to attach adatom not on att site";
+        if(s==0&&d==0){
+            std :: cout << s<<"\t" << d<<std::flush; 
+            std :: cout << "\n Problem, tried to attach adatom in("<< x << ", " << y << ") not on att site"<<std::flush;
             exit(EXIT_FAILURE);}
 
-        // new ------
-            island.nn1[y][x] = island.get_neighbours1(x,y);
-            island.nn2[y][x] = island.get_neighbours2(x,y);
-            // PROVVISORIO DA INSERIRE NEGLI IFS SOPRA
+        // update neighbour list ------
+        //NOW DIRECLTY inside get_neighbour
+            // island.nn1[y][x] = island.get_neighbours1(x,y);
+            // island.nn2[y][x] = island.get_neighbours2(x,y);
+           
+           // INSERIRE SOPRA NEGLI IF SOPRA QUESTI UPDATES CASO PER CASO ?
+            island.nn1[top][x] = island.get_neighbours1(x,top); 
+            island.nn1[bottom][x] = island.get_neighbours1(x,bottom); 
+            island.nn1[y][left] =island.get_neighbours1(left,y); 
+            island.nn1[y][right] = island.get_neighbours1(right,y); 
             island.nn2[bottom][right] = island.get_neighbours2(right,bottom);
             island.nn2[bottom][left] = island.get_neighbours2(left,bottom);
             island.nn2[top][right] = island.get_neighbours2(right,top);
@@ -1340,9 +2026,9 @@ DIFFUSION EVENT
 
 	else if (r[diffusion]<d_rand && d_rand<r[n_classes]){
 
-        who = 5;
+        who = diffusion;
 
-        count_d+=1;
+        event_counter[diffusion]+=1;
         index = extract(R[diffusion].N);
 
         x = R[diffusion].where(index)[0];
@@ -1419,34 +2105,25 @@ DIFFUSION EVENT
 //CHECKS*********************
     step++;
 	std :: cout<< "\n  " << step <<"  KMC step \n";
-    if(who==0){
+    if(who==_0x0){
         std :: cout << "\n DETACHMENT event 0, coordinate="<< x << " , " << y << "\n \n";
     }
 
-    else if(who==1){
+    else if(who==_1x0){
         std :: cout << "\n DETACHMENT event 1, coordinate="<< x << " , " << y << "\n \n";
     }
-    else if(who==2){
+    else if(who==_2x0){
         std :: cout << "\n DETACHMENT event 2, coordinate="<< x << " , " << y << "\n \n";
     }
-    else if(who==3){
+    else if(who==_3x0){
         std :: cout << "\n DETACHMENT event 3, coordinate="<< x << " , " << y << "\n \n";
     }
-    else if(who==4){
+    else if(who==attachment){
         std :: cout << "\n ATTACHMENT event, coordinate="<< x << " , " << y << "\n \n";
     }    
-    else if(who==5){
+    else if(who==diffusion){
         std :: cout << "\n DIFFUSION event, coordinate="<< x << " , " << y << "\n \n";
     }
-
-    // if(error==0){
-    //     std :: cout << "\n\n ERROR: Unsucesful attempt to remove"<<" x = " << x <<" y = " << y << "unexisting MULTIPLE OR SINGLE element in class list." << std :: flush;
-    // }
-    // else if (error==-1){
-    //     std :: cout << "\n\n ERROR: Unsucesful attempt to remove"<<" x = " << x <<" y = " << y << "unexisting SINGLE element in class list."<< std :: flush;
-    // }
-
-
 
 	std :: cout<< "\n island \n";
 	for ( int i = 0;i < L;i++){
@@ -1480,9 +2157,19 @@ std :: cout<< "\n Second neighbours \n";
 		std :: cout <<"\n";
 	}
  	std :: cout << "\n total number adatoms"<< (adatom.N) ;
-	std :: cout << "\n Elements in det class0 (isolated)"<< R[0].N <<"\telements in det class 1:  " << R[1].N << 
-    "\t elements in det class 2:  " << R[2].N << "\t elements in det class 3:  " << R[3].N  << "\n";
-	std :: cout << "\n Elements in att class:" << R[attachment].N << "\t  elements in diffusion class" << R[diffusion].N << "\n";
+	std :: cout << "\n Elements in det class nn1 = 0, nn2=0:  "<< R[_0x0].N <<"\t elements in det class nn1 = 1, nn2=0:  " << R[_1x0].N << 
+    "\t elements in det class nn1 = 2, nn2=0:  " << R[_2x0].N << "\t elements in det class nn1 = 3, nn2=0:  " << R[_3x0].N  << "\t elements in det class nn1 = 4, nn2=0:  " << R[_4x0].N<<
+    "\n Elements in det class nn1 = 0, nn2=1:  "<< R[_0x1].N <<"\t elements in det class nn1 = 1, nn2=1:  " << R[_1x1].N << 
+    "\t elements in det class nn1 = 2, nn2=1:  " << R[_2x1].N << "\t elements in det class nn1 = 3, nn2=1:  " << R[_3x1].N  << "\t elements in det class nn1 = 4, nn2=1:  " << R[_4x1].N<<
+    "\n Elements in det class nn1 = 0, nn2=2:  "<< R[_0x2].N <<"\t elements in det class nn1 = 1, nn2=2:  " << R[_1x2].N << 
+    "\t elements in det class nn1 = 2, nn2=2:  " << R[_2x2].N << "\t elements in det class nn1 = 3, nn2=2:  " << R[_3x2].N  << "\t elements in det class nn1 = 4, nn2=2:  " << R[_4x2].N<<
+    "\n Elements in det class nn1 = 0, nn2=3:  "<< R[_0x3].N <<"\t elements in det class nn1 = 1, nn2=3:  " << R[_1x3].N << 
+    "\t elements in det class nn1 = 2, nn2=3:  "<< R[_2x3].N << "\t elements in det class nn1 = 3, nn2=3:  " << R[_3x3].N  << "\t elements in det class nn1 = 4, nn2=3:  " << R[_4x3].N<<
+    "\n Elements in det class nn1 = 0, nn2=4:  "<< R[_0x4].N <<"\t elements in det class nn1 = 1, nn2=4:  " << R[_1x4].N << 
+    "\t elements in det class nn1 = 2, nn2=4:  "<< R[_2x4].N << "\t elements in det class nn1 = 3, nn2=3:  " << R[_3x4].N  << "\n";
+
+
+	std :: cout << "\n Elements in att class:" << R[attachment].N << "\t  elements in diffusion class" << R[diffusion].N <<"\n";
 
     std :: cout << "\n detachment 0nn list \n";
 	 for (int i = 0; i < R[0].N; i++)

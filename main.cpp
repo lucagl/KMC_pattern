@@ -178,7 +178,7 @@ if(proc_ID==0){
 	int * counter;
 	counter = kmc.get_nevents();
  	std :: cout << "\n\nDetachment # nn0= " << counter[0] << "\tDetachment # nn1= " << counter[1] <<"\tDetachment # nn2= " 
-	 << counter[2]<<"\tDetachment # nn3= " << counter[3] << "\tAttachment # = " << counter[4] << "\t Diffusion # = " << counter[5] ;
+	 << counter[2]<<"\tDetachment # nn3= " << counter[3] << "\tAttachment # = " << counter[24] << "\t Diffusion # = " << counter[25] ;
 
 
 	std :: cout << "\n Numeber of parallel KMCs ="<< n_proc<<"\n";
