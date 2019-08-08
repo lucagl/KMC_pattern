@@ -16,30 +16,20 @@ input file: file Input.txt containing input informations must be present
 ------------------- CONVENTIONS -----------
 System of coordinates is x: left-right-wise and y: top-bottom wise. The indexe start with 0.
 
-
 --------------------- TODO -----------------
 - Time computation 
--Build 2nn counter function and test it. OK
-- BEFORE FOLLOWING: update nn1 when necessary within the ifs instead of all of them and the end of det. class update
--pass to 24 det classes and define all updating behaviors.
-	-diverso tratamento per nn1=0 nn2 =1 come fatto per nn1=1, nn2=0 ?
-	-riscrivi print e debugs flags
-- change attachment site criteria based on being on the diagonal
 -new energy and parameter given by ratio J/J'
+- MAJOR :Time dependent T
 
 - program architecture can be improved.. for instance L in both master and dependent classes is redundant.
 
-
-- Spostare bordello di KMC_step in una funzione dedicata?
-
-- Would be faster if I already individuate contiguos elements between detachment 2 and 3
-- Sort the event list for better organization of data?
---------------------
-
+-------------------- COMMENTS -------------
+- Specific implementations for special scenario of NN1 =1, NN2 =0 and NN1 =0, NN2 =1.
+  This because the fact that I have only on neighbour can be exploited for more efficient update.
 
 ---------- QUESTIONS ------------------
 
-- How to derive c_eq ?
+- change attachment site criteria based on being on the diagonal ?
 
 
 
@@ -162,7 +152,7 @@ frame = 0;
 for (int k = 0; k < n_steps; k++){
 	// Temperature function..
 
-	kmc.step(T0,true);
+	kmc.step(T0,false);
 
 	if ((k%print_every)== 0){
 		frame+=1;

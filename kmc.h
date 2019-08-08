@@ -26,7 +26,7 @@ double get_concentration() const;
 int* get_nevents() const;
 
 private: 
-int event_counter[n_classes];
+int event_counter[n_classes] {};
 int L;
 int radius;
 double  concentration;
@@ -45,6 +45,10 @@ double att_rate() const;
 double cumulative ( double * ) ;// calls rate evaluation, so is not a constant member function
 int extract (const int ) const;// extracts event
 bool is_attSite(const int , const int ) const;
+
+void update_nn1DetachmentClasses(const int, const int);
+void update_nn2DetachmentClasses(const int, const int);
+void update_AttachmentClasses(const int, const int);
 
 };
 
