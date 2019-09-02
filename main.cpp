@@ -99,7 +99,7 @@ int main(int argc, char **argv){
 
 	const double J =0.2;
 
-	double T0,conc0, A;
+	double T0,conc0, A, BR;
 	int L,radius, n_steps;
 	int frame, print_every;
 	
@@ -108,11 +108,11 @@ int main(int argc, char **argv){
 	if(proc_ID == root_process){
 		// read from input file and broadcast	
 		std :: cout << "\n Number of processors= "<< n_proc << std :: endl ;
-		read_input(&L, &T0,& conc0, &radius, &A, &n_steps, &print_every, &read_old);
+		read_input(&L, &T0,& conc0, &radius, &A, &BR, &n_steps, &print_every, &read_old);
 
-		std :: cout << "\n J= " << J << "  L= "<< L<< " T =" << T0 <<" concentration = "<< conc0 <<
-		 " radius = "<< radius <<  " 'attachment parameter ' =" << A<<" kmc steps =" << n_steps<<
-		" print each =" << print_every << " read old file? =" << read_old<<"\n";
+		std :: cout << "\n J= " << J << "  |  L= "<< L<< "  |  T =" << T0 <<"  |  concentration = "<< conc0 <<
+		 "  |  initial island radius = "<< radius <<  "  |  'attachment parameter ' =" << A << "  |  Bond energy ratio = "<< BR <<"  |  kmc steps =" << n_steps<<
+		"  |  print each =" << print_every << "  |  read old file? =" << read_old<<"\n";
 	}
 
 	//RootID broadcast data to other processors
@@ -120,6 +120,7 @@ int main(int argc, char **argv){
 	MPI_Bcast(&T0, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	MPI_Bcast(&conc0, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	MPI_Bcast(&radius, 1, MPI_INT, 0, MPI_COMM_WORLD);
+	MPI_Bcast(&BR, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	MPI_Bcast(&A, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	MPI_Bcast(&n_steps, 1, MPI_INT, 0, MPI_COMM_WORLD);
 	MPI_Bcast(&print_every, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -139,7 +140,7 @@ int main(int argc, char **argv){
 // 	___________________INITIALIZATION _____________________________
 
 	srand (time(NULL)*(proc_ID+1));// initialise random generator differently for each thread
-	KMC kmc(J,A);
+	KMC kmc(J,BR,A);
 	kmc.init(L,radius,conc0,T0, read_old);
 	kmc.print(0);
 
@@ -152,7 +153,7 @@ frame = 0;
 for (int k = 0; k < n_steps; k++){
 	// Temperature function..
 
-	kmc.step(T0,false);
+	kmc.step(T0,true);
 
 	if ((k%print_every)== 0){
 		frame+=1;
@@ -167,8 +168,17 @@ for (int k = 0; k < n_steps; k++){
 if(proc_ID==0){
 	int * counter;
 	counter = kmc.get_nevents();
- 	std :: cout << "\n\nDetachment # nn0= " << counter[0] << "\tDetachment # nn1= " << counter[1] <<"\tDetachment # nn2= " 
-	 << counter[2]<<"\tDetachment # nn3= " << counter[3] << "\tAttachment # = " << counter[24] << "\t Diffusion # = " << counter[25] ;
+ 	std :: cout << "\n\nDetachment # nn1=0, nn2=0 " << counter[0] << "\tDetachment # nn1= 1,nn2=0 " << counter[1] <<"\tDetachment # nn1= 2,nn2=0 " 
+	 << counter[2]<<"\tDetachment # nn1= 3,nn2=0 " << counter[3] << "\tDetachment # nn1= 4,nn2=0 " << counter[4] 
+	 << "\nDetachment # nn1=0,nn2=1 " << counter[5] << "\tDetachment # nn1= 1,nn2=1 " << counter[6] <<"\tDetachment # nn1= 2,nn2=1 " 
+	 << counter[7]<<"\tDetachment # nn1= 3,nn2=1 " << counter[8] << "\tDetachment # nn1= 4,nn2=1 " << counter[9] 
+	 << "\nDetachment # nn1=0,nn2=2 " << counter[10] << "\tDetachment # nn1= 1,nn2=2 " << counter[11] <<"\tDetachment # nn1= 2,nn2=2 " 
+	 << counter[12]<<"\tDetachment # nn1= 3,nn2=2 " << counter[13] << "\tDetachment # nn1= 4,nn2=2 " << counter[14]
+	 << "\nDetachment # nn1=0,nn2=3 " << counter[15] << "\tDetachment # nn1= 1,nn2=3 " << counter[16] <<"\tDetachment # nn1= 2,nn2=3 " 
+	 << counter[17]<<"\tDetachment # nn1= 3,nn2=3 " << counter[18] << "\tDetachment # nn1= 4,nn2=3 " << counter[19] 
+	 << "\nDetachment # nn1=0,nn2=4 " << counter[20] << "\tDetachment # nn1= 1,nn2=4 " << counter[21] <<"\tDetachment # nn1= 2,nn2=4 " 
+	 << counter[22]<<"\tDetachment # nn1= 3,nn2=4 " << counter[23]
+	 <<"\nAttachment # = " << counter[24] << "\t Diffusion # = " << counter[25] ;
 
 
 	std :: cout << "\n Numeber of parallel KMCs ="<< n_proc<<"\n";

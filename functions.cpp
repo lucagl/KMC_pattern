@@ -1,7 +1,7 @@
 #include "global.h"
 #include "functions.h"
 
-void read_input(int* L, double* T, double* c, int* radius, double* A, int* n_steps, int* print_every, bool* read_old){
+void read_input(int* L, double* T, double* c, int* radius, double* A, double* BR, int* n_steps, int* print_every, bool* read_old){
 
 	std :: ifstream finput("Input.txt");
     std :: string line;
@@ -12,7 +12,6 @@ void read_input(int* L, double* T, double* c, int* radius, double* A, int* n_ste
 		
 		*L= std::stoi(line); //parse to integer
 		
-
 		std :: getline(finput,line); 
 
 		*T= std::stod(line);//initial temperature
@@ -32,6 +31,10 @@ void read_input(int* L, double* T, double* c, int* radius, double* A, int* n_ste
 		// std :: getline(finput,line); 
 		
 		*A= std::stod(line);//attachment parameter
+		
+		std :: getline(finput,line); 
+
+		*BR= std::stod(line);//bond energy ratio parameter
 		
 		std :: getline(finput,line); 
 		

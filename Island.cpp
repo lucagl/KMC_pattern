@@ -1,17 +1,9 @@
-
-
-
 #include "global.h"
 #include "Island.h"
 
 
-
-//print method of the class
-
-
-
 void Island :: print(const std::string& file_name, unsigned short**mask1,unsigned short**mask2,  unsigned short**mask3, const double T, const double c) const {
-	
+//print method of the class	
 	
 	
 	std :: ofstream outfile (file_name);
@@ -30,26 +22,6 @@ void Island :: print(const std::string& file_name, unsigned short**mask1,unsigne
 	}
 	outfile.close();
 }
-
-
-
-// void Island :: initialize( int radius){
-
-//     int x0 = int(L/2);
-
-//     for(int i =0;i<L; i++){		
-//         for(int j =0;j<L;j++){
-//            // if (sqrt((i-x0)*(i-x0)+(j-x0)*(j-x0))<=radius) {
-// 			  if ((abs(i-x0)<=radius)&&(abs(j-x0)<=radius)) {
-//                 matrix[i][j] = 1;
-//             }
-// 		}
-//     }
-//   //flag = 0 ; // update all classes
-// }
-
-
-//------------------------
 
 
 void Island :: init_neighbours(){
@@ -142,49 +114,4 @@ int Island :: get_neighbours2(const int x,const int y){
 return local_neighbour;
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// 	else if (R[3]<d_rand<R[4]){
-// 		//detach 3 (3 neighbours)
-// 		attached_site=pick_event(Natt);//just int random generator up to N
-// 		x,y = sort(R_att,attached_site);//1st solution pick Nth non zero element of mask matrix
-// 		//2nd solution: make the class R, which contains both position, and sort method --> most elegant
-// 		flag = 4;//attachment event
-// 		Natt += -1;
-// 		adatom[y][x] -=1;
-// 		island[y][x] +=1;
-// 		nn_adatom = get_adatomIslandNN(x,y);//change to function not method if i will separate adatom and island classes
-// 		if (nn_adatom){
-// 			Rdet1.populate(x,y);/* new element added with associated coordinate 
-// 			Note that this not exclude that 2 elements have same coordinate 
-// 			(2 adatom on top of each other)*/
-// 		}
-		
-// 	}
-
-// }
-
-
 

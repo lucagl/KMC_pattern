@@ -12,7 +12,7 @@ class KMC {
 
 public:
 
-KMC(const double,const double);
+KMC(const double,const double,const double);
 
 
 void init (const int , const int , const double , const double, const bool read_old = false);
@@ -33,6 +33,7 @@ double  concentration;
 //int get(); get method to retrieve L, radius or density
 
  double J;
+ double BR;
  double A;
  double  current_T;
 
@@ -40,15 +41,15 @@ Adatom adatom;
 Island island;
 Events R[n_classes];
  
-double det_rate(const int) const;
+double det_rate(const int, const int ) const;
 double att_rate() const;
 double cumulative ( double * ) ;// calls rate evaluation, so is not a constant member function
 int extract (const int ) const;// extracts event
 bool is_attSite(const int , const int ) const;
 
-void update_nn1DetachmentClasses(const int, const int);
-void update_nn2DetachmentClasses(const int, const int);
-void update_AttachmentClasses(const int, const int);
+bool update_nn1DetachmentClasses(const int, const int);
+bool update_nn2DetachmentClasses(const int, const int);
+bool update_AttachmentClasses(const int, const int);
 
 };
 
