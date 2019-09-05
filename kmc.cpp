@@ -1315,7 +1315,6 @@ else if (r[_1x0]<d_rand && d_rand<r[_2x0]){
 (rest of island touch detaching element only top, lef, bottom, or right)*/
 		if(island.matrix[y][right]){
 			island.nn1[y][right] -= 1;
-            // In the following neighbour already updated
             if(island.nn1[y][right] ==0){
                 if(island.nn2[y][right]==0){
                     R[_0x0].populate(right,y);
@@ -1907,8 +1906,8 @@ else if (r[_0x1]<d_rand && d_rand<r[_1x1]){
             error=R[_1x1].destroy_coordinates(right,top); 
             }
             else if(island.nn1[top][right]==2){
-                R[_2x0].populate(right,y); 
-                error=R[_2x1].destroy_coordinates(right,y); 
+                R[_2x0].populate(right,top); 
+                error=R[_2x1].destroy_coordinates(right,top); 
             }
             // THIS IS IMPOSSIBLE IF THE DETACHING ELEMENT IS 0x1
             // else if(island.nn1[top][right]==3){

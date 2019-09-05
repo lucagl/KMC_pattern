@@ -153,7 +153,7 @@ frame = 0;
 for (int k = 0; k < n_steps; k++){
 	// Temperature function..
 
-	kmc.step(T0,true);
+	kmc.step(T0,false);
 
 	if ((k%print_every)== 0){
 		frame+=1;
