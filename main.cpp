@@ -7,7 +7,6 @@
 ###############################################################################################
 
  ------------ COMPILING INSTRUCTIONS ----------------
- -riscrivi print e debugs flags
 place in working folder *.cpp and *.h
 compile: mpic++ *.cpp -o "executable".ex 
 run:  mpirun -np "cores number" executable.out
@@ -30,8 +29,6 @@ System of coordinates is x: left-right-wise and y: top-bottom wise. The indexe s
 ---------- QUESTIONS ------------------
 
 - change attachment site criteria based on being on the diagonal ?
-
-
 
 ################################################################################
 */
