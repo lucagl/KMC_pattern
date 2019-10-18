@@ -17,7 +17,7 @@ System of coordinates is x: left-right-wise and y: top-bottom wise. The indexe s
 
 --------------------- TODO -----------------
 - Time computation 
--new energy and parameter given by ratio J/J'
+
 - MAJOR :Time dependent T
 
 - program architecture can be improved.. for instance L in both master and dependent classes is redundant.

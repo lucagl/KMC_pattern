@@ -256,7 +256,12 @@ void KMC :: init (const int L_read, const int radius_read, const double conc_rea
                 if(is_attSite(x,y)) R[attachment].populate(x,y);
             }
         }
-    }   
+    }
+
+    R[diffusion].D = 4./R[diffusion].N;  
+    std :: cout << "\n Initial rate per diffusing adatom  " << R[diffusion].D <<" \n";
+    std :: cout << "\n Initial rate for the diffusion event  " << R[diffusion].rate() <<" \n";
+
 }
  
 
@@ -1267,6 +1272,7 @@ if (r[_0x0]<d_rand && d_rand<r[_1x0]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
+    R[diffusion].D = 4./R[diffusion].N;
 
     //*********************************
 }
@@ -1706,6 +1712,7 @@ else if (r[_1x0]<d_rand && d_rand<r[_2x0]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
+    R[diffusion].D = 4./R[diffusion].N;
 
     //*********************************
         
@@ -1766,6 +1773,7 @@ DETACHEMENT EVENT AT A NN1 =2 SITE AND NN2 =0 SITE
         //Diffusion list update
 
         R[diffusion].populate(x,y);
+        R[diffusion].D = 4./R[diffusion].N;
 
     //*********************************
 
@@ -1809,6 +1817,7 @@ DETACHMENT EVENT AT A NN1 =3 SITE AND NN2 =0 site
         //Diffusion list update
 
         R[diffusion].populate(x,y);
+        R[diffusion].D = 4./R[diffusion].N;
     }
 
  /*===================================
@@ -1847,6 +1856,7 @@ else if (r[_4x0]<d_rand && d_rand<r[_0x1]){
         //Diffusion list update
 
         R[diffusion].populate(x,y);
+        R[diffusion].D = 4./R[diffusion].N;
 }
 
 
@@ -2167,7 +2177,7 @@ else if (r[_0x1]<d_rand && d_rand<r[_1x1]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
-
+    R[diffusion].D = 4./R[diffusion].N;
 
 
 
@@ -2209,6 +2219,7 @@ else if (r[_1x1]<d_rand && d_rand<r[_2x1]){
         //Diffusion list update
 
     R[diffusion].populate(x,y);
+    R[diffusion].D = 4./R[diffusion].N;
 }
 
 
@@ -2248,6 +2259,7 @@ else if (r[_2x1]<d_rand && d_rand<r[_3x1]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
+    R[diffusion].D = 4./R[diffusion].N;
 }
 
 /*===================================
@@ -2286,6 +2298,7 @@ else if (r[_3x1]<d_rand && d_rand<r[_4x1]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
+    R[diffusion].D = 4./R[diffusion].N;
 }
 
 /*===================================
@@ -2324,6 +2337,7 @@ else if (r[_4x1]<d_rand && d_rand<r[_0x2]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
+    R[diffusion].D = 4./R[diffusion].N;
 }
 
 /*===================================
@@ -2362,6 +2376,7 @@ else if (r[_0x2]<d_rand && d_rand<r[_1x2]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
+    R[diffusion].D = 4./R[diffusion].N;
 }
 
 /*===================================
@@ -2400,6 +2415,7 @@ else if (r[_1x2]<d_rand && d_rand<r[_2x2]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
+    R[diffusion].D = 4./R[diffusion].N;
 }
 
 /*===================================
@@ -2438,6 +2454,7 @@ else if (r[_2x2]<d_rand && d_rand<r[_3x2]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
+    R[diffusion].D = 4./R[diffusion].N;
 }
 
 /*===================================
@@ -2476,6 +2493,7 @@ else if (r[_3x2]<d_rand && d_rand<r[_4x2]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
+    R[diffusion].D = 4./R[diffusion].N;
 }
 
 /*===================================
@@ -2514,6 +2532,7 @@ else if (r[_4x2]<d_rand && d_rand<r[_0x3]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
+    R[diffusion].D = 4./R[diffusion].N;
 }
 
 /*===================================
@@ -2552,6 +2571,7 @@ else if (r[_0x3]<d_rand && d_rand<r[_1x3]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
+    R[diffusion].D = 4./R[diffusion].N;
 }
 
 /*===================================
@@ -2590,6 +2610,7 @@ else if (r[_1x3]<d_rand && d_rand<r[_2x3]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
+    R[diffusion].D = 4./R[diffusion].N;
 }
 
 /*===================================
@@ -2628,6 +2649,7 @@ else if (r[_2x3]<d_rand && d_rand<r[_3x3]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
+    R[diffusion].D = 4./R[diffusion].N;
 }
 
 /*===================================
@@ -2666,6 +2688,7 @@ else if (r[_3x3]<d_rand && d_rand<r[_4x3]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
+    R[diffusion].D = 4./R[diffusion].N;
 }
 
 /*===================================
@@ -2704,6 +2727,7 @@ else if (r[_4x3]<d_rand && d_rand<r[_0x4]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
+    R[diffusion].D = 4./R[diffusion].N;
 }
 
 /*===================================
@@ -2742,6 +2766,7 @@ else if (r[_0x4]<d_rand && d_rand<r[_1x4]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
+    R[diffusion].D = 4./R[diffusion].N;
 }
 
 /*===================================
@@ -2780,6 +2805,7 @@ else if (r[_1x4]<d_rand && d_rand<r[_2x4]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
+    R[diffusion].D = 4./R[diffusion].N;
 }
 
 /*===================================
@@ -2818,6 +2844,7 @@ else if (r[_2x4]<d_rand && d_rand<r[_3x4]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
+    R[diffusion].D = 4./R[diffusion].N;
 }
 
 /*===================================
@@ -2856,6 +2883,7 @@ else if (r[_3x4]<d_rand && d_rand<r[attachment]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
+    R[diffusion].D = 4./R[diffusion].N;
 }
 
 /*===================================
@@ -2882,6 +2910,7 @@ ATTACHMENT EVENT
 		
         error=R[attachment].destroy_coordinates(x,y);//I have to remove in this case all multiples adatoms on the site
         error=R[diffusion].destroy_singleCoordinate(x,y);// remove a single diffusion event on same coordinate
+        R[diffusion].D = 4./R[diffusion].N;
 
         adatom.matrix[y][x]-=1;
         adatom.N -=1;
@@ -3742,69 +3771,75 @@ DIFFUSION EVENT
         who = diffusion;
 
         event_counter[diffusion]+=1;
-        index = extract(R[diffusion].N);
 
-        x = R[diffusion].where(index)[0];
-		y = R[diffusion].where(index)[1];
+        //index = extract(R[diffusion].N);
 
-     //  std :: cout << "\n\n DIFFUSION event , coordinate="<< x << " , " << y << "\n \n";
+//This could be parallelized in shared memory
+        for (int index = 0; index < R[diffusion].N; index++)
+        {
 
-        R[diffusion].destroy(index);
-        adatom.matrix[y][x] -=1;
-        i_rand = rand() % 4 +1;
+            x = R[diffusion].where(index)[0];
+            y = R[diffusion].where(index)[1];
 
-        if(is_attSite(x,y)){
-        //remove if it was (in the previous position) on an attachment site
-            error=R[attachment].destroy_singleCoordinate(x,y);
-        }
-        
-        if(i_rand ==1){
+        //  std :: cout << "\n\n DIFFUSION event , coordinate="<< x << " , " << y << "\n \n";
 
-            int top = y+1;
-            if(top==L) top = 0;
-            R[diffusion].populate(x,top);
-            adatom.matrix[top][x] += 1;
+            R[diffusion].destroy(index);
+            adatom.matrix[y][x] -=1;
+            i_rand = rand() % 4 +1;
 
-            if(is_attSite(x,top)){
-                R[attachment].populate(x,top);
+            if(is_attSite(x,y)){
+            //remove if it was (in the previous position) on an attachment site
+                error=R[attachment].destroy_singleCoordinate(x,y);
             }
-        }
-        else if(i_rand ==2){
-
-		    int bottom = y-1;
-		    if(bottom==-1) bottom = L-1;
-            R[diffusion].populate(x,bottom);
-            adatom.matrix[bottom][x] += 1;
             
-            if(is_attSite(x,bottom)){
-                R[attachment].populate(x,bottom);
+            if(i_rand ==1){
+
+                int top = y+1;
+                if(top==L) top = 0;
+                R[diffusion].populate(x,top);
+                adatom.matrix[top][x] += 1;
+
+                if(is_attSite(x,top)){
+                    R[attachment].populate(x,top);
+                }
             }
-       }
-        else if(i_rand ==3){
+            else if(i_rand ==2){
 
-		    int right = x+1;
-		    if (right ==L) right = 0;
-
-            R[diffusion].populate(right,y);
-            adatom.matrix[y][right] += 1;
-
-            if(is_attSite(right,y)){
-                R[attachment].populate(right,y);
+                int bottom = y-1;
+                if(bottom==-1) bottom = L-1;
+                R[diffusion].populate(x,bottom);
+                adatom.matrix[bottom][x] += 1;
+                
+                if(is_attSite(x,bottom)){
+                    R[attachment].populate(x,bottom);
+                }
             }
-       }
-        else if(i_rand ==4){
+            else if(i_rand ==3){
 
-		    int left = x -1;	
-		    if(left == -1) left = L-1; 
+                int right = x+1;
+                if (right ==L) right = 0;
 
-            R[diffusion].populate(left,y);
-            adatom.matrix[y][left] += 1;
+                R[diffusion].populate(right,y);
+                adatom.matrix[y][right] += 1;
 
-            if(is_attSite(left,y)){
-
-                R[attachment].populate(left,y);
+                if(is_attSite(right,y)){
+                    R[attachment].populate(right,y);
+                }
             }
-       }
+            else if(i_rand ==4){
+
+                int left = x -1;	
+                if(left == -1) left = L-1; 
+
+                R[diffusion].populate(left,y);
+                adatom.matrix[y][left] += 1;
+
+                if(is_attSite(left,y)){
+
+                    R[attachment].populate(left,y);
+                }
+            }
+        }
 
     }
 
