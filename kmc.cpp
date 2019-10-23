@@ -259,8 +259,8 @@ void KMC :: init (const int L_read, const int radius_read, const double conc_rea
     }
 
     R[diffusion].D = 4./R[diffusion].N;  
-    std :: cout << "\n Initial rate per diffusing adatom  " << R[diffusion].D <<" \n";
-    std :: cout << "\n Initial rate for the diffusion event  " << R[diffusion].rate() <<" \n";
+    // std :: cout << "\n Initial rate per diffusing adatom  " << R[diffusion].D <<" \n";
+    // std :: cout << "\n Initial rate for the diffusion event  " << R[diffusion].rate() <<" \n";
 
 }
  

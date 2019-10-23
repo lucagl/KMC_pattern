@@ -11,7 +11,6 @@ class Events {
 
 	private:
 		int L;
-		//int index =0;// just to check, can be erased in funture versions
 		std::list<std::tuple<int, int>> element{}; // list of tuple (i-th element touple of coordinates)
 	//list more efficient than vector for deletion and insertion
 
