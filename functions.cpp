@@ -1,7 +1,9 @@
 #include "global.h"
 #include "functions.h"
 
-void read_input(int* L, double* T, double* c, int* radius, double* A, double* BR, int* n_steps, int* print_every, bool* read_old){
+
+
+void read_input(int* L, double* T, double* c, int* radius, bool* is_circle, double* A, double* BR, int* n_steps, int* print_every, bool* read_old){
 
 	std :: ifstream finput("Input.txt");
     std :: string line;
@@ -22,13 +24,31 @@ void read_input(int* L, double* T, double* c, int* radius, double* A, double* BR
 
         std :: getline(finput,line); 
         
-		*radius= std::stoi(line);//initial concentration
+		*radius= std::stoi(line);//initial size or radius 
 		
 		std :: getline(finput,line);
+
+		//std::string delimiter = " ";
+
+		//line = line.substr(0, line.find(delimiter)); // token is "scott"
+
+		//std :: cout << "\n " << line[0] << std:: flush;
+ 		//int answ = std::stoi(line);
+		 
+
+		if(line[0] == 'y'){	
+			*is_circle= true;// Square or circle? 
+		}
+		else if (line[0] == 'n'){
+			*is_circle = false;
+		}
+		else{
+			std :: cout << "\n\n ABORT, not legal shape inserted\n" <<std:: flush; 
+			exit(EXIT_FAILURE);
+		}
 		
-		// *F= std::stod(line); //diffusion rate (constant)
 		
-		// std :: getline(finput,line); 
+		std :: getline(finput,line);
 		
 		*A= std::stod(line);//attachment parameter
 		
@@ -46,32 +66,29 @@ void read_input(int* L, double* T, double* c, int* radius, double* A, double* BR
 		
 		std :: getline(finput,line, ' '); 
 		
-		auto answ = line;
+		//auto answ = line;
     
         *read_old = false;
-        if (answ == "yes"){
+        if (line == "yes"){
             std:: cout << "\n Reading from last configuration. L, and temperature (and concentration) will be overwritten \n";
             *read_old = true;
         }
+		else if (line=="no")
+		{
+			//do nothing
+		}
+		else
+		{
+			std:: cout << "\n ABORT. Not legal answer";
+			exit(EXIT_FAILURE);
+		}
+		
 		finput.close();
 	}
 	else {
 		std :: cout << "input file not existing. Abort \n";
 		exit(EXIT_FAILURE);
 	}
-	
-	
-	// std :: cout << "Size of the box is "<< *L<< " X "<< *L << "\n";
-	// std :: cout << "Temperature " << *T << "\n";
-	// std :: cout << "Density of adatoms " << << "\n";
-    // std :: cout << "Attachment rate " <<  << "\n";
-    // std :: cout << "Diffusion rate (per direction) " <<  << "\n";
-	
-	
-
-	// std :: cout << "Number of KMC steps " << *N_integration << "\n";
-	// std :: cout << "Frequency plot " << print_every << "\n";
-
 
 	if(((*L)*(*L))>RAND_MAX){
 		std :: cout << "L too big . Abort\n";

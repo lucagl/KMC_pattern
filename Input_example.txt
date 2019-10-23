@@ -1,0 +1,10 @@
+400         size
+0.1         Temperature
+0.05        concentration
+20          initial island size (radius or edge..)
+y	    circular island (if n squared)	
+0           attachment parameter
+0.70711         Bond energy ratio
+1000000000   kmc steps
+2000000     print frequency
+no          read from previous configuration file

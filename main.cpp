@@ -102,12 +102,12 @@ int main(int argc, char **argv){
 	int L,radius, n_steps;
 	int frame, print_every;
 	
-	bool read_old;
+	bool read_old,is_circle;
 	
 	if(proc_ID == root_process){
 		// read from input file and broadcast	
 		std :: cout << "\n Number of processors= "<< n_proc << std :: endl ;
-		read_input(&L, &T0,& conc0, &radius, &A, &BR, &n_steps, &print_every, &read_old);
+		read_input(&L, &T0,& conc0, &radius,&is_circle, &A, &BR, &n_steps, &print_every, &read_old);
 
 		std :: cout << "\n J= " << J << "  |  L= "<< L<< "  |  T =" << T0 <<"  |  concentration = "<< conc0 <<
 		 "  |  initial island radius = "<< radius <<  "  |  'attachment parameter ' =" << A << "  |  Bond energy ratio = "<< BR <<"  |  kmc steps =" << n_steps<<
@@ -119,6 +119,7 @@ int main(int argc, char **argv){
 	MPI_Bcast(&T0, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	MPI_Bcast(&conc0, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	MPI_Bcast(&radius, 1, MPI_INT, 0, MPI_COMM_WORLD);
+	MPI_Bcast(&is_circle, 1, MPI_INT, 0, MPI_COMM_WORLD);
 	MPI_Bcast(&BR, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	MPI_Bcast(&A, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	MPI_Bcast(&n_steps, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -140,7 +141,7 @@ int main(int argc, char **argv){
 
 	srand (time(NULL)*(proc_ID+1));// initialise random generator differently for each thread
 	KMC kmc(J,BR,A);
-	kmc.init(L,radius,conc0,T0, read_old);
+	kmc.init(L,is_circle,radius,conc0,T0, read_old);
 	//kmc.print(0);
 
 

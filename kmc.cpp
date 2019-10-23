@@ -31,7 +31,7 @@ KMC:: KMC(const double J_read, const double BR_read, const double A_read){
 
 }
 
-void KMC :: init (const int L_read, const int radius_read, const double conc_read, const double T0, const bool old_conf){
+void KMC :: init (const int L_read, const bool is_circle,const int radius, const double conc_read, const double T0, const bool old_conf){
 
 
     if (old_conf) {
@@ -106,10 +106,9 @@ void KMC :: init (const int L_read, const int radius_read, const double conc_rea
 
     else{
         L = L_read;
-        radius = radius_read;
         current_T = T0;// initial temperature
         concentration = conc_read; //initial concentration
-        island.init(L,radius);
+        island.init(L,is_circle,radius);
         adatom.init(L,concentration);
     }
 
