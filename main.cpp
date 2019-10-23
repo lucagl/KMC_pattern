@@ -13,22 +13,24 @@ run:  mpirun -np "cores number" executable.out
 input file: file Input.txt containing input informations must be present 
 
 ------------------- CONVENTIONS -----------
-System of coordinates is x: left-right-wise and y: top-bottom wise. The indexe start with 0.
+System of coordinates is x: left-right-wise and y: top-bottom wise. The indexes of arrays start with 0.
 
---------------------- TODO -----------------
+-------------------- TODO -----------------
 - Time computation 
--new energy and parameter given by ratio J/J'
-- MAJOR :Time dependent T
+- MAJOR :Time dependent Temperature
 
-- program architecture can be improved.. for instance L in both master and dependent classes is redundant.
+- Program architecture can be improved.. 
+	for instance L in both master and dependent classes is redundant.
+	Creating a parent class for island and adatom could also be interesting
 
--------------------- COMMENTS -------------
+-------------------- COMMENTS ------------------
 - Specific implementations for special scenario of NN1 =1, NN2 =0 and NN1 =0, NN2 =1.
   This because the fact that I have only on neighbour can be exploited for more efficient update.
+- The isotropic case is BR=sqrt(2)/2 ~ 0.70711 (zeta = J/J')
+-------------------- QUESTIONS ------------------
 
----------- QUESTIONS ------------------
-
-- change attachment site criteria based on being on the diagonal ?
+- Change attachment site criteria based on being on the diagonal ? --> No but tempting..
+- Is simultaneous diffusion more efficient (see dedicated branch..)
 
 ################################################################################
 */
@@ -139,7 +141,7 @@ int main(int argc, char **argv){
 	srand (time(NULL)*(proc_ID+1));// initialise random generator differently for each thread
 	KMC kmc(J,BR,A);
 	kmc.init(L,radius,conc0,T0, read_old);
-	kmc.print(0);
+	//kmc.print(0);
 
 
 // _________________________RUN KMC ___________________________
@@ -153,8 +155,8 @@ for (int k = 0; k < n_steps; k++){
 	kmc.step(T0,false);
 
 	if ((k%print_every)== 0){
-		frame+=1;
 		kmc.print(frame);
+		frame+=1;
 	}
 	if(k%(n_steps/10)==0&&proc_ID == root_process){
 		std :: cout  << " | "<< std :: flush;
