@@ -25,8 +25,8 @@ public:
 	// 	}
 	// };
 
-	void init(const int L_in, const int radius = 0){
-
+	void init(const int L_in, const bool circle =0, const int radius = 0){
+	//default value in order to be able to initialise the object given the total box size when reading from previous integration file
 		L = L_in;
 
 		matrix = new bool*[L];
@@ -41,15 +41,25 @@ public:
 		
 		if (radius!=0){
 			int x0 = int(L/2);
-
-			for(int i =0;i<L; i++){		
-				for(int j =0;j<L;j++){
-				// if (sqrt((i-x0)*(i-x0)+(j-x0)*(j-x0))<=radius) {
-					if ((abs(i-x0)<=radius)&&(abs(j-x0)<=radius)) {
-						matrix[i][j] = 1;
+			if(circle == false){
+				for(int i =0;i<L; i++){		
+					for(int j =0;j<L;j++){
+					// if (sqrt((i-x0)*(i-x0)+(j-x0)*(j-x0))<=radius) {
+						if ((abs(i-x0)<=radius)&&(abs(j-x0)<=radius)) {
+							matrix[i][j] = 1;
+						}
 					}
 				}
 			}
+			else{
+				for(int i =0;i<L; i++){		
+					for(int j =0;j<L;j++){
+						if (sqrt((i-x0)*(i-x0)+(j-x0)*(j-x0))<=radius){
+							matrix[i][j] = 1;
+						}
+					}
+				}
+			}	
 		}
 	}
 

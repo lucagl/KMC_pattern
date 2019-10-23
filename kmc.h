@@ -15,7 +15,7 @@ public:
 KMC(const double,const double,const double);
 
 
-void init (const int , const int , const double , const double, const bool read_old = false);
+void init (const int ,const bool, const int , const double , const double, const bool read_old = false);
 
 void step(const double , const bool debug_mode  = false);
 
@@ -28,7 +28,6 @@ int* get_nevents() const;
 private: 
 int event_counter[n_classes] {};
 int L;
-int radius;
 double  concentration;
 //int get(); get method to retrieve L, radius or density
 
