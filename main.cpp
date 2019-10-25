@@ -8,7 +8,7 @@
 
  ------------ COMPILING INSTRUCTIONS ----------------
 place in working folder *.cpp and *.h
-compile: mpic++ *.cpp -o "executable".ex 
+compile: mpic++ -openmp *.cpp -o "executable".ex 
 run:  mpirun -np "cores number" executable.out
 input file: file Input.txt containing input informations must be present 
 
@@ -58,7 +58,9 @@ TEMPLATE: to make function or classes versatile on different types
 #include "kmc.h"
 #include "functions.h"
 
+
 // --- PARALLELISATION
+#include "thread"
 #include <mpi.h>
 //------
 
@@ -69,6 +71,9 @@ const int root_process=0;
 int proc_ID;
 int ierr,n_proc;
 	
+unsigned total_n_proc = std::thread::hardware_concurrency();
+
+
 int main(int argc, char **argv){
 	
 
@@ -105,8 +110,10 @@ int main(int argc, char **argv){
 	bool read_old,is_circle;
 	
 	if(proc_ID == root_process){
-		// read from input file and broadcast	
-		std :: cout << "\n Number of processors= "<< n_proc << std :: endl ;
+		// read from input file and broadcast
+		std :: cout << "\n Total number of cores available= "<< total_n_proc << std :: endl ;	
+		std :: cout << "\n Number of parallel simulations launched = "<< n_proc << std :: endl ;
+
 		read_input(&L, &T0,& conc0, &radius,&is_circle, &A, &BR, &n_steps, &print_every, &read_old);
 
 		std :: cout << "\n J= " << J << "  |  L= "<< L<< "  |  T =" << T0 <<"  |  concentration = "<< conc0 <<

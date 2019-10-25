@@ -26,6 +26,7 @@ double get_concentration() const;
 int* get_nevents() const;
 
 private: 
+
 int event_counter[n_classes] {};
 int L;
 double  concentration;
