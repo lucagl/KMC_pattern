@@ -8,6 +8,8 @@
 //Shared memory parallelisation
 #include "omp.h"
 //-----------------
+omp_lock_t writelock1, writelock2;
+
 
 enum det_classes {
     // #nn1 X #nn2
@@ -3779,49 +3781,83 @@ DIFFUSION EVENT
         //index = extract(R[diffusion].N);
 
 //This could be parallelized in shared memory --> Problem: I think rushing condition on update
-//#pragma omp parallel for default(none) shared (error) private(x,y) num_threads(4)
+//I think I need a fine syncronization to avoid event classes are updated at the same time-- > USE LOCK
  
-    //#pragma omp  for  
+
+    omp_init_lock(&writelock1);
+    omp_init_lock(&writelock2);
+   // int id;
+
+    #pragma omp parallel shared(writelock1,writelock2) private (i_rand)
+    {
+    //last private just to have senseful information in debug mode..
+   // id = omp_get_thread_num();
+    #pragma omp for lastprivate (x,y) 
             for (int index = 0; index < R[diffusion].N; index++){
             
+                omp_set_lock(&writelock1);
                 x = R[diffusion].where(index)[0];
                 y = R[diffusion].where(index)[1];
 
                 //R[diffusion].destroy(index); Conceptual error. If I destroy all indexes are shifted.
-                //This works only if I extract randomly from the current index databese
-
+                //This works only if I extract randomly from the current index database
+                
+                
+                // std :: cout << "\n " << index << "Locked1  on index quest and adatom update -1" << "  id= " << id << "\n";
+                // std :: cout << "pos (" << x << ", " <<y <<")";
                 adatom.matrix[y][x] -=1;
+                omp_unset_lock(&writelock1);
 
                 i_rand = rand() % 4 +1; 
 
                 //std :: cout << " \n" <<x << "\t" << y << "\n";
-
+                
                 if(is_attSite(x,y)){
                 //remove from attachment class if it was (in the previous position) on an attachment site
                 //rushing condition in parallel.. maybe trying to remove before update of class happened
+                    omp_set_lock(&writelock2);
+                    // std :: cout << "\n " <<  index << "Locked2 on attachement destruction" << "  id= " << id << "\n";
+                    // std :: cout << "pos (" << x << ", " <<y <<")";
                     error=R[attachment].destroy_singleCoordinate(x,y);
+                    omp_unset_lock(&writelock2);
                 }
                 
                 if(i_rand ==1){
-
+                    
                     int top = y+1;
                     if(top==L) top = 0;
+
+                    omp_set_lock(&writelock1);
+                    // std :: cout << "\n " << index << "Locked1  on adatom update +1, top diffusion" << "  id= " << id << "\n";
+                    // std :: cout << "old pos (" << x << ", " <<y <<")";
                     R[diffusion].change(index,x,top);
                     adatom.matrix[top][x] += 1;
+                    omp_unset_lock(&writelock1);
+
 
                     if(is_attSite(x,top)){
+                        omp_set_lock(&writelock2);
                         R[attachment].populate(x,top);
+                        omp_unset_lock(&writelock2);
                     }
                 }
                 else if(i_rand ==2){
 
                     int bottom = y-1;
                     if(bottom==-1) bottom = L-1;
+
+                    omp_set_lock(&writelock1);
+                    // std :: cout << "\n " << index << "Locked1  on adatom update +1, bottom diffusion" << "  id= " << id << "\n";
+                    // std :: cout << "old pos (" << x << ", " <<y <<")";
                     R[diffusion].change(index,x,bottom);
                     adatom.matrix[bottom][x] += 1;
+                    omp_unset_lock(&writelock1);
                     
                     if(is_attSite(x,bottom)){
+                        omp_set_lock(&writelock2);
+                        
                         R[attachment].populate(x,bottom);
+                        omp_unset_lock(&writelock2);
                     }
                 }
                 else if(i_rand ==3){
@@ -3829,11 +3865,20 @@ DIFFUSION EVENT
                     int right = x+1;
                     if (right ==L) right = 0;
 
+
+
+                    omp_set_lock(&writelock1);
+                    // std :: cout << "\n " << index << "Locked1  on adatom update +1, right diffusion" << "  id= " << id << "\n";
+                    // std :: cout << "old pos (" << x << ", " <<y <<")";
                     R[diffusion].change(index,right,y);
                     adatom.matrix[y][right] += 1;
+                    omp_unset_lock(&writelock1);
 
                     if(is_attSite(right,y)){
+                        omp_set_lock(&writelock2);
+                        
                         R[attachment].populate(right,y);
+                        omp_unset_lock(&writelock2);
                     }
                 }
                 else if(i_rand ==4){
@@ -3841,16 +3886,24 @@ DIFFUSION EVENT
                     int left = x -1;	
                     if(left == -1) left = L-1; 
 
+                    omp_set_lock(&writelock1);
+                    // std :: cout << "\n " << index << "Locked1  on adatom update +1, left diffusion" << "  id= " << id << "\n";
+                    // std :: cout << "old pos (" << x << ", " <<y <<")";
                     R[diffusion].change(index,left,y);
                     adatom.matrix[y][left] += 1;
+                    omp_unset_lock(&writelock1);
 
                     if(is_attSite(left,y)){
-
+                        omp_set_lock(&writelock2);
                         R[attachment].populate(left,y);
+                        omp_unset_lock(&writelock2);
                     }
                 }
+            }  
+    } 
 
-            }             
+        omp_destroy_lock(&writelock1);  
+        omp_destroy_lock(&writelock2);         
 
     }
 
@@ -4096,6 +4149,11 @@ if((proc_ID==root_process && debug_mode)||(proc_ID==root_process && error==true)
 	std :: cout << "\n attachment list \n";
 	 for (int i = 0; i < R[attachment].N; i++){
 	 	std :: cout << i <<"\t(" << R[attachment].where(i)[0]<< ","<< R[attachment].where(i)[1] << ")\n";
+ 	 }
+
+    std :: cout << "\n diffusion list \n";
+	 for (int i = 0; i < R[diffusion].N; i++){
+	 	std :: cout << i <<"\t(" << R[diffusion].where(i)[0]<< ","<< R[diffusion].where(i)[1] << ")\n";
  	 }
 }
  //std :: cout << "\n error = " << error;

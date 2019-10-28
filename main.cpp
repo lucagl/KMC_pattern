@@ -62,6 +62,7 @@ TEMPLATE: to make function or classes versatile on different types
 // --- PARALLELISATION
 #include "thread"
 #include <mpi.h>
+#include "ctime"
 //------
 
 
@@ -77,19 +78,10 @@ unsigned total_n_proc = std::thread::hardware_concurrency();
 int main(int argc, char **argv){
 	
 
-//	const double  J=1, A= 0.1, F = 0.025;//Maybe some from input file?
 
-
-	
-
-	//int x,y; //just dummy variables fr clarity
-	
-
-	
-
-	clock_t t1,t2;
-	t1=clock();
-	float seconds;
+	std::time_t start, end;
+	long elapsed_time;
+	start = std::time(NULL);
 	
 
 	
@@ -191,9 +183,9 @@ if(proc_ID==0){
 	std :: cout << "\n Numeber of parallel KMCs ="<< n_proc<<"\n";
 	
 		
-	t2 = clock();
-	seconds = ((float)t2-(float)t1)/ CLOCKS_PER_SEC;
-	std :: cout << "\n Elapsed time = " << seconds <<"s \n"<< std:: endl;
+	end = std::time(NULL);
+	elapsed_time = end-start;
+	std :: cout << "\n Elapsed time = " << elapsed_time <<" s \n"<< std:: endl;
 	std :: cout << "-----------"<<"\n"<< std:: endl;
 
 	//Other final messages like physical time
