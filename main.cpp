@@ -142,7 +142,7 @@ int main(int argc, char **argv){
 	srand (time(NULL)*(proc_ID+1));// initialise random generator differently for each thread
 	KMC kmc(J,BR,A);
 	kmc.init(L,is_circle,radius,conc0,T0, read_old);
-	//kmc.print(0);
+	kmc.print(0);
 
 
 // _________________________RUN KMC ___________________________
@@ -150,14 +150,14 @@ int main(int argc, char **argv){
 
 frame = 0;
 
-for (int k = 0; k < n_steps; k++){
+for (int k = 1; k <= n_steps; k++){
 	// Temperature function..
 
 	kmc.step(T0,false);
 
 	if ((k%print_every)== 0){
-		kmc.print(frame);
 		frame+=1;
+		kmc.print(frame);
 	}
 	if(k%(n_steps/10)==0&&proc_ID == root_process){
 		std :: cout  << " | "<< std :: flush;
