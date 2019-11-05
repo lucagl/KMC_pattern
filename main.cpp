@@ -112,14 +112,14 @@ if(proc_ID == root_process){
 
 	read_input(&L, &T0,& conc0, &radius,&is_circle, &A, &BR, &E_shift, &n_steps, &print_every, &read_old);
 
-	std :: cout << "\n J= " << J << "  |  L= "<< L<< "  |  T =" << T0 <<"  |  concentration = "<< conc0 <<
-		"  |  initial island radius = "<< radius <<  "  |  'attachment parameter ' =" << A << "  |  Bond energy ratio = "<< BR <<"  |  kmc steps =" << n_steps<<
-	"  |  print each =" << print_every << "  |  read old file? =" << read_old<<"\n";
+	std :: cout << "\n J= " << J << "  |  L= "<< L<< "  |  T=" << T0 <<"  |  concentration= "<< conc0 <<
+		"  |  initial island radius= "<< radius <<  "  |  attachment parameter= " << A << "	|	Energy shift= " << E_shift << "	|	Bond energy ratio= "<< BR <<"  |  kmc steps= " << n_steps<<
+	"  |  print each= " << print_every << "  |  read old file?= " << read_old<<"\n";
 
 	c_eq = exp((-2*J*(1+BR) + E_shift)/T0);
 
 
-	std :: cout << "\n Equilibrium concentration at T = 0" << c_eq << "\n";
+	std :: cout << "\n Equilibrium concentration at T=0, is  " << c_eq << "\n";
 }
 
 //RootID broadcast data to other processors
