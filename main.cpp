@@ -130,6 +130,7 @@ MPI_Bcast(&radius, 1, MPI_INT, 0, MPI_COMM_WORLD);
 MPI_Bcast(&is_circle, 1, MPI_INT, 0, MPI_COMM_WORLD);
 MPI_Bcast(&BR, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 MPI_Bcast(&A, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+MPI_Bcast(&E_shift, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 MPI_Bcast(&n_steps, 1, MPI_INT, 0, MPI_COMM_WORLD);
 MPI_Bcast(&print_every, 1, MPI_INT, 0, MPI_COMM_WORLD);
 MPI_Bcast(&read_old, 1, MPI_C_BOOL, 0, MPI_COMM_WORLD);
