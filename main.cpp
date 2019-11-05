@@ -8,7 +8,7 @@
 
  ------------ COMPILING INSTRUCTIONS ----------------
 place in working folder *.cpp and *.h
-compile: mpic++ -openmp *.cpp -o "executable".ex 
+compile: mpic++ -fopenmp *.cpp -o "executable".ex 
 run:  mpirun -np "cores number" executable.out
 input file: file Input.txt containing input informations must be present 
 
@@ -60,9 +60,9 @@ TEMPLATE: to make function or classes versatile on different types
 
 
 // --- PARALLELISATION
-#include "thread"
+#include <thread>
 #include <mpi.h>
-#include "ctime"
+
 //------
 
 

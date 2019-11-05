@@ -3788,11 +3788,11 @@ DIFFUSION EVENT
     omp_init_lock(&writelock2);
    // int id;
 
-    #pragma omp parallel shared(writelock1,writelock2) private (i_rand)
-    {
+    // #pragma omp parallel shared(writelock1,writelock2) private (i_rand) 
+    // {
     //last private just to have senseful information in debug mode..
    // id = omp_get_thread_num();
-    #pragma omp for lastprivate (x,y) 
+    #pragma omp parallel for lastprivate (x,y) shared(writelock1,writelock2) private (i_rand) schedule(auto) 
             for (int index = 0; index < R[diffusion].N; index++){
             
                 omp_set_lock(&writelock1);
@@ -3900,8 +3900,6 @@ DIFFUSION EVENT
                     }
                 }
             }  
-    } 
-
         omp_destroy_lock(&writelock1);  
         omp_destroy_lock(&writelock2);         
 
