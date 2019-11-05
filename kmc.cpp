@@ -5,9 +5,7 @@
 #include "Island.h"
 #include "Events.h"
 
-//Shared memory parallelisation
-#include "omp.h"
-//-----------------
+
 omp_lock_t writelock1, writelock2;
 
 
@@ -3795,6 +3793,9 @@ DIFFUSION EVENT
     #pragma omp parallel for lastprivate (x,y) shared(writelock1,writelock2) private (i_rand) schedule(auto) 
             for (int index = 0; index < R[diffusion].N; index++){
             
+                //do it directly on adatoms and update at the end diffusion class?
+                //but this diffusion update in serial is coslty no?
+                
                 omp_set_lock(&writelock1);
                 x = R[diffusion].where(index)[0];
                 y = R[diffusion].where(index)[1];

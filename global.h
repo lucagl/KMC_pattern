@@ -12,6 +12,10 @@
 #include <ctime>
 #include <cstdlib>
 
+//Shared memory parallelisation
+#include "omp.h"
+//-----------------
+
 
 
 

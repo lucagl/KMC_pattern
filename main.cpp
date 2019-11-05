@@ -103,7 +103,7 @@ int main(int argc, char **argv){
 	
 	if(proc_ID == root_process){
 		// read from input file and broadcast
-		std :: cout << "\n Total number of cores available= "<< total_n_proc << std :: endl ;	
+		//std :: cout << "\n Total number of cores available= "<< total_n_proc << std :: endl ;	
 		std :: cout << "\n Number of parallel simulations launched = "<< n_proc << std :: endl ;
 
 		read_input(&L, &T0,& conc0, &radius,&is_circle, &A, &BR, &n_steps, &print_every, &read_old);
@@ -111,6 +111,12 @@ int main(int argc, char **argv){
 		std :: cout << "\n J= " << J << "  |  L= "<< L<< "  |  T =" << T0 <<"  |  concentration = "<< conc0 <<
 		 "  |  initial island radius = "<< radius <<  "  |  'attachment parameter ' =" << A << "  |  Bond energy ratio = "<< BR <<"  |  kmc steps =" << n_steps<<
 		"  |  print each =" << print_every << "  |  read old file? =" << read_old<<"\n";
+	#pragma omp parallel
+	{
+		if(omp_get_thread_num()==0){
+		std :: cout << "\n Number of threads per process used = " << omp_get_num_threads() << "\n \n";
+		}
+	}
 	}
 
 	//RootID broadcast data to other processors
@@ -141,7 +147,7 @@ int main(int argc, char **argv){
 	srand (time(NULL)*(proc_ID+1));// initialise random generator differently for each thread
 	KMC kmc(J,BR,A);
 	kmc.init(L,is_circle,radius,conc0,T0, read_old);
-	//kmc.print(0);
+	kmc.print(0);
 
 
 // _________________________RUN KMC ___________________________
@@ -149,14 +155,14 @@ int main(int argc, char **argv){
 
 frame = 0;
 
-for (int k = 0; k < n_steps; k++){
+for (int k = 1; k <= n_steps; k++){
 	// Temperature function..
 
 	kmc.step(T0,false);
 
 	if ((k%print_every)== 0){
-		kmc.print(frame);
 		frame+=1;
+		kmc.print(frame);
 	}
 	if(k%(n_steps/10)==0&&proc_ID == root_process){
 		std :: cout  << " | "<< std :: flush;
