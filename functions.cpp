@@ -3,7 +3,8 @@
 
 
 
-void read_input(int* L, double* T, double* c, int* radius, bool* is_circle, double* A, double* BR, int* n_steps, int* print_every, bool* read_old){
+void read_input(int* L, double* T, double* c, int* radius, bool* is_circle, 
+double* A, double* BR, double* E_shift, int* n_steps, int* print_every, bool* read_old){
 
 	std :: ifstream finput("Input.txt");
     std :: string line;
@@ -55,6 +56,10 @@ void read_input(int* L, double* T, double* c, int* radius, bool* is_circle, doub
 		std :: getline(finput,line); 
 
 		*BR= std::stod(line);//bond energy ratio parameter
+
+		std :: getline(finput,line); 
+
+		*E_shift= std::stod(line);//"Excess concentration term"
 		
 		std :: getline(finput,line); 
 		

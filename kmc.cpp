@@ -17,17 +17,15 @@ enum det_classes {
 };
 
 
-KMC:: KMC(const double J_read, const double BR_read, const double A_read){
+KMC:: KMC(const double J_read, const double BR_read, const double A_read, const double E_read){
 
-        if(proc_ID == root_process){
+    if(proc_ID == root_process){
             std :: cout << "\n Starting KMC with " << n_classes << " classes of events \n";
-        }
-        J = J_read; // link strenght
-        BR = BR_read;
-        A =A_read; // attachment over diffusion parameter >0 =few attachement, <0 many attachement (diffusion dominated)
-       // F =F_read; // diffusion constant
-
-// not supposed to change if a read from previous conf file
+    }
+    J = J_read; // link strenght
+    BR = BR_read; // Ratio between first neighbours energy and second neighbours one
+    A =A_read; // attachment over diffusion parameter >0 =few attachement, <0 many attachement (diffusion dominated)
+    E_shift = E_read; //Shift in detachment energy to increase equilibrium concentration
 
 }
 
@@ -62,25 +60,16 @@ void KMC :: init (const int L_read, const bool is_circle,const int radius, const
 
             std :: cout << "L = " << L << " T =" << current_T << "initial concentration = " << concentration << "\n"<< std::flush ;
             std :: getline(finput,line);//skip one line
-        // read island and adatom from file
             int dummy;
             
             for (int i = 0; i < L; i++){
-                
                 std :: getline(finput,line);
-                //std :: cout << line <<std::flush;
                 std::istringstream ss(line);
                 for (int j = 0; j < L; j++){              
                     ss >> dummy;
-                    //std:: cout << dummy<<" " <<std::flush;
                     island.matrix[i][j] =(dummy ? true : false);//a bit involved way to convert int to bool
-                    //island.matrix[i][j] =0;
-                 //  std:: cout << island.matrix[i][j]<<" " <<std::flush;
                 }
-                //std:: cout <<"\n";
             }
-
-
             std :: getline(finput,line);//empty line
             int counter =0;
             for (int i = 0; i < L; i++){
@@ -95,8 +84,6 @@ void KMC :: init (const int L_read, const bool is_circle,const int radius, const
                 //std:: cout <<"\n";
             }
         finput.close();
-        
-
         }
         else{
         std :: cout << "input file not found. Abort \n";
@@ -108,6 +95,7 @@ void KMC :: init (const int L_read, const bool is_circle,const int radius, const
         L = L_read;
         current_T = T0;// initial temperature
         concentration = conc_read; //initial concentration
+        
         island.init(L,is_circle,radius);
         adatom.init(L,concentration);
     }
@@ -270,7 +258,7 @@ double KMC ::  det_rate(const int nn1, const int nn2 ) const{
 double KMC ::  att_rate() const{
 
     double rate;
-    rate = exp(-A/current_T);
+    rate = exp(-(A+E_shift)/current_T);
 
     return rate;
 }
