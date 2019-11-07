@@ -3778,85 +3778,127 @@ DIFFUSION EVENT
 
         //index = extract(R[diffusion].N);
 
-//This could be parallelized in shared memory --> Problem: I think rushing condition on update
-//#pragma omp parallel for default(none) shared (error) private(x,y) num_threads(4)
- 
-    //#pragma omp  for  
-            for (int index = 0; index < R[diffusion].N; index++){
-            
-                x = R[diffusion].where(index)[0];
-                y = R[diffusion].where(index)[1];
+        for (int index = 0; index < R[diffusion].N; index++){
 
-                //R[diffusion].destroy(index); Conceptual error. If I destroy all indexes are shifted.
-                //This works only if I extract randomly from the current index databese
+            x = R[diffusion].where(index)[0];
+            y = R[diffusion].where(index)[1];
 
-                adatom.matrix[y][x] -=1;
+            adatom.matrix[y][x] -= 1;
 
-                i_rand = rand() % 4 +1; 
-
-                //std :: cout << " \n" <<x << "\t" << y << "\n";
-
-                if(is_attSite(x,y)){
-                //remove from attachment class if it was (in the previous position) on an attachment site
-                //rushing condition in parallel.. maybe trying to remove before update of class happened
-                    error=R[attachment].destroy_singleCoordinate(x,y);
-                }
-                
-                if(i_rand ==1){
-
-                    int top = y+1;
-                    if(top==L) top = 0;
-                    R[diffusion].change(index,x,top);
-                    adatom.matrix[top][x] += 1;
-
-                    if(is_attSite(x,top)){
-                        R[attachment].populate(x,top);
-                    }
-                }
-                else if(i_rand ==2){
-
-                    int bottom = y-1;
-                    if(bottom==-1) bottom = L-1;
-                    R[diffusion].change(index,x,bottom);
-                    adatom.matrix[bottom][x] += 1;
+            i_rand = rand() % 4 +1;
                     
-                    if(is_attSite(x,bottom)){
-                        R[attachment].populate(x,bottom);
-                    }
+            if(i_rand ==1){      
+                int top = y+1;
+                if(top==L) top = 0;
+                adatom.matrix[top][x] += 1;
+            }
+
+            else if(i_rand ==2){
+                int bottom = y-1;
+                if(bottom==-1) bottom = L-1;
+                adatom.matrix[bottom][x] += 1;
+            }
+
+            else if(i_rand ==3){
+                int right = x+1;
+                if (right ==L) right = 0;
+                adatom.matrix[y][right] += 1;
+            }
+            else if(i_rand ==4){
+                int left = x -1;	
+                if(left == -1) left = L-1; 
+                adatom.matrix[y][left] += 1;
+            }
+            
+        }
+
+        R[diffusion].clear();
+        R[attachment].clear();
+        for (y = 0; y < L; y++){
+            for ( x = 0; x < L; x++){
+                for(int k=0; k<adatom.matrix[y][x]; k++){
+                    R[diffusion].populate(x,y);
+                    if(is_attSite(x,y)) R[attachment].populate(x,y);
                 }
-                else if(i_rand ==3){
-
-                    int right = x+1;
-                    if (right ==L) right = 0;
-
-                    R[diffusion].change(index,right,y);
-                    adatom.matrix[y][right] += 1;
-
-                    if(is_attSite(right,y)){
-                        R[attachment].populate(right,y);
-                    }
-                }
-                else if(i_rand ==4){
-
-                    int left = x -1;	
-                    if(left == -1) left = L-1; 
-
-                    R[diffusion].change(index,left,y);
-                    adatom.matrix[y][left] += 1;
-
-                    if(is_attSite(left,y)){
-
-                        R[attachment].populate(left,y);
-                    }
-                }
-
-            }             
+            }
+        }
 
     }
 
-    concentration = static_cast<double>(adatom.N)/(L*L);//update average concentration of adatoms
 
-  
+
+
+        // OLD IMPLEMENTATION SLOWER BECAUSE of .change() and .destroy_singleCoordinate
+
+        // for (int index = 0; index < R[diffusion].N; index++){
+        
+        //     x = R[diffusion].where(index)[0];
+        //     y = R[diffusion].where(index)[1];
+
+        //     //R[diffusion].destroy(index); Conceptual error. If I destroy all indexes are shifted.
+        //     //This works only if I extract randomly from the current index databese
+
+        //     adatom.matrix[y][x] -=1;
+
+        //     i_rand = rand() % 4 +1; 
+
+        //     if(is_attSite(x,y)){
+        //     //remove from attachment class if it was (in the previous position) on an attachment site
+        //     //rushing condition in parallel.. maybe trying to remove before update of class happened
+        //         error=R[attachment].destroy_singleCoordinate(x,y);
+        //     }
+            
+        //     if(i_rand ==1){
+
+        //         int top = y+1;
+        //         if(top==L) top = 0;
+        //         R[diffusion].change(index,x,top);
+        //         adatom.matrix[top][x] += 1;
+
+        //         if(is_attSite(x,top)){
+        //             R[attachment].populate(x,top);
+        //         }
+        //     }
+        //     else if(i_rand ==2){
+
+        //         int bottom = y-1;
+        //         if(bottom==-1) bottom = L-1;
+        //         R[diffusion].change(index,x,bottom);
+        //         adatom.matrix[bottom][x] += 1;
+                
+        //         if(is_attSite(x,bottom)){
+        //             R[attachment].populate(x,bottom);
+        //         }
+        //     }
+        //     else if(i_rand ==3){
+
+        //         int right = x+1;
+        //         if (right ==L) right = 0;
+
+        //         R[diffusion].change(index,right,y);
+        //         adatom.matrix[y][right] += 1;
+
+        //         if(is_attSite(right,y)){
+        //             R[attachment].populate(right,y);
+        //         }
+        //     }
+        //     else if(i_rand ==4){
+
+        //         int left = x -1;	
+        //         if(left == -1) left = L-1; 
+
+        //         R[diffusion].change(index,left,y);
+        //         adatom.matrix[y][left] += 1;
+
+        //         if(is_attSite(left,y)){
+
+        //             R[attachment].populate(left,y);
+        //         }
+        //     }
+
+        // }             
+
+concentration = static_cast<double>(adatom.N)/(L*L);//update average concentration of adatoms
 
 step++;
 if((proc_ID==root_process && debug_mode)||(proc_ID==root_process && error==true)){

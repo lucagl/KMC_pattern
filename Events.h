@@ -28,6 +28,7 @@ class Events {
 		bool exist (const int ,const int ) const;// checks existence of the element in the list based on its coordinate
 		int* where (const int ) const; //returns coordinate of the element
 		double rate();
+		void clear();
 
 		void init (const int box_size){
 

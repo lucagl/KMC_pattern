@@ -172,7 +172,7 @@ for (int k = 1; k <= n_steps; k++){
 		frame+=1;
 		kmc.print(frame);
 	}
-	if(k%(n_steps/10)==0&&proc_ID == root_process){
+	if(k%(n_steps/10 + 1 )==0&&proc_ID == root_process){
 		std :: cout  << " | "<< std :: flush;
 		}
 }
