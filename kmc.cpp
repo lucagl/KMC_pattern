@@ -3769,10 +3769,10 @@ DIFFUSION EVENT
 
 	else if (r[diffusion]<d_rand && d_rand<r[n_classes]){
 
-        omp_lock_t writelock1, writelock2;//lock[L*L];
+        // omp_lock_t writelock1, writelock2;//lock[L*L];
         
-        omp_init_lock(&writelock1);
-        omp_init_lock(&writelock2);
+        // omp_init_lock(&writelock1);
+        // omp_init_lock(&writelock2);
         
         // for (int i = 0; i < L*L; i++)
         // {
@@ -3812,12 +3812,12 @@ for (int i = 0; i < R[diffusion].N; i++){
         //     omp_init_lock(&(lock[i]));
         //     }
 
-            //std :: cout << "\n hello from thread "<< omp_get_thread_num() << std:: flush; 
+       // std :: cout << "\n hello from thread "<<id << std:: flush; 
         #pragma omp critical
         {
            srand(seed+id);
        }
-        #pragma omp for nowait   
+        #pragma omp for schedule(auto) nowait   
         
             for (int i = 0; i < Diff_adatoms.size(); i++){
                 //std :: cout << "\n thread "<< omp_get_thread_num() << "loop index" << i << std:: flush;
@@ -3885,28 +3885,27 @@ for (int i = 0; i < R[diffusion].N; i++){
         R[diffusion].clear();
         R[attachment].clear();
         }
-        // Implicit barrier
-
-        #pragma omp for 
+        
+        }
+        //#pragma omp for 
         for (int i = 0; i < L*L; i++){
         //         omp_destroy_lock(&lock[i]);
 
-                for(int k=0; k<adatom.matrix[i/L][i%L]; k++){
-                    omp_set_lock(&writelock1);
-                    R[diffusion].populate(i%L,i/L);
-                    omp_unset_lock(&writelock1);
-                    
+            for(int k=0; k<adatom.matrix[i/L][i%L]; k++){
+                //omp_set_lock(&writelock1);
+                R[diffusion].populate(i%L,i/L);
+                // omp_unset_lock(&writelock1);
                 
-                    if(is_attSite(i%L,i/L)) {
-                    omp_set_lock(&writelock2);
-                        R[attachment].populate(i%L,i/L);
-                    omp_unset_lock(&writelock2);
-                    }
+            
+                if(is_attSite(i%L,i/L)) {
+                // omp_set_lock(&writelock2);
+                    R[attachment].populate(i%L,i/L);
+                // omp_unset_lock(&writelock2);
                 }
+            }
         }
 
 
-    }
     
     
 // OLD VERSION : 
