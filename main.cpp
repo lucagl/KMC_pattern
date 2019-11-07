@@ -10,6 +10,7 @@
 place in working folder *.cpp and *.h
 compile: mpic++ -fopenmp *.cpp -o "executable".ex 
 run:  mpirun -np "cores number" executable.out
+set number threads using: export OMP_NUM_THREADS= ..
 input file: file Input.txt containing input informations must be present 
 
 ------------------- CONVENTIONS -----------
@@ -69,7 +70,7 @@ TEMPLATE: to make function or classes versatile on different types
 //Define global variables
 const double PI = 3.14159265358979323846;
 const int root_process=0;
-int proc_ID;
+int proc_ID,seed;
 int ierr,n_proc;
 	
 unsigned total_n_proc = std::thread::hardware_concurrency();
@@ -143,8 +144,8 @@ int main(int argc, char **argv){
 
 
 // 	___________________INITIALIZATION _____________________________
-
-	srand (time(NULL)*(proc_ID+1));// initialise random generator differently for each thread
+	seed = time(NULL)*(proc_ID+1);
+	srand (seed);// initialise random generator differently for each MPI thread
 	KMC kmc(J,BR,A);
 	kmc.init(L,is_circle,radius,conc0,T0, read_old);
 	kmc.print(0);
@@ -159,12 +160,12 @@ for (int k = 1; k <= n_steps; k++){
 	// Temperature function..
 
 	kmc.step(T0,false);
-
+	
 	if ((k%print_every)== 0){
 		frame+=1;
 		kmc.print(frame);
 	}
-	if(k%(n_steps/10)==0&&proc_ID == root_process){
+	if(k%(1+n_steps/10)==0 && proc_ID == root_process){
 		std :: cout  << " | "<< std :: flush;
 		}
 }
