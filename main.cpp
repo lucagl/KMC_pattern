@@ -70,8 +70,10 @@ TEMPLATE: to make function or classes versatile on different types
 //Define global variables
 const double PI = 3.14159265358979323846;
 const int root_process=0;
-int proc_ID,seed;
-int ierr,n_proc;
+unsigned id,seed;
+int proc_ID,n_proc;
+
+int ierr;
 	
 unsigned total_n_proc = std::thread::hardware_concurrency();
 
@@ -112,7 +114,7 @@ int main(int argc, char **argv){
 		std :: cout << "\n J= " << J << "  |  L= "<< L<< "  |  T =" << T0 <<"  |  concentration = "<< conc0 <<
 		 "  |  initial island radius = "<< radius <<  "  |  'attachment parameter ' =" << A << "  |  Bond energy ratio = "<< BR <<"  |  kmc steps =" << n_steps<<
 		"  |  print each =" << print_every << "  |  read old file? =" << read_old<<"\n";
-	#pragma omp parallel
+	#pragma omp parallel 
 	{
 		if(omp_get_thread_num()==0){
 		std :: cout << "\n Number of threads per process used = " << omp_get_num_threads() << "\n \n";
@@ -145,7 +147,7 @@ int main(int argc, char **argv){
 
 // 	___________________INITIALIZATION _____________________________
 	seed = time(NULL)*(proc_ID+1);
-	srand (seed);// initialise random generator differently for each MPI thread
+	//srand (seed);// initialise random generator differently for each MPI thread
 	KMC kmc(J,BR,A);
 	kmc.init(L,is_circle,radius,conc0,T0, read_old);
 	kmc.print(0);

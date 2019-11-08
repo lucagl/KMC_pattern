@@ -3769,10 +3769,10 @@ DIFFUSION EVENT
 
 	else if (r[diffusion]<d_rand && d_rand<r[n_classes]){
 
-        // omp_lock_t writelock1, writelock2;//lock[L*L];
+        omp_lock_t writelock1, writelock2;//lock[L*L];
         
-        // omp_init_lock(&writelock1);
-        // omp_init_lock(&writelock2);
+        omp_init_lock(&writelock1);
+        omp_init_lock(&writelock2);
         
         // for (int i = 0; i < L*L; i++)
         // {
@@ -3786,6 +3786,8 @@ DIFFUSION EVENT
 
 /* OBSERVATION
 Explicit locking and atomic clause have same efficiency..
+Each random number sequence independent for each trheads. Indeed rand() not thread safe since it relies on a shared static seed (advancing at each call).
+Simultaneaous call might lead to repetition od same random number..  
 */
 
 /*PROBLEMS
@@ -3801,11 +3803,10 @@ for (int i = 0; i < R[diffusion].N; i++){
 // 	std :: cout << i <<"\t(" << std ::get<0>(Diff_adatoms[i]) << ","<< std :: get<1>(Diff_adatoms[i]) << ")\n";
 // }
 
-    #pragma omp parallel private(i_rand,x,y)
-
-        {   
-            int id;
-            id = omp_get_thread_num();
+    #pragma omp parallel private(i_rand,x,y) 
+    {   
+        unsigned localseed;
+        localseed = seed + omp_get_thread_num();
         // #pragma omp for
         //     for (int i = 0; i < L*L; i++)
         //     {
@@ -3813,25 +3814,23 @@ for (int i = 0; i < R[diffusion].N; i++){
         //     }
 
        // std :: cout << "\n hello from thread "<<id << std:: flush; 
-        #pragma omp critical
-        {
-           srand(seed+id);
-       }
-        #pragma omp for schedule(auto) nowait   
         
+        #pragma omp for  nowait
             for (int i = 0; i < Diff_adatoms.size(); i++){
                 //std :: cout << "\n thread "<< omp_get_thread_num() << "loop index" << i << std:: flush;
                 //omp_get_thread_num();
+
                 x= std :: get<0>(Diff_adatoms[i]);
                 y= std :: get<1>(Diff_adatoms[i]);
-                
+
+                i_rand = rand_r(&localseed) % 4 +1;//independent seed for each thread, if seed does not change sequence keep going from that seed
                 //omp_set_lock(&(lock[x+L*y]));
                #pragma omp atomic
                     adatom.matrix[y][x] -= 1;
                     
                // omp_unset_lock(&(lock[x+L*y]));
 
-                i_rand = rand() % 4 +1;
+                
                 
                 if(i_rand ==1){      
                     int top = y+1;
@@ -3878,32 +3877,45 @@ for (int i = 0; i < R[diffusion].N; i++){
                    // omp_unset_lock(&(lock[left+L*y]));
                 }
             }
+        }
 
         // Refill diffusion and attachment classes 
-        #pragma omp single  
-        {
+        // #pragma omp single  
+        // {
         R[diffusion].clear();
         R[attachment].clear();
-        }
+        // }
         
-        }
-        //#pragma omp for 
-        for (int i = 0; i < L*L; i++){
-        //         omp_destroy_lock(&lock[i]);
+        
+        // #pragma omp for 
+        // for (int i = 0; i < L*L; i++){
+        // //         omp_destroy_lock(&lock[i]);
 
-            for(int k=0; k<adatom.matrix[i/L][i%L]; k++){
-                //omp_set_lock(&writelock1);
-                R[diffusion].populate(i%L,i/L);
-                // omp_unset_lock(&writelock1);
+        //     for(int k=0; k<adatom.matrix[i/L][i%L]; k++){
+        //         omp_set_lock(&writelock1);
+        //         R[diffusion].populate(i%L,i/L);
+        //         omp_unset_lock(&writelock1);
                 
             
-                if(is_attSite(i%L,i/L)) {
-                // omp_set_lock(&writelock2);
-                    R[attachment].populate(i%L,i/L);
-                // omp_unset_lock(&writelock2);
-                }
-            }
+        //         if(is_attSite(i%L,i/L)) {
+        //         omp_set_lock(&writelock2);
+        //             R[attachment].populate(i%L,i/L);
+        //          omp_unset_lock(&writelock2);
+        //         }
+        //     }
+        // }
+    // }
+omp_destroy_lock(&writelock1);  
+omp_destroy_lock(&writelock2); 
+
+for ( y = 0; y < L; y++){
+    for (x = 0; x < L; x++){
+        for(int k=0; k<adatom.matrix[y][x]; k++){
+            R[diffusion].populate(x,y);
+            if(is_attSite(x,y)) R[attachment].populate(x,y);
         }
+    }
+}
 
 
     
