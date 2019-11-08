@@ -119,7 +119,7 @@ if(proc_ID == root_process){
 	c_eq = exp((-2*J*(1+BR))/T0);
 
 
-	std :: cout << "\n Equilibrium concentration at T = 0" << c_eq << "\n";
+	std :: cout << "\n Equilibrium concentration at T = 0,   " << c_eq << "\n";
 }
 
 //RootID broadcast data to other processors
@@ -200,6 +200,7 @@ if(proc_ID==0){
 	elapsed_time = end-start;
 	t2 = clock();
 	seconds = ((float)t2-(float)t1)/ CLOCKS_PER_SEC;
+	time(&curr_time);
 	std :: cout << "\n Elapsed CPU time = " << seconds <<"s \n"<< std:: endl;
 	std :: cout << "\n Elapsed time = " << elapsed_time <<"s \n"<< std:: endl;
 	std :: cout << "\n End time " << ctime(&curr_time) << "\n";
