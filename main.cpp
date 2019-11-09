@@ -67,12 +67,13 @@ TEMPLATE: to make function or classes versatile on different types
 //------
 
 
-//Define global variables
-const double PI = 3.14159265358979323846;
-const int root_process=0;
-unsigned id,seed;
-int proc_ID,n_proc;
+// //Define global variables
+// const double PI = 3.14159265358979323846;
+// const int root_process=0;
+// unsigned id,seed;
+// int proc_ID,n_proc;
 
+//const unsigned THREAD_NUM = 4;
 int ierr;
 	
 unsigned total_n_proc = std::thread::hardware_concurrency();
@@ -80,7 +81,13 @@ unsigned total_n_proc = std::thread::hardware_concurrency();
 
 int main(int argc, char **argv){
 	
+	const double J =0.2;
 
+	double T0,conc0, A, BR;
+	int L,radius, n_steps;
+	int frame, print_every;
+	
+	bool read_old,is_circle;
 
 	std::time_t start, end;
 	long elapsed_time;
@@ -96,13 +103,7 @@ int main(int argc, char **argv){
 	
 
 
-	const double J =0.2;
-
-	double T0,conc0, A, BR;
-	int L,radius, n_steps;
-	int frame, print_every;
 	
-	bool read_old,is_circle;
 	
 	if(proc_ID == root_process){
 		// read from input file and broadcast
@@ -115,13 +116,22 @@ int main(int argc, char **argv){
 		 "  |  initial island radius = "<< radius <<  "  |  'attachment parameter ' =" << A << "  |  Bond energy ratio = "<< BR <<"  |  kmc steps =" << n_steps<<
 		"  |  print each =" << print_every << "  |  read old file? =" << read_old<<"\n";
 
-	omp_set_dynamic(0);
-    omp_set_num_threads(4);
+    //omp_set_num_threads(THREAD_NUM);
+	seed = time(NULL)*(proc_ID+1);
+	// localseed = new unsigned[THREAD_NUM];
+	
 	#pragma omp parallel 
 	{
-		if(omp_get_thread_num()==0){
+		#pragma omp single
+		{
 		std :: cout << "\n Number of threads per process used = " << omp_get_num_threads() << "\n \n";
+		localseed = new unsigned[omp_get_num_threads()];
 		}
+		
+		unsigned id = omp_get_thread_num();
+
+		localseed[id] = seed *(id + 1);
+		
 	}
 	}
 	
@@ -150,7 +160,7 @@ int main(int argc, char **argv){
 
 
 // 	___________________INITIALIZATION _____________________________
-	seed = time(NULL)*(proc_ID+1);
+	
 	//srand (seed);// initialise random generator differently for each MPI thread
 	KMC kmc(J,BR,A);
 	kmc.init(L,is_circle,radius,conc0,T0, read_old);
