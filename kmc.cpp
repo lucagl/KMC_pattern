@@ -3805,7 +3805,7 @@ for (int i = 0; i < R[diffusion].N; i++){
     
     #pragma omp parallel private(i_rand,x,y) 
     {   
-         unsigned localseed = seed + time(NULL) + omp_get_thread_num();
+         unsigned localseed = seed + time(NULL)*(omp_get_thread_num()+1);
         // #pragma omp for
         //     for (int i = 0; i < L*L; i++)
         //     {
