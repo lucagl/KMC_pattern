@@ -3771,8 +3771,8 @@ DIFFUSION EVENT
 
         omp_lock_t writelock1, writelock2;//lock[L*L];
         
-        omp_init_lock(&writelock1);
-        omp_init_lock(&writelock2);
+        // omp_init_lock(&writelock1);
+        // omp_init_lock(&writelock2);
         
         // for (int i = 0; i < L*L; i++)
         // {
@@ -3802,11 +3802,10 @@ for (int i = 0; i < R[diffusion].N; i++){
 // for (int i = 0; i < Diff_adatoms.size(); i++){
 // 	std :: cout << i <<"\t(" << std ::get<0>(Diff_adatoms[i]) << ","<< std :: get<1>(Diff_adatoms[i]) << ")\n";
 // }
-
+    
     #pragma omp parallel private(i_rand,x,y) 
     {   
-        unsigned localseed;
-        localseed = seed + omp_get_thread_num();
+         unsigned localseed = seed + time(NULL) + omp_get_thread_num();
         // #pragma omp for
         //     for (int i = 0; i < L*L; i++)
         //     {
@@ -3815,10 +3814,9 @@ for (int i = 0; i < R[diffusion].N; i++){
 
        // std :: cout << "\n hello from thread "<<id << std:: flush; 
         
-        #pragma omp for  nowait
+        #pragma omp for 
             for (int i = 0; i < Diff_adatoms.size(); i++){
                 //std :: cout << "\n thread "<< omp_get_thread_num() << "loop index" << i << std:: flush;
-                //omp_get_thread_num();
 
                 x= std :: get<0>(Diff_adatoms[i]);
                 y= std :: get<1>(Diff_adatoms[i]);
@@ -3905,8 +3903,8 @@ for (int i = 0; i < R[diffusion].N; i++){
         //     }
         // }
     // }
-omp_destroy_lock(&writelock1);  
-omp_destroy_lock(&writelock2); 
+// omp_destroy_lock(&writelock1);  
+// omp_destroy_lock(&writelock2); 
 
 for ( y = 0; y < L; y++){
     for (x = 0; x < L; x++){

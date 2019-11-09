@@ -114,6 +114,9 @@ int main(int argc, char **argv){
 		std :: cout << "\n J= " << J << "  |  L= "<< L<< "  |  T =" << T0 <<"  |  concentration = "<< conc0 <<
 		 "  |  initial island radius = "<< radius <<  "  |  'attachment parameter ' =" << A << "  |  Bond energy ratio = "<< BR <<"  |  kmc steps =" << n_steps<<
 		"  |  print each =" << print_every << "  |  read old file? =" << read_old<<"\n";
+
+	omp_set_dynamic(0);
+    omp_set_num_threads(4);
 	#pragma omp parallel 
 	{
 		if(omp_get_thread_num()==0){
@@ -121,6 +124,7 @@ int main(int argc, char **argv){
 		}
 	}
 	}
+	
 
 	//RootID broadcast data to other processors
 	MPI_Bcast(&L, 1, MPI_INT, 0, MPI_COMM_WORLD);
