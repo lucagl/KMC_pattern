@@ -341,6 +341,15 @@ int* KMC :: get_nevents() const {
     return counter;
 }
 
+int* KMC :: get_classN() const {
+    static int members[n_classes];
+    for (int i = 0; i < n_classes; i++)
+    {
+        members[i] =R[i].N; 
+    }
+    return members;
+}
+
 
 void KMC :: print (int frame, int flag) const{
 
@@ -3778,7 +3787,7 @@ DIFFUSION EVENT
 
         //index = extract(R[diffusion].N);
 
-        for (int index = 0; index < R[diffusion].N; index++){
+        for (unsigned long int index = 0; index < R[diffusion].N; index++){
 
             x = R[diffusion].where(index)[0];
             y = R[diffusion].where(index)[1];
