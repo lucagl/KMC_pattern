@@ -3828,7 +3828,7 @@ for (int i = 0; i < R[diffusion].N; i++){
 
 
         #pragma omp for schedule(dynamic) nowait//further could prevent correlations in random sequnces
-            for (int i = 0; i < Diff_adatoms.size(); i++){
+            for (unsigned long int i = 0; i < Diff_adatoms.size(); i++){
                 //std :: cout << "\n thread "<< omp_get_thread_num() << "loop index" << i << std:: flush;
 
                 x= std :: get<0>(Diff_adatoms[i]);
