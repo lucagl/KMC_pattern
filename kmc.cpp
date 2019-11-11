@@ -297,7 +297,10 @@ double KMC :: cumulative (double* r){
 }
 
 int KMC ::  extract (int N) const{
-
+    if (N>RAND_MAX){
+        std :: cout << "\n Problem, cannot extract random number bigger than " << RAND_MAX << "\n";
+        exit(EXIT_FAILURE);
+    }
     return (rand() % N);
 }
 
@@ -3839,74 +3842,74 @@ DIFFUSION EVENT
 
         // OLD IMPLEMENTATION SLOWER BECAUSE of .change() and .destroy_singleCoordinate
 
-        // for (int index = 0; index < R[diffusion].N; index++){
+    //     for (unsigned long int index = 0; index < R[diffusion].N; index++){
         
-        //     x = R[diffusion].where(index)[0];
-        //     y = R[diffusion].where(index)[1];
+    //         x = R[diffusion].where(index)[0];
+    //         y = R[diffusion].where(index)[1];
 
-        //     //R[diffusion].destroy(index); Conceptual error. If I destroy all indexes are shifted.
-        //     //This works only if I extract randomly from the current index databese
+    //         //R[diffusion].destroy(index); Conceptual error. If I destroy all indexes are shifted.
+    //         //This works only if I extract randomly from the current index databese
 
-        //     adatom.matrix[y][x] -=1;
+    //         adatom.matrix[y][x] -=1;
 
-        //     i_rand = rand() % 4 +1; 
+    //         i_rand = rand() % 4 +1; 
 
-        //     if(is_attSite(x,y)){
-        //     //remove from attachment class if it was (in the previous position) on an attachment site
-        //     //rushing condition in parallel.. maybe trying to remove before update of class happened
-        //         error=R[attachment].destroy_singleCoordinate(x,y);
-        //     }
+    //         if(is_attSite(x,y)){
+    //         //remove from attachment class if it was (in the previous position) on an attachment site
+    //         //rushing condition in parallel.. maybe trying to remove before update of class happened
+    //             error=R[attachment].destroy_singleCoordinate(x,y);
+    //         }
             
-        //     if(i_rand ==1){
+    //         if(i_rand ==1){
 
-        //         int top = y+1;
-        //         if(top==L) top = 0;
-        //         R[diffusion].change(index,x,top);
-        //         adatom.matrix[top][x] += 1;
+    //             int top = y+1;
+    //             if(top==L) top = 0;
+    //             R[diffusion].change(index,x,top);
+    //             adatom.matrix[top][x] += 1;
 
-        //         if(is_attSite(x,top)){
-        //             R[attachment].populate(x,top);
-        //         }
-        //     }
-        //     else if(i_rand ==2){
+    //             if(is_attSite(x,top)){
+    //                 R[attachment].populate(x,top);
+    //             }
+    //         }
+    //         else if(i_rand ==2){
 
-        //         int bottom = y-1;
-        //         if(bottom==-1) bottom = L-1;
-        //         R[diffusion].change(index,x,bottom);
-        //         adatom.matrix[bottom][x] += 1;
+    //             int bottom = y-1;
+    //             if(bottom==-1) bottom = L-1;
+    //             R[diffusion].change(index,x,bottom);
+    //             adatom.matrix[bottom][x] += 1;
                 
-        //         if(is_attSite(x,bottom)){
-        //             R[attachment].populate(x,bottom);
-        //         }
-        //     }
-        //     else if(i_rand ==3){
+    //             if(is_attSite(x,bottom)){
+    //                 R[attachment].populate(x,bottom);
+    //             }
+    //         }
+    //         else if(i_rand ==3){
 
-        //         int right = x+1;
-        //         if (right ==L) right = 0;
+    //             int right = x+1;
+    //             if (right ==L) right = 0;
 
-        //         R[diffusion].change(index,right,y);
-        //         adatom.matrix[y][right] += 1;
+    //             R[diffusion].change(index,right,y);
+    //             adatom.matrix[y][right] += 1;
 
-        //         if(is_attSite(right,y)){
-        //             R[attachment].populate(right,y);
-        //         }
-        //     }
-        //     else if(i_rand ==4){
+    //             if(is_attSite(right,y)){
+    //                 R[attachment].populate(right,y);
+    //             }
+    //         }
+    //         else if(i_rand ==4){
 
-        //         int left = x -1;	
-        //         if(left == -1) left = L-1; 
+    //             int left = x -1;	
+    //             if(left == -1) left = L-1; 
 
-        //         R[diffusion].change(index,left,y);
-        //         adatom.matrix[y][left] += 1;
+    //             R[diffusion].change(index,left,y);
+    //             adatom.matrix[y][left] += 1;
 
-        //         if(is_attSite(left,y)){
+    //             if(is_attSite(left,y)){
 
-        //             R[attachment].populate(left,y);
-        //         }
-        //     }
+    //                 R[attachment].populate(left,y);
+    //             }
+    //         }
 
-        // }             
-
+    //     }             
+    // }
 concentration = static_cast<double>(adatom.N)/(L*L);//update average concentration of adatoms
 
 step++;

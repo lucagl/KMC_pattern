@@ -157,6 +157,7 @@ kmc.print(0);
 int * N_class;
 	N_class = kmc.get_classN();
 	std:: cout << "\n\n # elements in diffusion class =  "<< N_class[25]<<"\n";
+	std:: cout << "# elements in attachment class =  "<< N_class[24]<<"\n";
 
 // _________________________RUN KMC ___________________________
 
@@ -199,6 +200,7 @@ if(proc_ID==0){
 	 <<"\nAttachment # = " << counter[24] << "\t Diffusion # = " << counter[25] ;
 
 	std:: cout << "\n\n # elements in diffusion class =  "<< N_class[25]<<"\n";
+	std:: cout << "# elements in attachment class =  "<< N_class[24]<<"\n";
 		
 	std :: cout << "\n Numeber of parallel KMCs ="<< n_proc<<"\n";
 	
