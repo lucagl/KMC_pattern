@@ -24,7 +24,7 @@ void print_final(int) const;
 
 double get_concentration() const;
 int* get_nevents() const;
-
+int* get_classN() const;
 private: 
 
 int event_counter[n_classes] {};

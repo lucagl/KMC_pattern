@@ -116,9 +116,9 @@ int main(int argc, char **argv){
 		 "  |  initial island radius = "<< radius <<  "  |  'attachment parameter ' =" << A << "  |  Bond energy ratio = "<< BR <<"  |  kmc steps =" << n_steps<<
 		"  |  print each =" << print_every << "  |  read old file? =" << read_old<<"\n";
 
-    //omp_set_num_threads(THREAD_NUM);
-	seed = time(NULL)*(proc_ID+1);
-	// localseed = new unsigned[THREAD_NUM];
+  
+		seed = time(NULL)*(proc_ID+1);
+	
 	
 	#pragma omp parallel 
 	{
@@ -161,11 +161,16 @@ int main(int argc, char **argv){
 
 // 	___________________INITIALIZATION _____________________________
 	
-	//srand (seed);// initialise random generator differently for each MPI thread
+	srand (seed);// initialise random generator differently for each MPI thread
+	//rand() is still used in non parallel regions..
 	KMC kmc(J,BR,A);
 	kmc.init(L,is_circle,radius,conc0,T0, read_old);
 	kmc.print(0);
 
+	
+	int * N_class;
+	N_class = kmc.get_classN();
+	std:: cout << "\n\n # elements in diffusion class =  "<< N_class[25]<<"\n";
 
 // _________________________RUN KMC ___________________________
 
@@ -190,6 +195,8 @@ for (int k = 1; k <= n_steps; k++){
 if(proc_ID==0){
 	int * counter;
 	counter = kmc.get_nevents();
+	
+	N_class = kmc.get_classN();
  	std :: cout << "\n\nDetachment # nn1=0, nn2=0 " << counter[0] << "\tDetachment # nn1= 1,nn2=0 " << counter[1] <<"\tDetachment # nn1= 2,nn2=0 " 
 	 << counter[2]<<"\tDetachment # nn1= 3,nn2=0 " << counter[3] << "\tDetachment # nn1= 4,nn2=0 " << counter[4] 
 	 << "\nDetachment # nn1=0,nn2=1 " << counter[5] << "\tDetachment # nn1= 1,nn2=1 " << counter[6] <<"\tDetachment # nn1= 2,nn2=1 " 
@@ -201,6 +208,8 @@ if(proc_ID==0){
 	 << "\nDetachment # nn1=0,nn2=4 " << counter[20] << "\tDetachment # nn1= 1,nn2=4 " << counter[21] <<"\tDetachment # nn1= 2,nn2=4 " 
 	 << counter[22]<<"\tDetachment # nn1= 3,nn2=4 " << counter[23]
 	 <<"\nAttachment # = " << counter[24] << "\t Diffusion # = " << counter[25] ;
+
+	 std:: cout << "\n\n # elements in diffusion class =  "<< N_class[25]<<"\n";
 
 
 	std :: cout << "\n Numeber of parallel KMCs ="<< n_proc<<"\n";

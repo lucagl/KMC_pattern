@@ -18,7 +18,7 @@ class Events {
 	public:
 		double D; // constant rate
 		std::tuple<int, int> coordinate(int i); //return a tuple
-		int N=0; // elements in the class
+		unsigned long int N=0; // elements in the class
 		unsigned short ** mask; 
 		
 		void destroy(int i); //destroy ith element

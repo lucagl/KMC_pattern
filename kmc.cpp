@@ -338,6 +338,15 @@ int* KMC :: get_nevents() const {
     return counter;
 }
 
+int* KMC :: get_classN() const {
+    static int members[n_classes];
+    for (int i = 0; i < n_classes; i++)
+    {
+        members[i] =R[i].N; 
+    }
+    return members;
+}
+
 
 void KMC :: print (int frame, int flag) const{
 
