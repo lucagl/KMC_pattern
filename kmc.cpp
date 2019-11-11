@@ -289,7 +289,10 @@ double KMC :: cumulative (double* r){
 }
 
 int KMC ::  extract (int N) const{
-
+    if (N>RAND_MAX){
+        std :: cout << "\n Problem, cannot extract random number bigger than " << RAND_MAX << "\n";
+        exit(EXIT_FAILURE);
+    }
     return (rand() % N);
 }
 
