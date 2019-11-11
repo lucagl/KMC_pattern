@@ -294,7 +294,10 @@ double KMC :: cumulative (double* r){
 }
 
 int KMC ::  extract (int N) const{
-
+    if (N>RAND_MAX){
+        std :: cout << "\n Problem, cannot extract random number bigger than " << RAND_MAX << "\n";
+        exit(EXIT_FAILURE);
+    }
     return (rand() % N);
 }
 
@@ -1230,7 +1233,8 @@ bool KMC :: update_AttachmentClasses(const int x, const int y){
     static int step=0;
     int who=-1;
    
-	int index,i_rand;
+	int index;
+    int i_rand;
 	double R_sum,d_rand;
 	int x,y;
     double r [n_classes+1];
@@ -3906,7 +3910,7 @@ for (int i = 0; i < R[diffusion].N; i++){
         
         
         #pragma omp for 
-        for (int i = 0; i < L*L; i++){
+        for (unsigned long int i = 0; i < L*L; i++){
         //         omp_destroy_lock(&lock[i]);
 
             for(int k=0; k<adatom.matrix[i/L][i%L]; k++){
