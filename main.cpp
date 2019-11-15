@@ -155,6 +155,10 @@ KMC kmc(J,BR,A,E_shift);
 kmc.init(L,is_circle,radius,conc0,T0, read_old);
 kmc.print(0);
 
+int * N_class;
+	N_class = kmc.get_classN();
+	std:: cout << "\n\n # elements in diffusion class =  "<< N_class[25]<<"\n";
+	std:: cout << "# elements in attachment class =  "<< N_class[24]<<"\n";
 
 // _________________________RUN KMC ___________________________
 
@@ -173,7 +177,7 @@ for (int k = 1; k <= n_steps; k++){
 		frame+=1;
 		kmc.print(frame);
 	}
-	if(k%(n_steps/10)==0&&proc_ID == root_process){
+	if(k%(n_steps/10 + 1 )==0&&proc_ID == root_process){
 		std :: cout  << " | "<< std :: flush;
 		}
 }
@@ -182,6 +186,8 @@ for (int k = 1; k <= n_steps; k++){
 if(proc_ID==0){
 	int * counter;
 	counter = kmc.get_nevents();
+	N_class = kmc.get_classN();
+	
  	std :: cout << "\n\nDetachment # nn1=0, nn2=0 " << counter[0] << "\tDetachment # nn1= 1,nn2=0 " << counter[1] <<"\tDetachment # nn1= 2,nn2=0 " 
 	 << counter[2]<<"\tDetachment # nn1= 3,nn2=0 " << counter[3] << "\tDetachment # nn1= 4,nn2=0 " << counter[4] 
 	 << "\nDetachment # nn1=0,nn2=1 " << counter[5] << "\tDetachment # nn1= 1,nn2=1 " << counter[6] <<"\tDetachment # nn1= 2,nn2=1 " 
@@ -194,13 +200,16 @@ if(proc_ID==0){
 	 << counter[22]<<"\tDetachment # nn1= 3,nn2=4 " << counter[23]
 	 <<"\nAttachment # = " << counter[24] << "\t Diffusion # = " << counter[25] ;
 
-
+	std:: cout << "\n\n # elements in diffusion class =  "<< N_class[25]<<"\n";
+	std:: cout << "# elements in attachment class =  "<< N_class[24]<<"\n";
+		
 	std :: cout << "\n Numeber of parallel KMCs ="<< n_proc<<"\n";
 	
 	end = std :: time(NULL);
 	elapsed_time = end-start;
 	t2 = clock();
 	seconds = ((float)t2-(float)t1)/ CLOCKS_PER_SEC;
+	time(&curr_time);
 	std :: cout << "\n Elapsed CPU time = " << seconds <<"s \n"<< std:: endl;
 	std :: cout << "\n Elapsed time = " << elapsed_time <<"s \n"<< std:: endl;
 	std :: cout << "\n End time " << ctime(&curr_time) << "\n";

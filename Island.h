@@ -44,7 +44,6 @@ public:
 			if(circle == false){
 				for(int i =0;i<L; i++){		
 					for(int j =0;j<L;j++){
-					// if (sqrt((i-x0)*(i-x0)+(j-x0)*(j-x0))<=radius) {
 						if ((abs(i-x0)<=radius)&&(abs(j-x0)<=radius)) {
 							matrix[i][j] = 1;
 						}

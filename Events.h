@@ -11,14 +11,13 @@ class Events {
 
 	private:
 		int L;
-		//int index =0;// just to check, can be erased in funture versions
 		std::list<std::tuple<int, int>> element{}; // list of tuple (i-th element touple of coordinates)
 	//list more efficient than vector for deletion and insertion
 
 	public:
 		double D; // constant rate
 		std::tuple<int, int> coordinate(int i); //return a tuple
-		int N=0; // elements in the class
+		unsigned long int N=0; // elements in the class
 		unsigned short ** mask; 
 		
 		void destroy(int i); //destroy ith element
@@ -29,6 +28,7 @@ class Events {
 		bool exist (const int ,const int ) const;// checks existence of the element in the list based on its coordinate
 		int* where (const int ) const; //returns coordinate of the element
 		double rate();
+		void clear();
 
 		void init (const int box_size){
 

@@ -19,6 +19,8 @@
 // GLOBAL VARIABLES 
 extern const double  PI; //A = attachment const, F=adatom diffusion constant
 extern int proc_ID;
+extern int n_proc;
+extern unsigned total_n_proc;
 extern const int root_process;
 
 
