@@ -54,8 +54,7 @@ bool Events :: destroy_coordinates(const int x, const int y){
 }
 bool Events :: destroy_singleCoordinate(const int x, const int y){
     bool error =0;
-    int oldN;
-    oldN = element.size();
+    
     
     auto coordinate = std :: make_tuple(x,y);
     auto it = std::find(element.begin(), element.end(), coordinate);
@@ -96,7 +95,12 @@ int * Events :: where (const int i) const{
     coordinate[1] = std :: get<1>(*it);
     return coordinate;
 }
-
+void Events :: clear () {
+    element.clear();
+    //std :: memset(mask,0,sizeof(int)*L*L);
+    std :: fill(&mask[0][0],&mask[0][0]+sizeof(mask),0);
+    N=0;
+}
 
 double Events :: rate(){
     double r;

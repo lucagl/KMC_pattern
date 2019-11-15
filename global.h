@@ -12,14 +12,20 @@
 #include <ctime>
 #include <cstdlib>
 
+//Shared memory parallelisation
+#include <omp.h>
+//-----------------
+
 
 
 
 
 // GLOBAL VARIABLES 
 extern const double  PI; //A = attachment const, F=adatom diffusion constant
-extern int proc_ID;
-extern int n_proc;
+extern int proc_ID,n_proc;
+extern unsigned seed;
+extern unsigned* localseed;
+
 extern unsigned total_n_proc;
 extern const int root_process;
 

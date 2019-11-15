@@ -23,7 +23,7 @@ class Adatom {
         //     } 
         // };
         void init (const int L_in , const double concentration =0){
-            int n_adatom, current_density = 1;
+            int current_density = 1;
             int rand_inti,rand_intj;
 
             L = L_in;

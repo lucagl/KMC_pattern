@@ -4,6 +4,7 @@
 
 #include "global.h"
 #include<list>
+#include<vector>
 #include<tuple>
 
 class Events {
@@ -27,6 +28,7 @@ class Events {
 		void change (const int , const int , const int );// could be useful: changes coordinate of a specific element in the list
 		bool exist (const int ,const int ) const;// checks existence of the element in the list based on its coordinate
 		int* where (const int ) const; //returns coordinate of the element
+		void clear();
 		double rate();
 		void clear();
 
