@@ -30,7 +30,7 @@ class Events {
 		int* where (const int ) const; //returns coordinate of the element
 		void clear();
 		double rate();
-		void clear();
+		
 
 		void init (const int box_size){
 

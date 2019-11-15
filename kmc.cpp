@@ -3770,15 +3770,11 @@ DIFFUSION EVENT
 
 	else if (r[diffusion]<d_rand && d_rand<r[n_classes]){
 
-        omp_lock_t writelock1, writelock2;//lock[L*L];
+        omp_lock_t writelock1, writelock2;
         
         omp_init_lock(&writelock1);
         omp_init_lock(&writelock2);
-        
-        // for (int i = 0; i < L*L; i++)
-        // {
-        // omp_init_lock(&(lock[i]));
-        // }
+
 
         who = diffusion;
 
@@ -3799,10 +3795,6 @@ std :: vector <std :: tuple<int, int>> Diff_adatoms{};
 for (int i = 0; i < R[diffusion].N; i++){
             Diff_adatoms.push_back(std :: make_tuple (R[diffusion].where(i)[0],R[diffusion].where(i)[1]));
         }
-// std :: cout << "\n COPIED diffusion list \n";
-// for (int i = 0; i < Diff_adatoms.size(); i++){
-// 	std :: cout << i <<"\t(" << std ::get<0>(Diff_adatoms[i]) << ","<< std :: get<1>(Diff_adatoms[i]) << ")\n";
-// }
     
     #pragma omp parallel private(i_rand,x,y) 
     {   
@@ -3816,15 +3808,6 @@ for (int i = 0; i < R[diffusion].N; i++){
         Indeed, before I had this correlation buildig up at every call of a diffusion event on random sequneces long as the subloop per thread. 
         Now "only" among threads whose indexing is shuffling at every for loop*/
 
-        // #pragma omp for
-        //     for (int i = 0; i < L*L; i++)
-        //     {
-        //     omp_init_lock(&(lock[i]));
-        //     }
-
-       // std :: cout << "\n hello from thread "<<id << std:: flush; 
-
-
         int id = omp_get_thread_num();
 
 
@@ -3836,58 +3819,43 @@ for (int i = 0; i < R[diffusion].N; i++){
                 y= std :: get<1>(Diff_adatoms[i]);
                 
                 i_rand = rand_r(&localseed[id]) % 4 +1;//independent seed for each thread, if seed does not change sequence keep going from that seed
-                //omp_set_lock(&(lock[x+L*y]));
+               
                #pragma omp atomic
                     adatom.matrix[y][x] -= 1;
-                    
-               // omp_unset_lock(&(lock[x+L*y]));
                
                 if(i_rand ==1){      
                     int top = y+1;
                     if(top==L) top = 0;
-                    //std :: get<1>(Diff_adatoms[i]) = top;
 
-                    //omp_set_lock(&(lock[x+L*top]));
                     #pragma omp atomic
                         adatom.matrix[top][x] += 1;
-                   // omp_unset_lock(&(lock[x+L*top]));
+
                 }
                 else if(i_rand ==2){
 
                     int bottom = y-1;
                     if(bottom==-1) bottom = L-1;
-                   // std :: get<1>(Diff_adatoms[i]) = bottom;
 
-                   // omp_set_lock(&(lock[x+L*bottom]));
                    #pragma omp atomic
                         adatom.matrix[bottom][x] += 1;
-                    //omp_unset_lock(&(lock[x+L*bottom]));
                 }
                 else if(i_rand ==3){
 
                     int right = x+1;
                     if (right ==L) right = 0;
-                   // std :: get<0>(Diff_adatoms[i]) = right;
 
-                    //omp_set_lock(&(lock[right+L*y]));
                     #pragma omp atomic
                         adatom.matrix[y][right] += 1;
-                    //omp_unset_lock(&(lock[right+L*y]));
                 }
                 else if(i_rand ==4){
 
-    //         //R[diffusion].destroy(index); Conceptual error. If I destroy all indexes are shifted.
-    //         //This works only if I extract randomly from the current index databese
+                    int left = x-1;
+                    if (left == -1) left = L-1;
 
-                    //std :: get<0>(Diff_adatoms[i]) = left;
-
-                   // omp_set_lock(&(lock[left+L*y]));
-                   #pragma omp atomic
+                    #pragma omp atomic
                         adatom.matrix[y][left] += 1;
-                   // omp_unset_lock(&(lock[left+L*y]));
                 }
             }
-        //}
 
         // Refill diffusion and attachment classes 
         #pragma omp single  
@@ -3927,160 +3895,8 @@ omp_destroy_lock(&writelock2);
 //     }
 // }
 
-
-    
-    
-// OLD VERSION : 
-// #pragma omp parallel for lastprivate (x,y) shared(writelock1,writelock2) private (i_rand) schedule(auto) 
-   
-   
-
-// //OR RATHER WORK SOLELY ON ADATOMS AND UPDATE R AT THE END?
-//             for (int index = 0; index < R[diffusion].N; index++){
-            
-//                 //do it directly on adatoms and update at the end diffusion class?
-//                 //but this diffusion update in serial is coslty no?
-                
-//                 omp_set_lock(&writelock1);
-//                 x = R[diffusion].where(index)[0];
-//                 y = R[diffusion].where(index)[1];
-//                 omp_unset_lock(&writelock1);
-//                 //R[diffusion].destroy(index); Conceptual error. If I destroy all indexes are shifted.
-//                 //This works only if I extract randomly from the current index database
-                
-                
-//                 // std :: cout << "\n " << index << "Locked1  on index quest and adatom update -1" << "  id= " << id << "\n";
-//                 // std :: cout << "pos (" << x << ", " <<y <<")";
-//                 //omp_set_lock(&lock[x+L*y]);
-//                 #pragma omp atomic
-//                     adatom.matrix[y][x] -= 1;
-//                 //omp_unset_lock(&lock[x+L*y]);
-
-//                 i_rand = rand() % 4 +1; 
-
-//                 //std :: cout << " \n" <<x << "\t" << y << "\n";
-                
-//                 if(is_attSite(x,y)){
-//                 //remove from attachment class if it was (in the previous position) on an attachment site
-//                 //rushing condition in parallel.. maybe trying to remove before update of class happened
-//                     omp_set_lock(&writelock2);
-//                     // std :: cout << "\n " <<  index << "Locked2 on attachement destruction" << "  id= " << id << "\n";
-//                     // std :: cout << "pos (" << x << ", " <<y <<")";
-//                     error=R[attachment].destroy_singleCoordinate(x,y);
-//                     omp_unset_lock(&writelock2);
-//                 }
-                
-//                 if(i_rand ==1){
-                    
-//                     int top = y+1;
-//                     if(top==L) top = 0;
-
-//                     omp_set_lock(&writelock1);
-//                     // std :: cout << "\n " << index << "Locked1  on adatom update +1, top diffusion" << "  id= " << id << "\n";
-//                     // std :: cout << "old pos (" << x << ", " <<y <<")";
-//                     R[diffusion].change(index,x,top);
-//                     omp_unset_lock(&writelock1);
-
-//                     //omp_set_lock(&lock[x+L*top]);
-//                     #pragma omp atomic
-//                     adatom.matrix[top][x] += 1;
-//                     //omp_unset_lock(&lock[x+L*top]);
-
-//                     if(is_attSite(x,top)){
-//                         omp_set_lock(&writelock2);
-//                         R[attachment].populate(x,top);
-//                         omp_unset_lock(&writelock2);
-//                     }
-//                 }
-//                 else if(i_rand ==2){
-
-//                     int bottom = y-1;
-//                     if(bottom==-1) bottom = L-1;
-
-//                     omp_set_lock(&writelock1);
-//                     // std :: cout << "\n " << index << "Locked1  on adatom update +1, bottom diffusion" << "  id= " << id << "\n";
-//                     // std :: cout << "old pos (" << x << ", " <<y <<")";
-//                     R[diffusion].change(index,x,bottom);
-//                     omp_unset_lock(&writelock1);
-
-//                     //omp_set_lock(&lock[x+L*bottom]);
-//                     #pragma omp atomic
-//                     adatom.matrix[bottom][x] += 1;
-//                     //omp_unset_lock(&lock[x+L*bottom]);
-                    
-//                     if(is_attSite(x,bottom)){
-//                         omp_set_lock(&writelock2);   
-//                         R[attachment].populate(x,bottom);
-//                         omp_unset_lock(&writelock2);
-//                     }
-//                 }
-//                 else if(i_rand ==3){
-
-//                     int right = x+1;
-//                     if (right ==L) right = 0;
-
-//                     omp_set_lock(&writelock1);
-//                     // std :: cout << "\n " << index << "Locked1  on adatom update +1, right diffusion" << "  id= " << id << "\n";
-//                     // std :: cout << "old pos (" << x << ", " <<y <<")";
-//                     R[diffusion].change(index,right,y);
-//                     omp_unset_lock(&writelock1);
-
-//                     //omp_set_lock(&lock[right+L*y]);
-//                     #pragma omp atomic
-//                     adatom.matrix[y][right] += 1;
-//                     //omp_unset_lock(&lock[right+L*y]);
-
-//                     if(is_attSite(right,y)){
-//                         omp_set_lock(&writelock2); 
-//                         R[attachment].populate(right,y);
-//                         omp_unset_lock(&writelock2);
-//                     }
-//                 }
-//                 else if(i_rand ==4){
-
-//                     int left = x -1;	
-//                     if(left == -1) left = L-1; 
-
-//                     omp_set_lock(&writelock1);
-//                     // std :: cout << "\n " << index << "Locked1  on adatom update +1, left diffusion" << "  id= " << id << "\n";
-//                     // std :: cout << "old pos (" << x << ", " <<y <<")";
-//                     R[diffusion].change(index,left,y);
-//                     omp_unset_lock(&writelock1);
-//                     //omp_set_lock(&lock[left+L*y]);
-//                     #pragma omp atomic
-//                     adatom.matrix[y][left] += 1;
-//                    // omp_unset_lock(&lock[left+L*y]);
-
-
-//                     if(is_attSite(left,y)){
-//                         omp_set_lock(&writelock2);
-//                         R[attachment].populate(left,y);
-//                         omp_unset_lock(&writelock2);
-//                     }
-//                 }
-//             }  
-//         omp_destroy_lock(&writelock1);  
-//         omp_destroy_lock(&writelock2); 
-
-
-        // for (int i = 0; i < L*L; i++)
-        // {
-        // omp_destroy_lock(&(lock[i]));
-        // }
-        //omp_destroy_lock(&writelock3);  
-
-        
-
-
-
 }
 
-    //                 R[attachment].populate(left,y);
-    //             }
-    //         }
-
-    //     }             
-    // }
 concentration = static_cast<double>(adatom.N)/(L*L);//update average concentration of adatoms
 
 step++;

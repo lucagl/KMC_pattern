@@ -79,14 +79,20 @@ int main(int argc, char **argv){
 	
 	const double J =0.2;
 
-	double T0,conc0, A, BR;
+	double T0,conc0, A, BR, E_shift, c_eq;
 	int L,radius, n_steps;
 	int frame, print_every;
 	
 	bool read_old,is_circle;
 
-	std::time_t start, end;
+	std::time_t start, end,curr_time;
+	clock_t t1,t2;
+
+	float seconds;
+
 	long elapsed_time;
+
+	t1=clock();
 	start = std::time(NULL);
 	
 
@@ -172,7 +178,7 @@ system(remove_old);
 	
 	srand (seed);// initialise random generator differently for each MPI thread
 	//rand() is still used in non parallel regions..
-	KMC kmc(J,BR,A);
+	KMC kmc(J,BR,A,E_shift);
 	kmc.init(L,is_circle,radius,conc0,T0, read_old);
 	kmc.print(0);
 

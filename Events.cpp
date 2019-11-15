@@ -107,9 +107,3 @@ double Events :: rate(){
     r = D*double(N);
     return r;
 }
-
-void Events :: clear () {
-    element.clear();
-    std :: fill(&mask[0][0],&mask[0][0]+sizeof(mask),0);
-    N=0;
-}
