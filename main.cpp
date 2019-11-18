@@ -103,13 +103,6 @@ MPI_Comm_size(MPI_COMM_WORLD, &n_proc);
 MPI_Comm_rank(MPI_COMM_WORLD, &proc_ID);
 
 
-	
-	
-	if(proc_ID == root_process){
-		// read from input file and broadcast
-		//std :: cout << "\n Total number of cores available= "<< total_n_proc << std :: endl ;	
-		std :: cout << "\n Number of parallel simulations launched = "<< n_proc << std :: endl ;
-
 // ----------------- READ INPUT AND PRINT INITIAL INFO -------------
 if(proc_ID == root_process){
 	// read from input file and broadcast
@@ -127,7 +120,7 @@ if(proc_ID == root_process){
   
 		seed = time(NULL)*(proc_ID+1);
 	
-	
+	std :: cout << "\n Equilibrium concentration at T=0, is  " << c_eq << "\n";
 	#pragma omp parallel 
 	{
 		#pragma omp single
@@ -141,12 +134,9 @@ if(proc_ID == root_process){
 		localseed[id] = seed *(id + 1);
 		
 	}
-	}
+}
 	
 
-
-	std :: cout << "\n Equilibrium concentration at T=0, is  " << c_eq << "\n";
-}
 
 //RootID broadcast data to other processors
 MPI_Bcast(&L, 1, MPI_INT, 0, MPI_COMM_WORLD);
