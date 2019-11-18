@@ -8,8 +8,9 @@
 
  ------------ COMPILING INSTRUCTIONS ----------------
 place in working folder *.cpp and *.h
-compile: mpic++ *.cpp -o "executable".ex 
+compile: mpic++ -fopenmp *.cpp -o "executable".ex 
 run:  mpirun -np "cores number" executable.out
+set number threads using: export OMP_NUM_THREADS= ..
 input file: file Input.txt containing input informations must be present 
 
 ------------------- CONVENTIONS -----------
@@ -59,32 +60,41 @@ TEMPLATE: to make function or classes versatile on different types
 #include "functions.h"
 
 // --- PARALLELISATION
+#include <thread>
 #include <mpi.h>
-#include <ctime>
+
 //------
 
 
-//Define global variables
-const double PI = 3.14159265358979323846;
-const int root_process=0;
-int proc_ID;
-int ierr,n_proc;
+// //Define global variables
+// const double PI = 3.14159265358979323846;
+// const int root_process=0;
+// unsigned id,seed;
+// int proc_ID,n_proc;
+
+//const unsigned THREAD_NUM = 4;
+int ierr;
 	
 int main(int argc, char **argv){
 	
+	const double J =0.2;
 
-clock_t t1,t2;
-t1=clock();
-float seconds;
-
-long elapsed_time;
-
-
-std :: time_t start,end, curr_time;
-start = std::time(NULL);
+	double T0,conc0, A, BR, E_shift, c_eq;
+	int L,radius, n_steps;
+	int frame, print_every;
 	
-	
+	bool read_old,is_circle;
 
+	std::time_t start, end,curr_time;
+	clock_t t1,t2;
+
+	float seconds;
+
+	long elapsed_time;
+
+	t1=clock();
+	start = std::time(NULL);
+	
 
 ierr = MPI_Init(&argc, &argv);
 
@@ -93,16 +103,6 @@ MPI_Comm_size(MPI_COMM_WORLD, &n_proc);
 MPI_Comm_rank(MPI_COMM_WORLD, &proc_ID);
 
 
-
-const double J =0.2;
-
-double T0,conc0, A, BR, c_eq;
-int L, radius, n_steps;
-int frame, print_every;
-
-bool read_old,is_circle;
-	
-
 // ----------------- READ INPUT AND PRINT INITIAL INFO -------------
 if(proc_ID == root_process){
 	// read from input file and broadcast
@@ -110,17 +110,35 @@ if(proc_ID == root_process){
 	std :: cout << "\n Start time " << ctime(&curr_time) << "\n";	
 	std :: cout << "\n Number of processors= "<< n_proc << std :: endl ;
 
-	read_input(&L, &T0,& conc0, &radius,&is_circle, &A, &BR, &n_steps, &print_every, &read_old);
+	read_input(&L, &T0,& conc0, &radius,&is_circle, &A, &BR, &E_shift, &n_steps, &print_every, &read_old);
 
-	std :: cout << "\n J= " << J << "  |  L= "<< L<< "  |  T =" << T0 <<"  |  concentration = "<< conc0 <<
-		"  |  initial island radius = "<< radius <<  "  |  'attachment parameter ' =" << A << "  |  Bond energy ratio = "<< BR <<"  |  kmc steps =" << n_steps<<
-	"  |  print each =" << print_every << "  |  read old file? =" << read_old<<"\n";
+	std :: cout << "\n J= " << J << "  |  L= "<< L<< "  |  T=" << T0 <<"  |  concentration= "<< conc0 <<
+		"  |  initial island radius= "<< radius <<  "  |  attachment parameter= " << A << "	|	Energy shift= " << E_shift << "	|	Bond energy ratio= "<< BR <<"  |  kmc steps= " << n_steps<<
+	"  |  print each= " << print_every << "  |  read old file?= " << read_old<<"\n";
 
-	c_eq = exp((-2*J*(1+BR))/T0);
-
-
-	std :: cout << "\n Equilibrium concentration at T = 0" << c_eq << "\n";
+	c_eq = exp((-2*J*(1+BR) + E_shift)/T0);
+  
+	seed = time(NULL)*(proc_ID+1);
+	
+	std :: cout << "\n Equilibrium concentration at T=0, is  " << c_eq << "\n";
 }
+	#pragma omp parallel 
+	{
+		#pragma omp single
+		{
+		std :: cout << "\n Number of threads per process used = " << omp_get_num_threads() << "\n \n";
+		localseed = new unsigned[omp_get_num_threads()];
+		}
+		
+		unsigned id = omp_get_thread_num();
+
+		localseed[id] = seed *(id + 1);
+		
+	}
+	
+
+
+
 
 //RootID broadcast data to other processors
 MPI_Bcast(&L, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -130,6 +148,7 @@ MPI_Bcast(&radius, 1, MPI_INT, 0, MPI_COMM_WORLD);
 MPI_Bcast(&is_circle, 1, MPI_INT, 0, MPI_COMM_WORLD);
 MPI_Bcast(&BR, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 MPI_Bcast(&A, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+MPI_Bcast(&E_shift, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 MPI_Bcast(&n_steps, 1, MPI_INT, 0, MPI_COMM_WORLD);
 MPI_Bcast(&print_every, 1, MPI_INT, 0, MPI_COMM_WORLD);
 MPI_Bcast(&read_old, 1, MPI_C_BOOL, 0, MPI_COMM_WORLD);
@@ -148,11 +167,18 @@ system(remove_old);
 
 
 // 	___________________INITIALIZATION _____________________________
+	
+	srand (seed);// initialise random generator differently for each MPI thread
+	//rand() is still used in non parallel regions..
+	KMC kmc(J,BR,A,E_shift);
+	kmc.init(L,is_circle,radius,conc0,T0, read_old);
+	kmc.print(0);
 
-srand (time(NULL)*(proc_ID+1));// initialise random generator differently for each thread
-KMC kmc(J,BR,A);
-kmc.init(L,is_circle,radius,conc0,T0, read_old);
-kmc.print(0);
+	
+	int * N_class;
+	N_class = kmc.get_classN();
+	std:: cout << "\n\n # elements in diffusion class =  "<< N_class[25]<<"\n";
+	std:: cout << "\n\n # elements in attchment class =  "<< N_class[24]<<"\n";
 
 
 // _________________________RUN KMC ___________________________
@@ -167,12 +193,12 @@ for (int k = 1; k <= n_steps; k++){
 	*/
 	// EVOLUTION STEP 
 	kmc.step(T0,false);
-
+	
 	if ((k%print_every)== 0){
 		frame+=1;
 		kmc.print(frame);
 	}
-	if(k%(n_steps/10)==0&&proc_ID == root_process){
+	if(k%(1+n_steps/10)==0 && proc_ID == root_process){
 		std :: cout  << " | "<< std :: flush;
 		}
 }
@@ -181,6 +207,8 @@ for (int k = 1; k <= n_steps; k++){
 if(proc_ID==0){
 	int * counter;
 	counter = kmc.get_nevents();
+	N_class = kmc.get_classN();
+	
  	std :: cout << "\n\nDetachment # nn1=0, nn2=0 " << counter[0] << "\tDetachment # nn1= 1,nn2=0 " << counter[1] <<"\tDetachment # nn1= 2,nn2=0 " 
 	 << counter[2]<<"\tDetachment # nn1= 3,nn2=0 " << counter[3] << "\tDetachment # nn1= 4,nn2=0 " << counter[4] 
 	 << "\nDetachment # nn1=0,nn2=1 " << counter[5] << "\tDetachment # nn1= 1,nn2=1 " << counter[6] <<"\tDetachment # nn1= 2,nn2=1 " 
@@ -193,7 +221,9 @@ if(proc_ID==0){
 	 << counter[22]<<"\tDetachment # nn1= 3,nn2=4 " << counter[23]
 	 <<"\nAttachment # = " << counter[24] << "\t Diffusion # = " << counter[25] ;
 
-
+	std:: cout << "\n\n # elements in diffusion class =  "<< N_class[25]<<"\n";
+	std:: cout << "# elements in attachment class =  "<< N_class[24]<<"\n";
+		
 	std :: cout << "\n Numeber of parallel KMCs ="<< n_proc<<"\n";
 	
 	end = std :: time(NULL);

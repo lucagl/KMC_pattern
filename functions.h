@@ -3,7 +3,7 @@
 
 
 
-void read_input(int* , double* , double* , int* , bool*, double* , double *,  int* , int* , bool* );
+void read_input(int* , double* , double* , int* , bool*, double* , double *, double *, int* , int* , bool* );
 
 
  #endif

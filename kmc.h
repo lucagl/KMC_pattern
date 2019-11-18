@@ -12,7 +12,7 @@ class KMC {
 
 public:
 
-KMC(const double,const double,const double);
+KMC(const double,const double,const double, const double);
 
 
 void init (const int ,const bool, const int , const double , const double, const bool read_old = false);
@@ -24,8 +24,9 @@ void print_final(int) const;
 
 double get_concentration() const;
 int* get_nevents() const;
-
+int* get_classN() const;
 private: 
+
 int event_counter[n_classes] {};
 int L;
 double  concentration;
@@ -34,6 +35,7 @@ double  concentration;
  double J;
  double BR;
  double A;
+ double E_shift;
  double  current_T;
 
 Adatom adatom;
