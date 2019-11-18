@@ -102,6 +102,7 @@ MPI_Comm_size(MPI_COMM_WORLD, &n_proc);
 
 MPI_Comm_rank(MPI_COMM_WORLD, &proc_ID);
 
+c_eq = exp((-2*J*(1+BR) + E_shift)/T0);
 
 // ----------------- READ INPUT AND PRINT INITIAL INFO -------------
 if(proc_ID == root_process){
@@ -115,25 +116,26 @@ if(proc_ID == root_process){
 	std :: cout << "\n J= " << J << "  |  L= "<< L<< "  |  T=" << T0 <<"  |  concentration= "<< conc0 <<
 		"  |  initial island radius= "<< radius <<  "  |  attachment parameter= " << A << "	|	Energy shift= " << E_shift << "	|	Bond energy ratio= "<< BR <<"  |  kmc steps= " << n_steps<<
 	"  |  print each= " << print_every << "  |  read old file?= " << read_old<<"\n";
-
-	c_eq = exp((-2*J*(1+BR) + E_shift)/T0);
-  
-		seed = time(NULL)*(proc_ID+1);
-	
 	std :: cout << "\n Equilibrium concentration at T=0, is  " << c_eq << "\n";
-	#pragma omp parallel 
-	{
-		#pragma omp single
-		{
-		std :: cout << "\n Number of threads per process used = " << omp_get_num_threads() << "\n \n";
-		localseed = new unsigned[omp_get_num_threads()];
-		}
-		
-		unsigned id = omp_get_thread_num();
+}
 
-		localseed[id] = seed *(id + 1);
-		
+	
+  
+seed = time(NULL)*(proc_ID+1);
+	
+	
+#pragma omp parallel 
+{
+	#pragma omp single
+	{
+	std :: cout << "\n Number of threads per process used = " << omp_get_num_threads() << "\n \n";
+	localseed = new unsigned[omp_get_num_threads()];
 	}
+	
+	unsigned id = omp_get_thread_num();
+
+	localseed[id] = seed *(id + 1);
+	
 }
 	
 
@@ -175,8 +177,11 @@ system(remove_old);
 	
 	int * N_class;
 	N_class = kmc.get_classN();
+
+	if(proc_ID == root_process){
 	std:: cout << "\n\n # elements in diffusion class =  "<< N_class[25]<<"\n";
 	std:: cout << "\n\n # elements in attchment class =  "<< N_class[24]<<"\n";
+	}
 
 
 // _________________________RUN KMC ___________________________
