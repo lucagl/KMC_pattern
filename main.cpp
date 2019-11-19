@@ -156,15 +156,6 @@ system(remove_old);
 	kmc.init(L,is_circle,radius,conc0,T0, read_old);
 	kmc.print(0);
 
-	
-	
-	// if(proc_ID == root_process){
-	// 	int * N_class = kmc.get_classN();
-	// 	std:: cout << "\n\n # elements in diffusion class =  "<< N_class[25]<<"\n";
-	// 	std:: cout << "\n\n # elements in attchment class =  "<< N_class[24]<<"\n";
-	// }
-
-
 // _________________________RUN KMC ___________________________
 
 
@@ -184,7 +175,7 @@ for (int k = 1; k <= n_steps; k++){
 		frame+=1;
 		kmc.print(frame);
 		//update number threads
-		n_threads= ceil(float(kmc.get_classN()[25])/4000);
+		n_threads= ceil(float(kmc.get_classN()[25])/3500);
 	}
 	if(k%(1+n_steps/10)==0 && proc_ID == root_process){
 		//std :: cout << floor(float(k)/n_steps)*100 << "% (threads per process= "<< n_threads << " )"<< std :: flush;
@@ -210,8 +201,6 @@ if(proc_ID==0){
 	 << counter[22]<<"\tDetachment # nn1= 3,nn2=4 " << counter[23]
 	 <<"\nAttachment # = " << counter[24] << "\t Diffusion # = " << counter[25] ;
 
-	// std:: cout << "\n\n # elements in diffusion class =  "<< N_class[25]<<"\n";
-	// std:: cout << "# elements in attachment class =  "<< N_class[24]<<"\n";
 		
 	std :: cout << "\n Numeber of parallel KMCs ="<< n_proc<<"\n";
 	

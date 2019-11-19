@@ -7,9 +7,7 @@ void Island :: print(const std::string& file_name, const double T, const double 
 	std :: ofstream outfile (file_name);
 	if (outfile.is_open()){
 		
-		
-		//outfile << "#L\tT\n";
-		//outfile <<  L << "\t"<< T << "\t" << "\n";
+
 		outfile <<"#T = " << T <<"\tc ="<<c <<"\n";;
 		outfile << "#Island\n";
 		for ( int i = 0;i < L;i++){
@@ -21,27 +19,6 @@ void Island :: print(const std::string& file_name, const double T, const double 
 	outfile.close();
 }
 
-
-// void Island :: print(const std::string& file_name, unsigned short**mask1,unsigned short**mask2,  unsigned short**mask3, const double T, const double c) const {
-// //print method of the class	
-	
-	
-// 	std :: ofstream outfile (file_name);
-// 	if (outfile.is_open()){
-		
-		
-// 		//outfile << "#L\tT\n";
-// 		//outfile <<  L << "\t"<< T << "\t" << "\n";
-// 		outfile <<"#T = " << T <<"\tc ="<<c <<"\n";;
-// 		outfile << "#Island\tsite1\tsite2\tsite3\n";
-// 		for ( int i = 0;i < L;i++){
-// 			for(int j =0;j<L;j++){
-// 				outfile << matrix[i][j]<< "\t" << mask1[i][j]<< "\t" << mask2[i][j] << "\t" << mask3[i][j] << "\n"; 
-// 			}
-// 		}
-// 	}
-// 	outfile.close();
-// }
 
 
 void Island :: init_neighbours(){

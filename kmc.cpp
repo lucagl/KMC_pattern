@@ -3615,7 +3615,7 @@ The problem is that the change of content of an index with list can problems sin
 Therefore I cannot have random access like vector or arrays.. I have to iterate on a pointer which is shared!
 */
 std :: vector <std :: tuple<int, int>> Diff_adatoms{};
-for (int i = 0; i < R[diffusion].N; i++){
+for (unsigned long int i = 0; i < R[diffusion].N; i++){
             Diff_adatoms.push_back(std :: make_tuple (R[diffusion].where(i)[0],R[diffusion].where(i)[1]));
         }
     
