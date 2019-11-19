@@ -11,19 +11,6 @@ public:
 	bool ** matrix;
 	unsigned short ** nn1;
 	unsigned short ** nn2;
-	// Island(){};
-	// Island(const int L_){
-	// 	std :: cout <<" Initializing island \n"<< std::flush ;
-	// 	L = L_;
-	// 	std :: cout << " L = " << L<< std::flush ;
-	// 	matrix = new bool*[L];
-	// 	nn = new unsigned short* [L];
-
-	// 	for (int i =0;i<L;i++){ 
-	// 		matrix[i] = new bool[L] ();
-	// 		nn[i] = new unsigned short[L] ();
-	// 	}
-	// };
 
 	void init(const int L_in, const bool circle =0, const int radius = 0){
 	//default value in order to be able to initialise the object given the total box size when reading from previous integration file

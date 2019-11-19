@@ -42,8 +42,6 @@ class Events {
 			is_diff = isDiff;
 			if(is_diff) tRate = & Events ::  rate_diffusion;
 			else tRate = & Events :: rate_general;
-
-
 			//mask = new unsigned short*[L];
 			// for (int i =0;i<L;i++){
 			// 	mask[i] = new unsigned short[L] (); 

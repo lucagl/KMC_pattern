@@ -3615,10 +3615,10 @@ The problem is that the change of content of an index with list can problems sin
 Therefore I cannot have random access like vector or arrays.. I have to iterate on a pointer which is shared!
 */
 std :: vector <std :: tuple<int, int>> Diff_adatoms{};
-for (int i = 0; i < R[diffusion].N; i++){
-            Diff_adatoms.push_back(std :: make_tuple (R[diffusion].where(i)[0],R[diffusion].where(i)[1]));
-        }
-    
+    for (unsigned long int  i = 0; i < R[diffusion].N; i++){
+        Diff_adatoms.push_back(std :: make_tuple (R[diffusion].where(i)[0],R[diffusion].where(i)[1]));
+    }
+
     #pragma omp parallel private (i_rand,x,y) num_threads(n_threads)
     {   
          //OBS: 
@@ -3630,9 +3630,8 @@ for (int i = 0; i < R[diffusion].N; i++){
         This problem persist, but I think is less severe in the new implementation. 
         Indeed, before I had this correlation buildig up at every call of a diffusion event on random sequneces long as the subloop per thread. 
         Now "only" among threads whose indexing is shuffling at every for loop*/
-
+  
         int id = omp_get_thread_num();
-
 
         #pragma omp for schedule(dynamic) nowait//further could prevent correlations in random sequnces
             for (unsigned long int i = 0; i < Diff_adatoms.size(); i++){
