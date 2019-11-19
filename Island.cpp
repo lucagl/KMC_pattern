@@ -1,11 +1,9 @@
 #include "global.h"
 #include "Island.h"
 
-
-void Island :: print(const std::string& file_name, unsigned short**mask1,unsigned short**mask2,  unsigned short**mask3, const double T, const double c) const {
+void Island :: print(const std::string& file_name, const double T, const double c) const {
 //print method of the class	
-	
-	
+
 	std :: ofstream outfile (file_name);
 	if (outfile.is_open()){
 		
@@ -13,15 +11,37 @@ void Island :: print(const std::string& file_name, unsigned short**mask1,unsigne
 		//outfile << "#L\tT\n";
 		//outfile <<  L << "\t"<< T << "\t" << "\n";
 		outfile <<"#T = " << T <<"\tc ="<<c <<"\n";;
-		outfile << "#Island\tsite1\tsite2\tsite3\n";
+		outfile << "#Island\n";
 		for ( int i = 0;i < L;i++){
 			for(int j =0;j<L;j++){
-				outfile << matrix[i][j]<< "\t" << mask1[i][j]<< "\t" << mask2[i][j] << "\t" << mask3[i][j] << "\n"; 
+				outfile << matrix[i][j]<< "\n"; 
 			}
 		}
 	}
 	outfile.close();
 }
+
+
+// void Island :: print(const std::string& file_name, unsigned short**mask1,unsigned short**mask2,  unsigned short**mask3, const double T, const double c) const {
+// //print method of the class	
+	
+	
+// 	std :: ofstream outfile (file_name);
+// 	if (outfile.is_open()){
+		
+		
+// 		//outfile << "#L\tT\n";
+// 		//outfile <<  L << "\t"<< T << "\t" << "\n";
+// 		outfile <<"#T = " << T <<"\tc ="<<c <<"\n";;
+// 		outfile << "#Island\tsite1\tsite2\tsite3\n";
+// 		for ( int i = 0;i < L;i++){
+// 			for(int j =0;j<L;j++){
+// 				outfile << matrix[i][j]<< "\t" << mask1[i][j]<< "\t" << mask2[i][j] << "\t" << mask3[i][j] << "\n"; 
+// 			}
+// 		}
+// 	}
+// 	outfile.close();
+// }
 
 
 void Island :: init_neighbours(){
@@ -52,7 +72,6 @@ void Island :: init_neighbours(){
 
 
 int Island :: get_neighbours1(const int x,const int y){
-	//only of the island
 
 
 	int local_neighbour;
@@ -84,7 +103,6 @@ return local_neighbour;
 }
 
 int Island :: get_neighbours2(const int x,const int y){
-	//only of the island
 
 
 	int local_neighbour;

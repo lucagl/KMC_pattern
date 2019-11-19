@@ -7,7 +7,7 @@
 void Events :: populate(const int  x,const int y){
     element.push_back(std::make_tuple(x,y));
    // index +=1;//useless
-	mask[y][x] +=1; //keep trck of having more than 1 adatom on a site: useful only for adatom class
+	//mask[y][x] +=1; //keep trck of having more than 1 adatom on a site: useful only for adatom class
 
     N = element.size(); //= N of the class
     // std :: cout << "\n"<< index;
@@ -18,17 +18,17 @@ void Events :: change(const int i,const int x, const int y){
     auto it=element.begin();
     advance(it,i);
    // index -=1;
-	mask[std :: get<1>(*it)][std :: get<0>(*it)] -=1;
+	//mask[std :: get<1>(*it)][std :: get<0>(*it)] -=1;
     *it = (std::make_tuple(x,y));
 
-    mask[y][x] +=1;
+  //  mask[y][x] +=1;
 }
 void Events :: destroy(const int i){
 
     auto it=element.begin();
     advance(it,i);
    // index -=1;
-	mask[std :: get<1>(*it)][std :: get<0>(*it)] -=1;
+	//mask[std :: get<1>(*it)][std :: get<0>(*it)] -=1;
     element.erase(it);
     N = element.size();// updates N
 }
@@ -39,7 +39,7 @@ bool Events :: destroy_coordinates(const int x, const int y){
     oldN = element.size();
     auto coordinate = std :: make_tuple(x,y);
     element.remove(coordinate);//O(n) Tkink better way?
-	mask[std :: get<1>(coordinate)][std :: get<0>(coordinate)] =0;
+	//mask[std :: get<1>(coordinate)][std :: get<0>(coordinate)] =0;
 
     N = element.size();// updates N
 
@@ -65,7 +65,7 @@ bool Events :: destroy_singleCoordinate(const int x, const int y){
         error = true;
     }
     element.erase(it);
-	mask[std :: get<1>(coordinate)][std :: get<0>(coordinate)] -=1;
+	//mask[std :: get<1>(coordinate)][std :: get<0>(coordinate)] -=1;
 
     N = element.size();// updates N
     return error;
@@ -97,13 +97,19 @@ int * Events :: where (const int i) const{
 }
 void Events :: clear () {
     element.clear();
-    //std :: memset(mask,0,sizeof(int)*L*L);
-    std :: fill(&mask[0][0],&mask[0][0]+sizeof(mask),0);
+    
+    //std :: fill(&mask[0][0],&mask[0][0]+sizeof(mask),0);
     N=0;
 }
 
-double Events :: rate(){
+double Events :: rate_general(){
     double r;
     r = D*double(N);
     return r;
+}
+
+
+
+double Events :: rate_diffusion(){
+    return D;
 }

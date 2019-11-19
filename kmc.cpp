@@ -5,6 +5,8 @@
 #include "Island.h"
 #include "Events.h"
 
+omp_lock_t writelock1, writelock2;
+static unsigned step_counter=0;
 
 enum det_classes {
     // #nn1 X #nn2
@@ -101,14 +103,15 @@ void KMC :: init (const int L_read, const bool is_circle, const int radius, cons
     }
 
     
-    
-
-    for (int i = 0; i < n_classes; i++)
+    for (int i = 0; i < n_classes-1; i++)
     {
         R[i].init(L);
     }
-    R[_0x0].D = det_rate(0,0); //nn=0
-    R[_1x0].D = det_rate(1,0);//I can use constant expression (finezza..)
+    R[diffusion].init(L,true);
+// assign correct rate per class element 
+
+    R[_0x0].D = det_rate(0,0); 
+    R[_1x0].D = det_rate(1,0);
     R[_2x0].D = det_rate(2,0);
     R[_3x0].D = det_rate(3,0);
     R[_4x0].D = det_rate(4,0);
@@ -135,6 +138,7 @@ void KMC :: init (const int L_read, const bool is_circle, const int radius, cons
     R[attachment].D = att_rate();
     R[diffusion].D = 4.0 *1; //4 possible movements, diffusion constant =1 (normalization)
 
+    //compute all neighbour list
     island.init_neighbours(); 
 
 // Fill classes
@@ -245,9 +249,11 @@ void KMC :: init (const int L_read, const bool is_circle, const int radius, cons
         }
     }
 
-    R[diffusion].D = 4./R[diffusion].N;  
     // std :: cout << "\n Initial rate per diffusing adatom  " << R[diffusion].D <<" \n";
-    // std :: cout << "\n Initial rate for the diffusion event  " << R[diffusion].rate() <<" \n";
+    // std :: cout << "\n total rate for diff adatom  " << R[diffusion].getRate() <<" \n";
+    // std :: cout << "\n Initial rate per attachment adatom  " << R[attachment].D << "  # in the class= "<< R[attachment].N <<" \n";
+    // std :: cout << "\n total rate for diff adatom  " << R[attachment].getRate() <<" \n";
+
 
 }
  
@@ -275,7 +281,7 @@ double KMC :: cumulative (double* r){
     r[0] = 0;
     for (int i = 1; i <=n_classes; i++)
     {
-        r[i] = r[i-1] + R[i-1].rate();
+        r[i] = r[i-1] + R[(i - 1)].getRate();
     }
     R_sum = r[n_classes];
     return R_sum;
@@ -346,11 +352,11 @@ void KMC :: print (int frame, int flag) const{
     auto name_b = path + "/island" + std::to_string(frame) + ".txt";
 
     if (flag==0){
-        adatom.print(name_a, R[attachment].mask,current_T,concentration);
-        island.print(name_b, R[_1x0].mask,R[_2x0].mask,R[_3x0].mask,current_T,concentration);
+        adatom.print(name_a,current_T,concentration);
+        island.print(name_b,current_T,concentration);
     }
     else if (flag ==1){
-        island.print(name_b, R[_1x0].mask,R[_2x0].mask,R[_3x0].mask,current_T, concentration);
+        island.print(name_b,current_T, concentration);
     }
 
 }
@@ -1215,34 +1221,22 @@ bool KMC :: update_AttachmentClasses(const int x, const int y){
 
 
    
- void KMC:: step(const double T, const bool debug_mode){
+ double KMC:: step(const double T, const bool debug_mode){
 
-    
-    static int step=0;
-    int who=-1;
+    unsigned who = 100;//dummy value
    
 	int index;
     int i_rand;
 	double R_sum,d_rand;
 	int x,y;
     double r [n_classes+1];
-    bool error =0;
+    bool error = 0;
 
-    //int N_THREADS = total_n_proc/n_proc; 
-    
-
-    // update_rate(T)
     current_T = T;
 
  	R_sum = cumulative(r); 
 
-    //std :: cout << "\n \n \n \n "<< r[0] <<  "\t" << r[1] << "\t"<< r[2] << "\t"<< r[3] << "\t"<< r[4] << "\t"<< r[5] << "\n";
-
-
  	d_rand =  ((double) rand() / (RAND_MAX)) * R_sum;
-
-   // std :: cout << "\n \n  " <<d_rand;
-
 
 /*===================================
 DETACHEMENT EVENT AT A NN1=0, NN2 =0 SITE
@@ -1274,7 +1268,7 @@ if (r[_0x0]<d_rand && d_rand<r[_1x0]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
-    R[diffusion].D = 4./R[diffusion].N;
+    
 
     //*********************************
 }
@@ -1336,14 +1330,6 @@ else if (r[_1x0]<d_rand && d_rand<r[_2x0]){
                     R[_0x2].populate(right,y); 
                     error=R[_1x2].destroy_coordinates(right,y); 
                 }
-                // else if(island.nn2[y][right]==3){
-                //     R[_0x3].populate(right,y); 
-                //     error=R[_1x3].destroy_coordinates(right,y); 
-                // }
-                // else if(island.nn2[y][right]==4){
-                //     R[_0x4].populate(right,y); 
-                //     error=R[_1x4].destroy_coordinates(right,y); 
-                // }
             }
             else if(island.nn1[y][right] ==1){
                 if(island.nn2[y][right]==0){
@@ -1358,15 +1344,6 @@ else if (r[_1x0]<d_rand && d_rand<r[_2x0]){
                     R[_1x2].populate(right,y); 
                     error=R[_2x2].destroy_coordinates(right,y); 
                 }
-                // else if(island.nn2[y][right]==3){
-                //     R[_1x3].populate(right,y); 
-                //     error=R[_2x3].destroy_coordinates(right,y); 
-                // }
-                // else if(island.nn2[y][right]==4){
-                //     R[_1x4].populate(right,y); 
-                //     error=R[_2x4].destroy_coordinates(right,y); 
-                // }
-
 			}
 			else if(island.nn1[y][right] ==2){
                 if(island.nn2[y][right]==0){
@@ -1381,14 +1358,6 @@ else if (r[_1x0]<d_rand && d_rand<r[_2x0]){
                     R[_2x2].populate(right,y); 
                     error=R[_3x2].destroy_coordinates(right,y); 
                 }
-                // else if(island.nn2[y][right]==3){
-                //     R[_2x3].populate(right,y); 
-                //     error=R[_3x3].destroy_coordinates(right,y); 
-                // }
-                // else if(island.nn2[y][right]==4){
-                //     R[_2x4].populate(right,y); 
-                //     error=R[_3x4].destroy_coordinates(right,y); 
-                // }
             }
 			else if(island.nn1[y][right] ==3){
                 if(island.nn2[y][right]==0){
@@ -1403,13 +1372,6 @@ else if (r[_1x0]<d_rand && d_rand<r[_2x0]){
                     R[_3x2].populate(right,y); 
                     error=R[_4x2].destroy_coordinates(right,y); 
                 }
-                // else if(island.nn2[y][right]==3){
-                //     R[_3x3].populate(right,y); 
-                //     error=R[_4x3].destroy_coordinates(right,y); 
-                // }
-                // else if(island.nn2[y][right]==4){
-                //     R[_3x4].populate(right,y); 
-                // }
 			}
 		}
 
@@ -1430,14 +1392,6 @@ else if (r[_1x0]<d_rand && d_rand<r[_2x0]){
                     R[_0x2].populate(left,y); 
                     error=R[_1x2].destroy_coordinates(left,y); 
                 }
-                // else if(island.nn2[y][left]==3){
-                //     R[_0x3].populate(left,y); 
-                //     error=R[_1x3].destroy_coordinates(left,y); 
-                // }
-                // else if(island.nn2[y][left]==4){
-                //     R[_0x4].populate(left,y); 
-                //     error=R[_1x4].destroy_coordinates(left,y); 
-                // }
             }
             else if(island.nn1[y][left] ==1){
                 if(island.nn2[y][left]==0){
@@ -1452,14 +1406,6 @@ else if (r[_1x0]<d_rand && d_rand<r[_2x0]){
                     R[_1x2].populate(left,y); 
                     error=R[_2x2].destroy_coordinates(left,y); 
                 }
-                // else if(island.nn2[y][left]==3){
-                //     R[_1x3].populate(left,y); 
-                //     error=R[_2x3].destroy_coordinates(left,y); 
-                // }
-                // else if(island.nn2[y][left]==4){
-                //     R[_1x4].populate(left,y); 
-                //     error=R[_2x4].destroy_coordinates(left,y); 
-                // }
 			 }
 			 else if(island.nn1[y][left] ==2){
                  if(island.nn2[y][left]==0){
@@ -1474,14 +1420,6 @@ else if (r[_1x0]<d_rand && d_rand<r[_2x0]){
                     R[_2x2].populate(left,y); 
                     error=R[_3x2].destroy_coordinates(left,y); 
                 }
-                // else if(island.nn2[y][left]==3){
-                //     R[_2x3].populate(left,y); 
-                //     error=R[_3x3].destroy_coordinates(left,y); 
-                // }
-                // else if(island.nn2[y][left]==4){
-                //     R[_2x4].populate(left,y); 
-                //     error=R[_3x4].destroy_coordinates(left,y); 
-                // }
 			 }
 			 else if(island.nn1[y][left] ==3){
                  if(island.nn2[y][left]==0){
@@ -1496,13 +1434,6 @@ else if (r[_1x0]<d_rand && d_rand<r[_2x0]){
                     R[_3x2].populate(left,y); 
                     error=R[_4x2].destroy_coordinates(left,y); 
                 }
-                // else if(island.nn2[y][left]==3){
-                //     R[_3x3].populate(left,y); 
-                //     error=R[_4x3].destroy_coordinates(left,y); 
-                // }
-                // else if(island.nn2[y][left]==4){
-                //     R[_3x4].populate(left,y); 
-                // }
 			 }
 			}
 
@@ -1522,14 +1453,6 @@ else if (r[_1x0]<d_rand && d_rand<r[_2x0]){
                     R[_0x2].populate(x,top); 
                     error=R[_1x2].destroy_coordinates(x,top); 
                 }
-                // else if(island.nn2[top][x]==3){
-                //     R[_0x3].populate(x,top); 
-                //     error=R[_1x3].destroy_coordinates(x,top); 
-                // }
-                // else if(island.nn2[top][x]==4){
-                //     R[_0x4].populate(x,top); 
-                //     error=R[_1x4].destroy_coordinates(x,top); 
-                // }
             }
             else if(island.nn1[top][x] ==1){
                 if(island.nn2[top][x]==0){
@@ -1544,14 +1467,6 @@ else if (r[_1x0]<d_rand && d_rand<r[_2x0]){
                     R[_1x2].populate(x,top); 
                     error=R[_2x2].destroy_coordinates(x,top); 
                 }
-                // else if(island.nn2[top][x]==3){
-                //     R[_1x3].populate(x,top); 
-                //     error=R[_2x3].destroy_coordinates(x,top); 
-                // }
-                // else if(island.nn2[top][x]==4){
-                //     R[_1x4].populate(x,top); 
-                //     error=R[_2x4].destroy_coordinates(x,top); 
-                // }
 			}
 			else if(island.nn1[top][x] ==2){
                 if(island.nn2[top][x]==0){
@@ -1566,14 +1481,6 @@ else if (r[_1x0]<d_rand && d_rand<r[_2x0]){
                     R[_2x2].populate(x,top); 
                     error=R[_3x2].destroy_coordinates(x,top); 
                 }
-                // else if(island.nn2[top][x]==3){
-                //     R[_2x3].populate(x,top); 
-                //     error=R[_3x3].destroy_coordinates(x,top); 
-                // }
-                // else if(island.nn2[top][x]==4){
-                //     R[_2x4].populate(x,top); 
-                //     error=R[_3x4].destroy_coordinates(x,top); 
-                // }
 			}
 			else if(island.nn1[top][x] ==3){
                 if(island.nn2[top][x]==0){
@@ -1588,40 +1495,25 @@ else if (r[_1x0]<d_rand && d_rand<r[_2x0]){
                     R[_3x2].populate(x,top); 
                     error=R[_4x2].destroy_coordinates(x,top); 
                 }
-                // else if(island.nn2[top][x]==3){
-                //     R[_3x3].populate(x,top); 
-                //     error=R[_4x3].destroy_coordinates(x,top); 
-                // }
-                // else if(island.nn2[top][x]==4){
-                //     R[_3x4].populate(x,top); 
-                // }
 			}
 		}
 
             //----------- BOTTOM -------------
-		else if(island.matrix[bottom][x]){
-			island.nn1[bottom][x] -= 1;
-            if(island.nn1[bottom][x] ==0){
-                if(island.nn2[bottom][x]==0){
-                    R[_0x0].populate(x,bottom);
-                    error= R[_1x0].destroy_coordinates(x,bottom);
-                }
+		    else if(island.matrix[bottom][x]){
+			    island.nn1[bottom][x] -= 1;
+                if(island.nn1[bottom][x] ==0){
+                    if(island.nn2[bottom][x]==0){
+                        R[_0x0].populate(x,bottom);
+                        error= R[_1x0].destroy_coordinates(x,bottom);
+                    }
                 else if(island.nn2[bottom][x]==1){
-                R[_0x1].populate(x,bottom); 
-                error=R[_1x1].destroy_coordinates(x,bottom); 
+                    R[_0x1].populate(x,bottom); 
+                    error=R[_1x1].destroy_coordinates(x,bottom); 
                 }
                 else if(island.nn2[bottom][x]==2){
                     R[_0x2].populate(x,bottom); 
                     error=R[_1x2].destroy_coordinates(x,bottom); 
                 }
-                // else if(island.nn2[bottom][x]==3){
-                //     R[_0x3].populate(x,bottom); 
-                //     error=R[_1x3].destroy_coordinates(x,bottom); 
-                // }
-                // else if(island.nn2[bottom][x]==4){
-                //     R[_0x4].populate(x,bottom); 
-                //     error=R[_1x4].destroy_coordinates(x,bottom); 
-                // }
             }
             else if(island.nn1[bottom][x] ==1){
                 if(island.nn2[bottom][x]==0){
@@ -1636,15 +1528,6 @@ else if (r[_1x0]<d_rand && d_rand<r[_2x0]){
                     R[_1x2].populate(x,bottom); 
                     error=R[_2x2].destroy_coordinates(x,bottom); 
                 }
-                // else if(island.nn2[bottom][x]==3){
-                //     R[_1x3].populate(x,bottom); 
-                //     error=R[_2x3].destroy_coordinates(x,bottom); 
-                // }
-                // else if(island.nn2[bottom][x]==4){
-                //     R[_1x4].populate(x,bottom); 
-                //     error=R[_2x4].destroy_coordinates(x,bottom); 
-                // }
-
 			}
 			else if(island.nn1[bottom][x] ==2){
                 if(island.nn2[bottom][x]==0){
@@ -1659,14 +1542,6 @@ else if (r[_1x0]<d_rand && d_rand<r[_2x0]){
                     R[_2x2].populate(x,bottom); 
                     error=R[_3x2].destroy_coordinates(x,bottom); 
                 }
-                // else if(island.nn2[bottom][x]==3){
-                //     R[_2x3].populate(x,bottom); 
-                //     error=R[_3x3].destroy_coordinates(x,bottom); 
-                // }
-                // else if(island.nn2[bottom][x]==4){
-                //     R[_2x4].populate(x,bottom); 
-                //     error=R[_3x4].destroy_coordinates(x,bottom); 
-                // }
 			}
 			else if(island.nn1[bottom][x] ==3){
                 if(island.nn2[bottom][x]==0){
@@ -1681,24 +1556,8 @@ else if (r[_1x0]<d_rand && d_rand<r[_2x0]){
                     R[_3x2].populate(x,bottom); 
                     error=R[_4x2].destroy_coordinates(x,bottom); 
                 }
-                // else if(island.nn2[bottom][x]==3){
-                //     R[_3x3].populate(x,bottom); 
-                //     error=R[_4x3].destroy_coordinates(x,bottom); 
-                // }
-                // else if(island.nn2[bottom][x]==4){
-                //     R[_3x4].populate(x,bottom); 
-                // }
 			}
 		}
-
-        //provvisional, just to update correctly 2nn
-        // USELESS : NO EFFECT ON DIAGONAL ELEMENTS BECAUSE I KNOW ALREADY I DO NOT HAVE ANY DIAGONAL NEIGHBOUR
-        //island.nn2[x][y] =0;
-        // island.nn2[top][right] = island.get_neighbours2(right,top);
-        // island.nn2[top][left] = island.get_neighbours2(left,top);
-        // island.nn2[bottom][right] = island.get_neighbours2(right,bottom);
-        // island.nn2[bottom][left] = island.get_neighbours2(left,bottom);
-
 
     // ********* Attachment neighbour list update
 
@@ -1714,7 +1573,6 @@ else if (r[_1x0]<d_rand && d_rand<r[_2x0]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
-    R[diffusion].D = 4./R[diffusion].N;
 
     //*********************************
         
@@ -1733,21 +1591,16 @@ DETACHEMENT EVENT AT A NN1 =2 SITE AND NN2 =0 SITE
 	    event_counter[_2x0] +=1;
 
 		index = extract(R[_2x0].N);
-	
-		// std:: cout << "\n counter 2    " << count_dnn2 << "\n";
 
 
 		x = R[_2x0].where(index)[0];
 		y = R[_2x0].where(index)[1];
 
-       //std :: cout << "\n DETACHMENT event 2 , coordinate="<< x << " , " << y<< "\n \n";
 
 		R[_2x0].destroy(index);
         adatom.matrix[y][x] +=1;
         adatom.N +=1;
 		island.matrix[y][x] =0;
-
-
 
         //*******************************
 		//update detachment classes and nn1
@@ -1755,11 +1608,7 @@ DETACHEMENT EVENT AT A NN1 =2 SITE AND NN2 =0 SITE
 		
 	    error =update_nn1DetachmentClasses(x,y);
 
-        // island.nn1[y][x] = 0;
-        // island.nn1[top][x] = island.get_neighbours1(x,top); 
-        // island.nn1[bottom][x] = island.get_neighbours1(x,bottom); 
-        // island.nn1[y][left] =island.get_neighbours1(left,y); 
-        // island.nn1[y][right] = island.get_neighbours1(right,y);
+
        // ********* Attachment neighbour list update
 
 
@@ -1775,7 +1624,6 @@ DETACHEMENT EVENT AT A NN1 =2 SITE AND NN2 =0 SITE
         //Diffusion list update
 
         R[diffusion].populate(x,y);
-        R[diffusion].D = 4./R[diffusion].N;
 
     //*********************************
 
@@ -1819,7 +1667,6 @@ DETACHMENT EVENT AT A NN1 =3 SITE AND NN2 =0 site
         //Diffusion list update
 
         R[diffusion].populate(x,y);
-        R[diffusion].D = 4./R[diffusion].N;
     }
 
  /*===================================
@@ -1858,7 +1705,6 @@ else if (r[_4x0]<d_rand && d_rand<r[_0x1]){
         //Diffusion list update
 
         R[diffusion].populate(x,y);
-        R[diffusion].D = 4./R[diffusion].N;
 }
 
 
@@ -1873,13 +1719,10 @@ else if (r[_0x1]<d_rand && d_rand<r[_1x1]){
     event_counter[_0x1] +=1;
     index = extract(R[_0x1].N);//simple uniform random generator
     // locate event
-        
-    // std:: cout << "\n counter 1    " << count_dnn1 << "\n";
 
     x = R[_0x1].where(index)[0];
     y = R[_0x1].where(index)[1];
 
-    // std :: cout << "\n DETACHMENT event 1 , coordinate="<< x << " , " << y<< "\n \n";
 
     R[_0x1].destroy(index);
     
@@ -2179,7 +2022,6 @@ else if (r[_0x1]<d_rand && d_rand<r[_1x1]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
-    R[diffusion].D = 4./R[diffusion].N;
 
 
 
@@ -2221,7 +2063,6 @@ else if (r[_1x1]<d_rand && d_rand<r[_2x1]){
         //Diffusion list update
 
     R[diffusion].populate(x,y);
-    R[diffusion].D = 4./R[diffusion].N;
 }
 
 
@@ -2261,7 +2102,6 @@ else if (r[_2x1]<d_rand && d_rand<r[_3x1]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
-    R[diffusion].D = 4./R[diffusion].N;
 }
 
 /*===================================
@@ -2300,7 +2140,6 @@ else if (r[_3x1]<d_rand && d_rand<r[_4x1]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
-    R[diffusion].D = 4./R[diffusion].N;
 }
 
 /*===================================
@@ -2339,7 +2178,6 @@ else if (r[_4x1]<d_rand && d_rand<r[_0x2]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
-    R[diffusion].D = 4./R[diffusion].N;
 }
 
 /*===================================
@@ -2378,7 +2216,6 @@ else if (r[_0x2]<d_rand && d_rand<r[_1x2]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
-    R[diffusion].D = 4./R[diffusion].N;
 }
 
 /*===================================
@@ -2417,7 +2254,6 @@ else if (r[_1x2]<d_rand && d_rand<r[_2x2]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
-    R[diffusion].D = 4./R[diffusion].N;
 }
 
 /*===================================
@@ -2456,7 +2292,6 @@ else if (r[_2x2]<d_rand && d_rand<r[_3x2]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
-    R[diffusion].D = 4./R[diffusion].N;
 }
 
 /*===================================
@@ -2495,7 +2330,6 @@ else if (r[_3x2]<d_rand && d_rand<r[_4x2]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
-    R[diffusion].D = 4./R[diffusion].N;
 }
 
 /*===================================
@@ -2534,7 +2368,6 @@ else if (r[_4x2]<d_rand && d_rand<r[_0x3]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
-    R[diffusion].D = 4./R[diffusion].N;
 }
 
 /*===================================
@@ -2573,7 +2406,6 @@ else if (r[_0x3]<d_rand && d_rand<r[_1x3]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
-    R[diffusion].D = 4./R[diffusion].N;
 }
 
 /*===================================
@@ -2612,7 +2444,6 @@ else if (r[_1x3]<d_rand && d_rand<r[_2x3]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
-    R[diffusion].D = 4./R[diffusion].N;
 }
 
 /*===================================
@@ -2651,7 +2482,6 @@ else if (r[_2x3]<d_rand && d_rand<r[_3x3]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
-    R[diffusion].D = 4./R[diffusion].N;
 }
 
 /*===================================
@@ -2690,7 +2520,6 @@ else if (r[_3x3]<d_rand && d_rand<r[_4x3]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
-    R[diffusion].D = 4./R[diffusion].N;
 }
 
 /*===================================
@@ -2729,7 +2558,6 @@ else if (r[_4x3]<d_rand && d_rand<r[_0x4]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
-    R[diffusion].D = 4./R[diffusion].N;
 }
 
 /*===================================
@@ -2768,7 +2596,6 @@ else if (r[_0x4]<d_rand && d_rand<r[_1x4]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
-    R[diffusion].D = 4./R[diffusion].N;
 }
 
 /*===================================
@@ -2807,7 +2634,6 @@ else if (r[_1x4]<d_rand && d_rand<r[_2x4]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
-    R[diffusion].D = 4./R[diffusion].N;
 }
 
 /*===================================
@@ -2846,7 +2672,6 @@ else if (r[_2x4]<d_rand && d_rand<r[_3x4]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
-    R[diffusion].D = 4./R[diffusion].N;
 }
 
 /*===================================
@@ -2885,7 +2710,6 @@ else if (r[_3x4]<d_rand && d_rand<r[attachment]){
     //Diffusion list update
 
     R[diffusion].populate(x,y);
-    R[diffusion].D = 4./R[diffusion].N;
 }
 
 /*===================================
@@ -2912,7 +2736,6 @@ ATTACHMENT EVENT
 		
         error=R[attachment].destroy_coordinates(x,y);//I have to remove in this case all multiples adatoms on the site
         error=R[diffusion].destroy_singleCoordinate(x,y);// remove a single diffusion event on same coordinate
-        R[diffusion].D = 4./R[diffusion].N;
 
         adatom.matrix[y][x]-=1;
         adatom.N -=1;
@@ -3770,7 +3593,7 @@ DIFFUSION EVENT
 
 	else if (r[diffusion]<d_rand && d_rand<r[n_classes]){
 
-        omp_lock_t writelock1, writelock2;
+        
         
         omp_init_lock(&writelock1);
         omp_init_lock(&writelock2);
@@ -3796,7 +3619,7 @@ for (int i = 0; i < R[diffusion].N; i++){
             Diff_adatoms.push_back(std :: make_tuple (R[diffusion].where(i)[0],R[diffusion].where(i)[1]));
         }
     
-    #pragma omp parallel private(i_rand,x,y) 
+    #pragma omp parallel private (i_rand,x,y) num_threads(n_threads)
     {   
          //OBS: 
         /* Localseed must be set externally or at every call new memory location assigned and rand_r will re-initialise the sequence.
@@ -3867,18 +3690,15 @@ for (int i = 0; i < R[diffusion].N; i++){
         
         #pragma omp for 
         for (unsigned long int i = 0; i < L*L; i++){
-        //         omp_destroy_lock(&lock[i]);
-
             for(int k=0; k<adatom.matrix[i/L][i%L]; k++){
                 omp_set_lock(&writelock1);
-                R[diffusion].populate(i%L,i/L);
+                    R[diffusion].populate(i%L,i/L);
                 omp_unset_lock(&writelock1);
                 
-            
                 if(is_attSite(i%L,i/L)) {
-                omp_set_lock(&writelock2);
-                    R[attachment].populate(i%L,i/L);
-                 omp_unset_lock(&writelock2);
+                    omp_set_lock(&writelock2);
+                        R[attachment].populate(i%L,i/L);
+                    omp_unset_lock(&writelock2);
                 }
             }
         }
@@ -3886,25 +3706,36 @@ for (int i = 0; i < R[diffusion].N; i++){
 omp_destroy_lock(&writelock1);  
 omp_destroy_lock(&writelock2); 
 
-// for ( y = 0; y < L; y++){
-//     for (x = 0; x < L; x++){
-//         for(int k=0; k<adatom.matrix[y][x]; k++){
-//             R[diffusion].populate(x,y);
-//             if(is_attSite(x,y)) R[attachment].populate(x,y);
-//         }
-//     }
-// }
-
 }
 
 concentration = static_cast<double>(adatom.N)/(L*L);//update average concentration of adatoms
 
-step++;
-if((proc_ID==root_process && debug_mode)||(proc_ID==root_process && error==true)){
+step_counter++;
 
-//CHECKS*********************
-    
-	std :: cout<< "\n  " << step <<"  KMC step \n";
+
+//############# Time computation ########################
+
+//d_rand = ((double) rand() / (RAND_MAX));
+//double time = -log(d_rand)/R_sum;
+
+//########################################################
+
+
+if((proc_ID==root_process && debug_mode)||(proc_ID==root_process && error==true)){
+    debug(who,x,y,error);
+}
+
+
+return 0;
+
+
+}
+ 
+ 
+ 
+void KMC :: debug (const unsigned who, const int x, const int y,  const bool error) const {
+
+	std :: cout<< "\n  " << step_counter <<"  KMC step \n";
     if(who==_0x0){
         std :: cout << "\n DETACHMENT event 0x0, coordinate="<< x << " , " << y << "\n \n";
     }
@@ -3985,6 +3816,11 @@ if((proc_ID==root_process && debug_mode)||(proc_ID==root_process && error==true)
         std :: cout << "\n DIFFUSION event, coordinate="<< x << " , " << y << "\n \n";
     }
 
+    else{
+        std:: cout << "Nothing happened = "<< who << "\n" << std :: flush ; 
+        exit(EXIT_FAILURE);
+    }
+
 	std :: cout<< "\n island \n";
 	for ( int i = 0;i < L;i++){
 		for(int j =0;j<L;j++){
@@ -4018,17 +3854,6 @@ if((proc_ID==root_process && debug_mode)||(proc_ID==root_process && error==true)
 		std :: cout <<"\n";
 	}
  	std :: cout << "\n total number adatoms"<< (adatom.N) ;
-	// std :: cout << "\n Elements in det class nn1 = 0, nn2=0:  "<< R[_0x0].N <<"\t elements in det class nn1 = 1, nn2=0:  " << R[_1x0].N << 
-    // "\t elements in det class nn1 = 2, nn2=0:  " << R[_2x0].N << "\t elements in det class nn1 = 3, nn2=0:  " << R[_3x0].N  << "\t elements in det class nn1 = 4, nn2=0:  " << R[_4x0].N<<
-    // "\n Elements in det class nn1 = 0, nn2=1:  "<< R[_0x1].N <<"\t elements in det class nn1 = 1, nn2=1:  " << R[_1x1].N << 
-    // "\t elements in det class nn1 = 2, nn2=1:  " << R[_2x1].N << "\t elements in det class nn1 = 3, nn2=1:  " << R[_3x1].N  << "\t elements in det class nn1 = 4, nn2=1:  " << R[_4x1].N<<
-    // "\n Elements in det class nn1 = 0, nn2=2:  "<< R[_0x2].N <<"\t elements in det class nn1 = 1, nn2=2:  " << R[_1x2].N << 
-    // "\t elements in det class nn1 = 2, nn2=2:  " << R[_2x2].N << "\t elements in det class nn1 = 3, nn2=2:  " << R[_3x2].N  << "\t elements in det class nn1 = 4, nn2=2:  " << R[_4x2].N<<
-    // "\n Elements in det class nn1 = 0, nn2=3:  "<< R[_0x3].N <<"\t elements in det class nn1 = 1, nn2=3:  " << R[_1x3].N << 
-    // "\t elements in det class nn1 = 2, nn2=3:  "<< R[_2x3].N << "\t elements in det class nn1 = 3, nn2=3:  " << R[_3x3].N  << "\t elements in det class nn1 = 4, nn2=3:  " << R[_4x3].N<<
-    // "\n Elements in det class nn1 = 0, nn2=4:  "<< R[_0x4].N <<"\t elements in det class nn1 = 1, nn2=4:  " << R[_1x4].N << 
-    // "\t elements in det class nn1 = 2, nn2=4:  "<< R[_2x4].N << "\t elements in det class nn1 = 3, nn2=3:  " << R[_3x4].N  << "\n";
-
 
 	std :: cout << "\n Elements in att class:" << R[attachment].N << "\t  elements in diffusion class" << R[diffusion].N <<"\n";
 
@@ -4143,8 +3968,7 @@ if((proc_ID==root_process && debug_mode)||(proc_ID==root_process && error==true)
 	 for (int i = 0; i < R[diffusion].N; i++){
 	 	std :: cout << i <<"\t(" << R[diffusion].where(i)[0]<< ","<< R[diffusion].where(i)[1] << ")\n";
  	 }
-}
- //std :: cout << "\n error = " << error;
+ 
 if (error){
     std:: cout << "Error = "<< error << "\n" << std :: flush ; 
     exit(EXIT_FAILURE);

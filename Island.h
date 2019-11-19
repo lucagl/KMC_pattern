@@ -63,7 +63,7 @@ public:
 	}
 
 
-    void print(const std::string&, unsigned short**, unsigned short**, unsigned short**,  const double, const double ) const;
+    void print(const std::string&, const double, const double ) const;
 
 	void init_neighbours ();//init first and second neighbours
 	int get_neighbours1( const int  ,const  int  );
