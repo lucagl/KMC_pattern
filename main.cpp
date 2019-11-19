@@ -8,11 +8,16 @@
 
 ------------ COMPILING INSTRUCTIONS ----------------
 
-place in working folder *.cpp and *.h
-compile: mpic++ -fopenmp *.cpp -o "executable".ex 
-run:  mpirun -np "cores number" executable.out
-set number threads using: export OMP_NUM_THREADS= ..
-input file: file Input.txt containing input informations must be present
+
+-Build libraries using..
+
+
+-Run python scritp--> Input file read by the script (make a user interface ? :) )
+					  "Live plots" when calling render command
+					  MPI must be displaced on python side? Not sure, I can still return observations which are results of averages. 
+					  However I think is a better idea to parallelize from python to have more explicit control.
+
+
 
 ------------------- CONVENTIONS -----------
 System of coordinates is x: left-right-wise and y: top-bottom wise. The indexes of arrays start with 0.
