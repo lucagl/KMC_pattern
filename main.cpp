@@ -179,7 +179,7 @@ for (int k = 1; k <= n_steps; k++){
 		frame+=1;
 		kmc.print(frame);
 		//update number threads
-		n_threads= ceil(float(kmc.get_classN()[25])/3500);
+		n_threads= ceil(float(kmc.get_classN()[25])/3000);
 	}
 	if(k%(1+n_steps/10)==0 && proc_ID == root_process){
 		//std :: cout << floor(float(k)/n_steps)*100 << "% (threads per process= "<< n_threads << " )"<< std :: flush;

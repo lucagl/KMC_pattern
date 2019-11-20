@@ -3682,26 +3682,39 @@ std :: vector <std :: tuple<int, int>> Diff_adatoms{};
         // Refill diffusion and attachment classes 
         #pragma omp single  
         {
-        R[diffusion].clear();
-        R[attachment].clear();
+            R[diffusion].clear();
+            R[attachment].clear();
         }
+    }  
         
-        
-        #pragma omp for 
-        for (unsigned long int i = 0; i < L*L; i++){
-            for(int k=0; k<adatom.matrix[i/L][i%L]; k++){
-                omp_set_lock(&writelock1);
-                    R[diffusion].populate(i%L,i/L);
-                omp_unset_lock(&writelock1);
-                
-                if(is_attSite(i%L,i/L)) {
-                    omp_set_lock(&writelock2);
-                        R[attachment].populate(i%L,i/L);
-                    omp_unset_lock(&writelock2);
-                }
+
+
+
+
+    for (int y = 0; y < L; y++){
+        for (int x = 0; x < L; x++){
+            for(int k=0; k<adatom.matrix[y][x]; k++){
+                R[diffusion].populate(x,y);
+                if(is_attSite(x,y)) R[attachment].populate(x,y);
             }
         }
     }
+
+        // #pragma omp for 
+        // for (unsigned long int i = 0; i < L*L; i++){
+        //     for(int k=0; k<adatom.matrix[i/L][i%L]; k++){
+        //         omp_set_lock(&writelock1);
+        //             R[diffusion].populate(i%L,i/L);
+        //         omp_unset_lock(&writelock1);
+                
+        //         if(is_attSite(i%L,i/L)) {
+        //             omp_set_lock(&writelock2);
+        //                 R[attachment].populate(i%L,i/L);
+        //             omp_unset_lock(&writelock2);
+        //         }
+        //     }
+        // }
+  //  }
 omp_destroy_lock(&writelock1);  
 omp_destroy_lock(&writelock2); 
 
