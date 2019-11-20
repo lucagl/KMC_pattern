@@ -261,7 +261,8 @@ void KMC :: init (const int L_read, const bool is_circle, const int radius, cons
 double KMC ::  det_rate(const int nn1, const int nn2 ) const{
 
     double rate;
-    rate = exp((-J*(nn1+BR*nn2) - A)/current_T);//" attachment strenght"A=E_A-E_D with E_D: diff energy, E_A: attachment energy
+    //rate = exp((-J*(nn1+BR*nn2) - A)/current_T);
+    rate = exp((-J*(nn1+BR*nn2) - A + E_shift)/current_T);//" attachment strenght"A=E_A-E_D with E_D: diff energy, E_A: attachment energy
 
     return rate;
 }
@@ -269,7 +270,8 @@ double KMC ::  det_rate(const int nn1, const int nn2 ) const{
 double KMC ::  att_rate() const{
 
     double rate;
-    rate = exp(-(A+E_shift)/current_T);
+    //rate = exp(-(A+E_shift)/current_T);
+    rate = exp(-A/current_T);
 
     return rate;
 }
@@ -3685,36 +3687,36 @@ std :: vector <std :: tuple<int, int>> Diff_adatoms{};
             R[diffusion].clear();
             R[attachment].clear();
         }
-    }  
+      
         
 
 
 
 
-    for (int y = 0; y < L; y++){
-        for (int x = 0; x < L; x++){
-            for(int k=0; k<adatom.matrix[y][x]; k++){
-                R[diffusion].populate(x,y);
-                if(is_attSite(x,y)) R[attachment].populate(x,y);
+    // for (int y = 0; y < L; y++){
+    //     for (int x = 0; x < L; x++){
+    //         for(int k=0; k<adatom.matrix[y][x]; k++){
+    //             R[diffusion].populate(x,y);
+    //             if(is_attSite(x,y)) R[attachment].populate(x,y);
+    //         }
+    //     }
+    // }
+
+        #pragma omp for 
+        for (unsigned long int i = 0; i < L*L; i++){
+            for(int k=0; k<adatom.matrix[i/L][i%L]; k++){
+                omp_set_lock(&writelock1);
+                    R[diffusion].populate(i%L,i/L);
+                omp_unset_lock(&writelock1);
+                
+                if(is_attSite(i%L,i/L)) {
+                    omp_set_lock(&writelock2);
+                        R[attachment].populate(i%L,i/L);
+                    omp_unset_lock(&writelock2);
+                }
             }
         }
-    }
-
-        // #pragma omp for 
-        // for (unsigned long int i = 0; i < L*L; i++){
-        //     for(int k=0; k<adatom.matrix[i/L][i%L]; k++){
-        //         omp_set_lock(&writelock1);
-        //             R[diffusion].populate(i%L,i/L);
-        //         omp_unset_lock(&writelock1);
-                
-        //         if(is_attSite(i%L,i/L)) {
-        //             omp_set_lock(&writelock2);
-        //                 R[attachment].populate(i%L,i/L);
-        //             omp_unset_lock(&writelock2);
-        //         }
-        //     }
-        // }
-  //  }
+   }
 omp_destroy_lock(&writelock1);  
 omp_destroy_lock(&writelock2); 
 

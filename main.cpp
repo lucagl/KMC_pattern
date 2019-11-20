@@ -178,7 +178,10 @@ for (int k = 1; k <= n_steps; k++){
 	if ((k%print_every)== 0){
 		frame+=1;
 		kmc.print(frame);
+
 		//update number threads
+		//Parallelization seems conveninet only for sizes about 200X200 onwards.
+		//Make it non parallelized if using sistemaically smaller sizes..
 		n_threads= ceil(float(kmc.get_classN()[25])/3000);
 	}
 	if(k%(1+n_steps/10)==0 && proc_ID == root_process){
