@@ -69,24 +69,24 @@ double* A, double* BR, double* E_shift, int* n_steps, int* print_every, bool* re
 		
 		*print_every= std::stoi(line);
 		
-		std :: getline(finput,line, ' '); 
+		// std :: getline(finput,line, ' '); 
 		
-		//auto answ = line;
+		// //auto answ = line;
     
-        *read_old = false;
-        if (line == "yes"){
-            std:: cout << "\n Reading from last configuration. L, and temperature (and concentration) will be overwritten \n";
-            *read_old = true;
-        }
-		else if (line=="no")
-		{
-			//do nothing
-		}
-		else
-		{
-			std:: cout << "\n ABORT. Not legal answer";
-			exit(EXIT_FAILURE);
-		}
+        // *read_old = false;
+        // if (line == "yes"){
+        //     std:: cout << "\n Reading from last configuration. L, and temperature (and concentration) will be overwritten \n";
+        //     *read_old = true;
+        // }
+		// else if (line=="no")
+		// {
+		// 	//do nothing
+		// }
+		// else
+		// {
+		// 	std:: cout << "\n ABORT. Not legal answer";
+		// 	exit(EXIT_FAILURE);
+		// }
 		
 		finput.close();
 	}
@@ -102,3 +102,4 @@ double* A, double* BR, double* E_shift, int* n_steps, int* print_every, bool* re
 	
 
 }
+

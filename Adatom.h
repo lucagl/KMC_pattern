@@ -14,15 +14,8 @@ class Adatom {
         int N;
         bool is_attSite(int ,int );
         void print (const std::string&, const double, const double) const;
-        // Adatom (){};
-        // Adatom(const int L_){
-        //     L = L_;
-        //     matrix =new unsigned short*[L];
-        //     for (int i =0;i<L;i++){
-        //         matrix[i] = new unsigned short [L] (); 
-        //     } 
-        // };
-        void init (const int L_in , const double concentration =0){
+        
+        Adatom(const int L_in , const double concentration =0){
             int current_density = 1;
             int rand_inti,rand_intj;
 

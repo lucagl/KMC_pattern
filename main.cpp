@@ -57,9 +57,24 @@ System of coordinates is x: left-right-wise and y: top-bottom wise. The indexes 
 //------
 
 int ierr;
-	
-int main(int argc, char **argv){
-	
+
+/*  Need:
+	methods to initialise and init
+		env.init()
+		env.reset()
+	methods to print
+		env.render()
+	methods for extracting informations:
+		env.action_space.sample() ..
+	step:
+	observation, reward, done, info = env.step(action)
+So what I called kmc could become environment.. However I need to set number of episodes..
+*/
+int main(){
+
+int argc; //MPI stuff
+char **argv; //MPI stuff
+
 const double J =0.2;
 
 double T0,conc0, A, BR, E_shift;
@@ -93,11 +108,11 @@ if(proc_ID == root_process){
 	std :: cout << "\n Start time " << ctime(&curr_time) << "\n";	
 	std :: cout << "\n Number of processors= "<< n_proc << std :: endl ;
 
-	read_input(&L, &T0,& conc0, &radius,&is_circle, &A, &BR, &E_shift, &n_steps, &print_every, &read_old);
+	read_input(&L, &T0,& conc0, &radius,&is_circle, &A, &BR, &E_shift, &n_steps, &print_every);//, &read_old);
 
 	std :: cout << "\n J= " << J << "  |  L= "<< L<< "  |  T=" << T0 <<"  |  concentration= "<< conc0 <<
 		"  |  initial island radius= "<< radius <<  "  |  attachment parameter= " << A << "	|	Energy shift= " << E_shift << "	|	Bond energy ratio= "<< BR <<"  |  kmc steps= " << n_steps<<
-	"  |  print each= " << print_every << "  |  read old file?= " << read_old<<"\n";
+	"  |  print each= " << print_every "\n";
   
 	double c_eq = exp((-2*J*(1+BR) + E_shift)/T0);
 	
@@ -133,7 +148,7 @@ MPI_Bcast(&A, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 MPI_Bcast(&E_shift, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 MPI_Bcast(&n_steps, 1, MPI_INT, 0, MPI_COMM_WORLD);
 MPI_Bcast(&print_every, 1, MPI_INT, 0, MPI_COMM_WORLD);
-MPI_Bcast(&read_old, 1, MPI_C_BOOL, 0, MPI_COMM_WORLD);
+//MPI_Bcast(&read_old, 1, MPI_C_BOOL, 0, MPI_COMM_WORLD); skip for now, I wnat to handle this directly in python
 
 // make directories for each thread
 
@@ -152,9 +167,15 @@ system(remove_old);
 	
 	srand (seed);// initialise random generator differently for each MPI thread
 	
-	KMC kmc(J,BR,A,E_shift);
-	kmc.init(L,is_circle,radius,conc0,T0, read_old);
-	kmc.print(0);
+	KMC kmc(J,BR,A,E_shift,L,is_circle,radius,conc0,T0);
+
+//_____________________________ EPISODES ______________________________
+
+int e=0;
+while(){
+e+=1;
+kmc.print(0,e);
+kmc.reset();
 
 // _________________________RUN KMC ___________________________
 
@@ -173,7 +194,7 @@ for (int k = 1; k <= n_steps; k++){
 	
 	if ((k%print_every)== 0){
 		frame+=1;
-		kmc.print(frame);
+		kmc.print(frame,e);
 		//update number threads
 		n_threads= ceil(float(kmc.get_classN()[25])/3500);
 	}
@@ -186,6 +207,8 @@ for (int k = 1; k <= n_steps; k++){
 //__________________ FINAL MESSAGES ____________________________
 if(proc_ID==0){
 	
+
+
 	int * counter = kmc.get_nevents();
 	//int * N_class = kmc.get_classN();
 	
@@ -220,6 +243,11 @@ if(proc_ID==0){
 // _______________ FINAL PRINTS ___________________________
 
 kmc.print_final(n_steps/print_every);
+
+
+}
+
+
 
 MPI_Finalize();
 

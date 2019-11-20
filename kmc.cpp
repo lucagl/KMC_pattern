@@ -19,30 +19,44 @@ enum det_classes {
 };
 
 
-KMC:: KMC(const double J_read, const double BR_read, const double A_read, const double E_read){
+KMC:: KMC(const double J_read, const double BR_read, const double A_read, const double E_read,const int L_read, const bool is_circle, const int radius, const double conc_read, const double T0){
 
-    if(proc_ID == root_process){
-            std :: cout << "\n Starting KMC with " << n_classes << " classes of events \n";
-    }
+    // if(proc_ID == root_process){
+    //         std :: cout << "\n Starting KMC with " << n_classes << " classes of events \n";
+    // }
     J = J_read; // link strenght
     BR = BR_read; // Ratio between first neighbours energy and second neighbours one
     A =A_read; // attachment over diffusion parameter >0 =few attachement, <0 many attachement (diffusion dominated)
     E_shift = E_read; //Shift in detachment energy to increase equilibrium concentration
-
+    L = L_read;
+    current_T = T0;// initial temperature
+    concentration = conc_read; //initial concentration
+    
+    island.init(L,is_circle,radius);
+    adatom.init(L,concentration);
 }
 
-void KMC :: init (const int L_read, const bool is_circle, const int radius, const double conc_read, const double T0, const bool old_conf){
+void KMC :: reset(){
+    
+    island.~Island();
+    adatom.~Adatom();
 
+    new(&island) Island(L,is_circle,radius);
+    new(&adatom) Adatom(L,concentration);
+    
+}
 
-    if (old_conf) {
-        std :: cout << "\n Insert full path to last configuration file \n";
-        std :: string filename,line;
-        std :: cin >> filename;
+void KMC :: read (std :: string filename){
+        //BETA NEVER TESTED
+        std :: cout << "\n Rewriting initial configuration \n";
+        // std :: string filename,line;
+        // std :: cin >> filename;
        // std :: cout << filename;
 
 	    std :: ifstream finput(filename);
         
-	
+        island.~Island();
+        adatom.~Adatom();
 	    if (finput.is_open()){
 
             std :: getline(finput,line, '\t'); //extracts until character delimiter '\t'
@@ -91,16 +105,6 @@ void KMC :: init (const int L_read, const bool is_circle, const int radius, cons
         std :: cout << "input file not found. Abort \n";
 		exit(EXIT_FAILURE);
         }
-    }
-
-    else{
-        L = L_read;
-        current_T = T0;// initial temperature
-        concentration = conc_read; //initial concentration
-        
-        island.init(L,is_circle,radius);
-        adatom.init(L,concentration);
-    }
 
     
     for (int i = 0; i < n_classes-1; i++)
@@ -261,7 +265,7 @@ void KMC :: init (const int L_read, const bool is_circle, const int radius, cons
 double KMC ::  det_rate(const int nn1, const int nn2 ) const{
 
     double rate;
-    rate = exp((-J*(nn1+BR*nn2) - A)/current_T);//" attachment strenght"A=E_A-E_D with E_D: diff energy, E_A: attachment energy
+    rate = exp((-J*(nn1+BR*nn2) - A + E_shift)/current_T);//" attachment strenght"A=E_A-E_D with E_D: diff energy, E_A: attachment energy
 
     return rate;
 }
@@ -269,7 +273,7 @@ double KMC ::  det_rate(const int nn1, const int nn2 ) const{
 double KMC ::  att_rate() const{
 
     double rate;
-    rate = exp(-(A+E_shift)/current_T);
+    rate = exp(-A/current_T);
 
     return rate;
 }
@@ -360,6 +364,19 @@ void KMC :: print (int frame, int flag) const{
     }
 
 }
+
+
+
+/////////////////////////////////////
+//		COUNTOUR INTERPOLATION //
+////////////////////////////////////
+
+void KMC :: print_interpolated (int frame) const{
+
+}
+
+
+/////////////////////////////
 
 void KMC :: print_final (const int n_frames) const{
 

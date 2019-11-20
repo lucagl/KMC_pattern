@@ -11,10 +11,11 @@ class KMC {
 
 public:
 
-    KMC(const double,const double,const double, const double);
+    KMC(const double, const double, const double, const double,const int, const bool, const int, const double, const double T0);
 
+    void reset ();
 
-    void init (const int ,const bool, const int , const double , const double, const bool read_old = false);
+    void print (std :: string);
 
     double step(const double , const bool debug_mode  = false);
 
@@ -26,7 +27,7 @@ public:
     int* get_classN() const;
 
 
-private: 
+protected: 
 
     int event_counter[n_classes] {};
     int L;
