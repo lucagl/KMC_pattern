@@ -96,20 +96,7 @@ int * Events :: where (const int i) const{
     return coordinate;
 }
 void Events :: clear () {
-    element.clear();
-    
+    element.clear();    
     //std :: fill(&mask[0][0],&mask[0][0]+sizeof(mask),0);
     N=0;
-}
-
-double Events :: rate_general(){
-    double r;
-    r = D*double(N);
-    return r;
-}
-
-
-
-double Events :: rate_diffusion(){
-    return D;
 }

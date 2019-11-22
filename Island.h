@@ -3,25 +3,26 @@
 #include "global.h"
 
 
-class Island {
+class Island : public FlatLand{
 	//class members
-private:
-	int L;
+
 public:
-	bool ** matrix;
+
 	unsigned short ** nn1;
 	unsigned short ** nn2;
-	
+	Island(){};
 	Island(const int L_in, const bool circle =0, const int radius = 0){
 	//default value in order to be able to initialise the object given the total box size when reading from previous integration file
+		std :: cout << "Initialising island \n" << std :: flush;
 		L = L_in;
-
-		matrix = new bool*[L];
+		// std :: cout << "\n L=" << L << std :: flush;
+		// std :: cout << "\n radius=" << radius << std :: flush;
+		matrix = new unsigned short*[L];
 		nn1 = new unsigned short* [L];
 		nn2 = new unsigned short* [L];
 
 		for (int i =0;i<L;i++){ 
-			matrix[i] = new bool[L] ();
+			matrix[i] = new unsigned short[L] ();
 			nn1[i] = new unsigned short[L] ();
 			nn2[i] = new unsigned short[L] ();
 		}
@@ -49,8 +50,30 @@ public:
 		}
 	}
 
+// copy assignement operator
 
-    void print(const std::string&, const double, const double ) const;
+ Island& operator=(const Island& oldobj){
+            std:: cout << "\n Island class copy assignement called"<< std :: flush; 
+            L = oldobj.getBox();
+            nn1 =new unsigned short*[L];
+			nn2 =new unsigned short*[L];
+			matrix =new unsigned short*[L];
+            for (int i =0;i<L;i++){
+                 nn1[i] = new unsigned short [L] ();
+				 nn2[i] = new unsigned short [L] ();
+				 matrix[i] = new unsigned short [L] ();
+				 
+                 for (int j = 0; j < L; j++)
+                 {
+					 matrix[i][j] = oldobj.matrix[i][j];
+                     nn1[i][j] = oldobj.nn1[i][j];
+					 nn2[i][j] = oldobj.nn2[i][j];
+                 }
+             }
+            return *this;
+        }
+
+    //void print(const std::string&, const double, const double ) const;
 
 	void init_neighbours ();//init first and second neighbours
 	int get_neighbours1( const int  ,const  int  );
@@ -59,11 +82,11 @@ public:
 	// destructor
 	~Island(){
 		for(int i = 0; i < L; ++i) {
-			delete [] matrix[i];
+			// delete [] matrix[i];
 			delete [] nn1[i];
 			delete [] nn2[i];
 		}
-		delete [] matrix;
+		// delete [] matrix;
 		delete [] nn1;	
 		delete [] nn2
 		;	

@@ -15,20 +15,27 @@ public:
 
     void reset ();
 
-    void print (std :: string);
+    void init();
+
+    void read(const std :: string);
 
     double step(const double , const bool debug_mode  = false);
 
-    void print(int, int flag =0 ) const;
-    void print_final(int) const;
+    void saveTxt(const std :: string,const int,const  int flag =0 ) const;
+    void print_final(int) const;//CHECK and CHANGE
 
     double get_concentration() const;
     int* get_nevents() const;
     int* get_classN() const;
+    double c0; //initial concentration
+
+    unsigned** getIsland();
+    unsigned** getAdatom();
 
 
-protected: 
-
+private: 
+    bool init_isCircle;
+    int init_radius;
     int event_counter[n_classes] {};
     int L;
     double  concentration;

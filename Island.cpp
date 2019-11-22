@@ -1,24 +1,32 @@
 #include "global.h"
 #include "Island.h"
 
-void Island :: print(const std::string& file_name, const double T, const double c) const {
-//print method of the class	
 
-	std :: ofstream outfile (file_name);
-	if (outfile.is_open()){
+
+
+// void Island :: saveTxt(const std::string& file_name, const double T, const double c) const {
+// //print method of the class	
+
+// 	std :: ofstream outfile (file_name);
+// 	if (outfile.is_open()){
 		
 
-		outfile <<"#T = " << T <<"\tc ="<<c <<"\n";;
-		outfile << "#Island\n";
-		for ( int i = 0;i < L;i++){
-			for(int j =0;j<L;j++){
-				outfile << matrix[i][j]<< "\n"; 
-			}
-		}
-	}
-	outfile.close();
-}
+// 		outfile <<"#T = " << T <<"\tc ="<<c <<"\n";;
+// 		outfile << "#Island\n";
+// 		for ( int i = 0;i < L;i++){
+// 			for(int j =0;j<L;j++){
+// 				outfile << matrix[i][j]<< "\n"; 
+// 			}
+// 		}
+// 	}
+// 	outfile.close();
+// }
 
+// double** Island :: GaussianC(double sigma){
+
+// 	#pragma omp ecc
+
+// };
 
 
 void Island :: init_neighbours(){

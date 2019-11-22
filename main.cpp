@@ -70,10 +70,10 @@ int ierr;
 	observation, reward, done, info = env.step(action)
 So what I called kmc could become environment.. However I need to set number of episodes..
 */
-int main(){
+int main(int argc, char **argv){
 
-int argc; //MPI stuff
-char **argv; //MPI stuff
+// int argc; //MPI stuff
+// char **argv; //MPI stuff
 
 const double J =0.2;
 
@@ -105,14 +105,14 @@ MPI_Comm_rank(MPI_COMM_WORLD, &proc_ID);
 if(proc_ID == root_process){
 	// read from input file and broadcast
 	time(&curr_time);
-	std :: cout << "\n Start time " << ctime(&curr_time) << "\n";	
+	std :: cout << "\n Start time " << ctime(&curr_time) << "\n" << std :: flush;	
 	std :: cout << "\n Number of processors= "<< n_proc << std :: endl ;
 
 	read_input(&L, &T0,& conc0, &radius,&is_circle, &A, &BR, &E_shift, &n_steps, &print_every);//, &read_old);
 
 	std :: cout << "\n J= " << J << "  |  L= "<< L<< "  |  T=" << T0 <<"  |  concentration= "<< conc0 <<
 		"  |  initial island radius= "<< radius <<  "  |  attachment parameter= " << A << "	|	Energy shift= " << E_shift << "	|	Bond energy ratio= "<< BR <<"  |  kmc steps= " << n_steps<<
-	"  |  print each= " << print_every "\n";
+	"  |  print each= " << print_every <<"\n";
   
 	double c_eq = exp((-2*J*(1+BR) + E_shift)/T0);
 	
@@ -168,18 +168,18 @@ system(remove_old);
 	srand (seed);// initialise random generator differently for each MPI thread
 	
 	KMC kmc(J,BR,A,E_shift,L,is_circle,radius,conc0,T0);
-
+	kmc.init();
 //_____________________________ EPISODES ______________________________
 
-int e=0;
-while(){
-e+=1;
-kmc.print(0,e);
-kmc.reset();
+// int e=0;
+// while(){
+// e+=1;
+
+//kmc.reset();
 
 // _________________________RUN KMC ___________________________
 
-
+kmc.saveTxt(path,0);
 frame = 0;
 double t =0;
 for (int k = 1; k <= n_steps; k++){
@@ -194,7 +194,7 @@ for (int k = 1; k <= n_steps; k++){
 	
 	if ((k%print_every)== 0){
 		frame+=1;
-		kmc.print(frame,e);
+		kmc.saveTxt(path,frame);
 		//update number threads
 		n_threads= ceil(float(kmc.get_classN()[25])/3500);
 	}
@@ -245,7 +245,10 @@ if(proc_ID==0){
 kmc.print_final(n_steps/print_every);
 
 
-}
+kmc.reset();
+auto path2 = "dummy";
+kmc.saveTxt(path2,0);
+
 
 
 

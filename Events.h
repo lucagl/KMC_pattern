@@ -15,12 +15,14 @@ class Events {
 		std::list<std::tuple<int, int>> element{}; // list of tuple (i-th element touple of coordinates)
 	//list more efficient than vector for deletion and insertion
 		bool is_diff;
-		double rate_diffusion();
-		double rate_general();
+		double r;
+		double rate_general(){return r*double(N);};
+		double rate_diffusion(){return r;}; 
 		double (Events :: *tRate) ();
+		
 
 	public:
-		double D; // constant rate
+		void setRate(double in_rate){r=in_rate;}; // constant rate
 		std::tuple<int, int> coordinate(int i); //return a tuple
 		unsigned long int N=0; // elements in the class
 		//unsigned short ** mask; 

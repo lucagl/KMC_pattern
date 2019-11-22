@@ -5,17 +5,17 @@
 
 
 
-class Adatom {
-    private :
-        int L;
+class Adatom: public FlatLand {
+
 
     public:
-        unsigned short ** matrix;
-        int N;
-        bool is_attSite(int ,int );
-        void print (const std::string&, const double, const double) const;
         
+        int N;
+        // bool is_attSite(int ,int );
+        //void saveTxt (const std::string&, const double, const double) const;
+        Adatom() {};
         Adatom(const int L_in , const double concentration =0){
+            std :: cout << "Initialising adatom \n" << std :: flush;
             int current_density = 1;
             int rand_inti,rand_intj;
 
@@ -41,15 +41,15 @@ class Adatom {
             
             }
         }
-//Misses copy assignement and copy constructior (rule of three)
+// //Misses copy assignement and copy constructior (rule of three)
 
 
-        ~Adatom(){
-        for(int i = 0; i < L; ++i) {
-            delete [] matrix[i];
-        }
-        delete [] matrix;	
-        }
+//         ~Adatom(){
+//         for(int i = 0; i < L; ++i) {
+//             delete [] matrix[i];
+//         }
+//         delete [] matrix;	
+//         }
 };
 
 #endif

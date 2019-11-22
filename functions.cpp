@@ -4,7 +4,7 @@
 
 
 void read_input(int* L, double* T, double* c, int* radius, bool* is_circle, 
-double* A, double* BR, double* E_shift, int* n_steps, int* print_every, bool* read_old){
+double* A, double* BR, double* E_shift, int* n_steps, int* print_every){
 
 	std :: ifstream finput("Input.txt");
     std :: string line;
