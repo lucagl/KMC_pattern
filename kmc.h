@@ -13,6 +13,8 @@ public:
 
     KMC(const double, const double, const double, const double,const int, const bool, const int, const double, const double T0);
 
+    void initConv (double,bool both=0);
+
     void reset ();
 
     void init();
@@ -27,11 +29,45 @@ public:
     double get_concentration() const;
     int* get_nevents() const;
     int* get_classN() const;
+
     double c0; //initial concentration
 
-    unsigned** getIsland();
-    unsigned** getAdatom();
+    unsigned short** getIsland() const { 
+        unsigned short** matrix;//like this I return by copy and not the pointer: this is safe
+        matrix = new unsigned short*[L];
+        for (int i = 0; i < L; i++)
+        {
+            matrix[i] = new unsigned short[L];
+            for (int j = 0; j < L; j++)
+            {
+                matrix[i][j] = island.matrix[i][j];
+            }
+            
+        }
+        return matrix;
+    };
+    //unsigned** getIsland_conv(double sigma) const { return &island.gaussianConv(signma);};
+    unsigned short ** getAdatom()const {
+        unsigned short** matrix;//like this I return by copy and not the pointer: this is safe
+        matrix = new unsigned short *[L];
+        for (int i = 0; i < L; i++)
+        {
+            matrix[i] = new unsigned short [L];
+            for (int j = 0; j < L; j++)
+            {
+                matrix[i][j] = adatom.matrix[i][j];
+            }
+            
+        }
+        return matrix;
+    };
 
+    double ** getIslandConv()const{
+        return island.gaussianConv();
+    };
+    double ** getAdatomConv()const{
+        return adatom.gaussianConv();
+    };
 
 private: 
     bool init_isCircle;
@@ -41,7 +77,7 @@ private:
     double  concentration;
     double J;
     double BR;
-    double A;//change to treat it as the temperature
+    double A;//change to treat it as the temperature ( a parameter passed from main)
     double E_shift;
     double  current_T;
 

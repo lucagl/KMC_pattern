@@ -95,8 +95,7 @@ int * Events :: where (const int i) const{
     coordinate[1] = std :: get<1>(*it);
     return coordinate;
 }
-void Events :: clear () {
-    element.clear();    
-    //std :: fill(&mask[0][0],&mask[0][0]+sizeof(mask),0);
-    N=0;
-}
+// void Events :: clear () {
+//     element.clear();    
+//     N=0;
+// }

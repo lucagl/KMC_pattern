@@ -36,27 +36,35 @@ KMC:: KMC(const double J_read, const double BR_read, const double A_read, const 
     init_radius = radius;
     
     island = Island(L,is_circle,radius);
-    adatom =Adatom(L,c0);
-    std :: cout << "\nHERE "<< std :: flush;
-    std :: cout << island.nn1[0][4]<< std :: flush;
-    std :: cout << "\nHERE "<< std :: flush;
+    adatom = Adatom(L,c0);
+    // std :: cout << "\nHERE "<< std :: flush;
+    // std :: cout << island.nn1[0][4]<< std :: flush;
+    // std :: cout << "\nHERE "<< std :: flush;
     for (int i = 0; i < n_classes-1; i++)
     {
         R[i].init(L);
     }
     R[diffusion].init(L,true);
+
+    
+}
+
+void KMC :: initConv(double sigma, bool both){
+    std :: cout << "\n Initialising convolution routines \n" << std :: flush;
+    if(!both) island.initConv(sigma);
+    else{island.initConv(sigma);adatom.initConv(sigma);}
+    //add adatom initialisation
 }
 
 void KMC :: reset(){
     
-    // island.~Island();
-    // adatom.~Adatom();
     std :: cout << "\n RESETTING \n" << std :: flush;
     island = Island(L,init_isCircle,init_radius);
     adatom = Adatom(L,c0);//but new random arrangement of adatoms.. Is this ok??
     //std :: cout << "\n HERE \n" << std :: flush;
 
-    std :: cout << "\n" << R[attachment].N << std :: flush;
+    //std :: cout << "\n" << R[attachment].N << std :: flush;
+    
     for (int i = 0; i < n_classes; i++)
     {
         R[i].clear();
@@ -134,7 +142,7 @@ void KMC :: read (const std :: string filename){
 void KMC :: init(){
     
 // assign correct rate per class element 
-std :: cout << "\n INIT "<< std :: flush;
+std :: cout << "\n Initialising classes \n"<< std :: flush;
     R[_0x0].setRate(det_rate(0,0)); 
     R[_1x0].setRate(det_rate(1,0));
     R[_2x0].setRate(det_rate(2,0));
@@ -283,7 +291,7 @@ std :: cout << "\n INIT "<< std :: flush;
 }
  
 
-double KMC :: det_rate(const int nn1, const int nn2 ) const{
+inline double KMC :: det_rate(const int nn1, const int nn2 ) const{
 
     double rate;
     rate = exp((-J*(nn1+BR*nn2) - A + E_shift)/current_T);//" attachment strenght"A=E_A-E_D with E_D: diff energy, E_A: attachment energy
@@ -291,7 +299,7 @@ double KMC :: det_rate(const int nn1, const int nn2 ) const{
     return rate;
 }
 
-double KMC ::  att_rate() const{
+inline double KMC ::  att_rate() const{
 
     double rate;
     rate = exp(-A/current_T);
@@ -312,7 +320,7 @@ double KMC :: cumulative (double* r){
     return R_sum;
 }
 
-int KMC ::  extract (int N) const{
+inline int KMC ::  extract (int N) const{
     if (N>RAND_MAX){
         std :: cout << "\n Problem, cannot extract random number bigger than " << RAND_MAX << "\n";
         exit(EXIT_FAILURE);
@@ -322,7 +330,7 @@ int KMC ::  extract (int N) const{
 
 
 
-bool KMC :: is_attSite(const int x,const int y) const{
+inline bool KMC :: is_attSite(const int x,const int y) const{
 	
 	int contact = false ;
 	int top,bottom,left,right;
@@ -386,35 +394,7 @@ void KMC :: saveTxt (const std:: string path, int frame, int flag) const{
 
 }
 
-unsigned** KMC :: getIsland(){
-    unsigned** matrix;
-    matrix = new unsigned*[L];
-    for (int i = 0; i < L; i++)
-    {
-        matrix[i] = new unsigned[L];
-        for (int j = 0; j < L; j++)
-        {
-            matrix[i][j] = island.matrix[i][j];
-        }
-        
-    }
-    return matrix;
-}
 
-unsigned** KMC :: getAdatom(){
-    unsigned** matrix;
-    matrix = new unsigned*[L];
-    for (int i = 0; i < L; i++)
-    {
-        matrix[i] = new unsigned[L];
-        for (int j = 0; j < L; j++)
-        {
-            matrix[i][j] = adatom.matrix[i][j];
-        }
-        
-    }
-    return matrix;
-}
 
 
 
@@ -3674,7 +3654,7 @@ The problem is that the change of content of an index with list can problems sin
 Therefore I cannot have random access like vector or arrays.. I have to iterate on a pointer which is shared!
 */
 std :: vector <std :: tuple<int, int>> Diff_adatoms{};
-for (unsigned long int i = 0; i < R[diffusion].N; i++){
+for (int i = 0; i < R[diffusion].N; i++){
             Diff_adatoms.push_back(std :: make_tuple (R[diffusion].where(i)[0],R[diffusion].where(i)[1]));
         }
     
@@ -3748,8 +3728,8 @@ for (unsigned long int i = 0; i < R[diffusion].N; i++){
         
         
         #pragma omp for 
-        for (unsigned long int i = 0; i < L*L; i++){
-            for(int k=0; k<adatom.matrix[i/L][i%L]; k++){
+        for (int i = 0; i < L*L; i++){
+            for(int k=0; k<adatom.matrix[i/L][i%L]; k++){//(y,x)[i][j] j advances at contiguous mem locations
                 omp_set_lock(&writelock1);
                     R[diffusion].populate(i%L,i/L);
                 omp_unset_lock(&writelock1);

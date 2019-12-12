@@ -16,7 +16,7 @@ class Events {
 	//list more efficient than vector for deletion and insertion
 		bool is_diff;
 		double r;
-		double rate_general(){return r*double(N);};
+		inline double rate_general(){return r*double(N);};
 		double rate_diffusion(){return r;}; 
 		double (Events :: *tRate) ();
 		
@@ -34,7 +34,7 @@ class Events {
 		void change (const int , const int , const int );// could be useful: changes coordinate of a specific element in the list
 		bool exist (const int ,const int ) const;// checks existence of the element in the list based on its coordinate
 		int* where (const int ) const; //returns coordinate of the element
-		void clear();
+		void clear() {element.clear(); N=0;};
 		//double rate();
 		
 		double getRate() {return (this->*tRate) ();}

@@ -9,10 +9,12 @@
 ------------ COMPILING INSTRUCTIONS ----------------
 
 
+mpic++ *.cpp -o kmc.ex -lfftw3_omp -lfftw3 -fopenmp
+
 -Build libraries using..
 
 
--Run python scritp--> Input file read by the script (make a user interface ? :) )
+-Make a python scritp--> Input file read by the script (make a user interface ? :) )
 					  "Live plots" when calling render command
 					  MPI must be displaced on python side? Not sure, I can still return observations which are results of averages. 
 					  However I think is a better idea to parallelize from python to have more explicit control.
@@ -23,7 +25,12 @@
 System of coordinates is x: left-right-wise and y: top-bottom wise. The indexes of arrays start with 0.
 
 -------------------- TODO -----------------
+- [minor]displace kmc.init() within constructor?
+- Redefine all 2d arrays in contiguous memory to avoid copying them in temporal variable for fourier transform
 
+
+
+/////
 - MAJOR :Time dependent Temperature
 
 - Program architecture can be improved.. 
@@ -60,8 +67,8 @@ int ierr;
 
 /*  Need:
 	methods to initialise and init
-		env.init()
-		env.reset()
+		env.init() ok
+		env.reset() ok
 	methods to print
 		env.render()
 	methods for extracting informations:
@@ -169,6 +176,36 @@ system(remove_old);
 	
 	KMC kmc(J,BR,A,E_shift,L,is_circle,radius,conc0,T0);
 	kmc.init();
+
+
+
+
+	//__________________
+	kmc.initConv(5);
+	double** convResult = kmc.getIslandConv();//current state
+	unsigned short** directResult = kmc.getIsland();//current state;
+
+if(proc_ID==0){
+	std :: string file_name1 = "dummy/initial_smooth.txt";
+    std :: ofstream outfile1 (file_name1);
+	std :: string file_name2 = "dummy/initial.txt";
+	std :: ofstream outfile2 (file_name2);
+
+	for (int i = 0; i < L; i++)
+	{
+		for (int j = 0; j < L; j++)
+		{
+			outfile1 << convResult[i][j]<< "\n";
+			outfile2 << directResult[i][j]<< "\n"; 
+		}
+		
+	}
+	outfile1.close();
+	outfile2.close();
+}
+
+
+
 //_____________________________ EPISODES ______________________________
 
 // int e=0;
@@ -178,7 +215,7 @@ system(remove_old);
 //kmc.reset();
 
 // _________________________RUN KMC ___________________________
-
+std :: cout << "\n *Starting integration* \n" << std :: endl;
 kmc.saveTxt(path,0);
 frame = 0;
 double t =0;
@@ -195,12 +232,12 @@ for (int k = 1; k <= n_steps; k++){
 	if ((k%print_every)== 0){
 		frame+=1;
 		kmc.saveTxt(path,frame);
-		//update number threads
+		//update number threads based on number of diffusing adatoms (very empirical..)
 		n_threads= ceil(float(kmc.get_classN()[25])/3500);
 	}
 	if(k%(1+n_steps/10)==0 && proc_ID == root_process){
 		//std :: cout << floor(float(k)/n_steps)*100 << "% (threads per process= "<< n_threads << " )"<< std :: flush;
-		std :: cout  << " | "<< std :: flush;
+		std :: cout  << " || "<< std :: flush;
 		}
 }
 
@@ -245,11 +282,33 @@ if(proc_ID==0){
 kmc.print_final(n_steps/print_every);
 
 
-kmc.reset();
-auto path2 = "dummy";
-kmc.saveTxt(path2,0);
+// kmc.reset();
+// auto path2 = "dummy";
+// kmc.saveTxt(path2,0);
 
 
+
+convResult = kmc.getIslandConv();//current state
+directResult = kmc.getIsland();//current state;
+
+if(proc_ID==0){
+	std :: string file_name1 = "dummy/final_smooth.txt";
+    std :: ofstream outfile1 (file_name1);
+	std :: string file_name2 = "dummy/final.txt";
+	std :: ofstream outfile2 (file_name2);
+
+	for (int i = 0; i < L; i++)
+	{
+		for (int j = 0; j < L; j++)
+		{
+			outfile1 << convResult[i][j]<< "\n";
+			outfile2 << directResult[i][j]<< "\n"; 
+		}
+		
+	}
+	outfile1.close();
+	outfile2.close();
+}
 
 
 MPI_Finalize();

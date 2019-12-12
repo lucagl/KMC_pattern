@@ -15,7 +15,7 @@ class Adatom: public FlatLand {
         //void saveTxt (const std::string&, const double, const double) const;
         Adatom() {};
         Adatom(const int L_in , const double concentration =0){
-            std :: cout << "Initialising adatom \n" << std :: flush;
+           // std :: cout << "Initialising adatom \n" << std :: flush;
             int current_density = 1;
             int rand_inti,rand_intj;
 
@@ -50,6 +50,8 @@ class Adatom: public FlatLand {
 //         }
 //         delete [] matrix;	
 //         }
+
+
 };
 
 #endif

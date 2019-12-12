@@ -102,4 +102,36 @@ double* A, double* BR, double* E_shift, int* n_steps, int* print_every){
 	
 
 }
+//subroutine
+void gauss(double *g,const int L, const double sigma ){
+	
+	double mu = double(L)/2;
+	double x,y;
+ 
+	for (int i = 0; i < L; i++)
+	{	
+		for (int j = 0; j < L; j++)
+		{	x = double(i)-mu;
+			y = double(j) - mu;
+			g[j+L*i]= 1/(sigma*2*PI) * exp(-(x*x+y*y)/(2*sigma*sigma));
+		}
+		
+	}
 
+// CHECK
+	std :: string file_name = "dummy/gaussianK.txt";
+	std :: ofstream outfile (file_name);
+        if (outfile.is_open()){
+            for ( int i = 0;i < L;i++){
+                for(int j =0;j<L;j++){
+                    outfile << g[j+L*i]<< "\n"; 
+                }
+            }
+        }
+        outfile.close();
+
+
+	return;
+	
+
+}
