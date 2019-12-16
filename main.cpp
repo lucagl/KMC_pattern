@@ -8,7 +8,6 @@
 
 ------------ COMPILING INSTRUCTIONS ----------------
 
-
 mpic++ *.cpp -o kmc.ex -lfftw3_omp -lfftw3 -fopenmp
 
 -Build libraries using..
@@ -27,6 +26,7 @@ System of coordinates is x: left-right-wise and y: top-bottom wise. The indexes 
 -------------------- TODO -----------------
 - [minor]displace kmc.init() within constructor?
 - Redefine all 2d arrays in contiguous memory to avoid copying them in temporal variable for fourier transform
+	(However if the convolution is done just a few times should not be too heavy)
 
 
 
@@ -53,9 +53,8 @@ System of coordinates is x: left-right-wise and y: top-bottom wise. The indexes 
 // #############################################
 //					MAIN	
 // #############################################
-#include "global.h"
+
 #include "kmc.h"
-#include "functions.h"
 
 // --- PARALLELISATION
 #include <thread>
@@ -83,6 +82,7 @@ int main(int argc, char **argv){
 // char **argv; //MPI stuff
 
 const double J =0.2;
+const double sigma =2;
 
 double T0,conc0, A, BR, E_shift;
 int L,radius, n_steps;
@@ -137,7 +137,7 @@ seed = time(NULL)*(proc_ID+1);
 	localseed = new unsigned[omp_get_max_threads()];//one seed per potential thread
 	}
 	
-	unsigned id = omp_get_thread_num();
+	unsigned id = omp_get_thread_num();	
 
 	localseed[id] = seed *(id + 1);
 	
@@ -177,32 +177,31 @@ system(remove_old);
 	KMC kmc(J,BR,A,E_shift,L,is_circle,radius,conc0,T0);
 	kmc.init();
 
-
-
-
 	//__________________
-	kmc.initConv(5);
-	double** convResult = kmc.getIslandConv();//current state
-	unsigned short** directResult = kmc.getIsland();//current state;
+	
+	// kmc.initConv(sigma,1);
 
-if(proc_ID==0){
-	std :: string file_name1 = "dummy/initial_smooth.txt";
-    std :: ofstream outfile1 (file_name1);
-	std :: string file_name2 = "dummy/initial.txt";
-	std :: ofstream outfile2 (file_name2);
+	// double** convResult = kmc.getIslandConv();//current state
+	// unsigned short** directResult = kmc.getIsland();//current state;
 
-	for (int i = 0; i < L; i++)
-	{
-		for (int j = 0; j < L; j++)
-		{
-			outfile1 << convResult[i][j]<< "\n";
-			outfile2 << directResult[i][j]<< "\n"; 
-		}
+// if(proc_ID==0){
+// 	std :: string file_name1 = "dummy/initial_smooth.txt";
+//     std :: ofstream outfile1 (file_name1);
+// 	std :: string file_name2 = "dummy/initial.txt";
+// 	std :: ofstream outfile2 (file_name2);
+
+// 	for (int i = 0; i < L; i++)
+// 	{
+// 		for (int j = 0; j < L; j++)
+// 		{
+// 			outfile1 << convResult[i][j]<< "\n";
+// 			outfile2 << directResult[i][j]<< "\n"; 
+// 		}
 		
-	}
-	outfile1.close();
-	outfile2.close();
-}
+// 	}
+// 	outfile1.close();
+// 	outfile2.close();
+// }
 
 
 
@@ -231,13 +230,12 @@ for (int k = 1; k <= n_steps; k++){
 	
 	if ((k%print_every)== 0){
 		frame+=1;
-		kmc.saveTxt(path,frame);
-		//update number threads based on number of diffusing adatoms (very empirical..)
-		n_threads= ceil(float(kmc.get_classN()[25])/3500);
+		kmc.saveTxt(path,frame);		
 	}
 	if(k%(1+n_steps/10)==0 && proc_ID == root_process){
 		//std :: cout << floor(float(k)/n_steps)*100 << "% (threads per process= "<< n_threads << " )"<< std :: flush;
 		std :: cout  << " || "<< std :: flush;
+		n_threads= ceil(float(kmc.get_classN()[25])/3500);//update number threads based on number of diffusing adatoms (very empirical..)
 		}
 }
 
@@ -261,8 +259,6 @@ if(proc_ID==0){
 	 << counter[22]<<"\tDetachment # nn1= 3,nn2=4 " << counter[23]
 	 <<"\nAttachment # = " << counter[24] << "\t Diffusion # = " << counter[25] ;
 
-		
-	std :: cout << "\n Numeber of parallel KMCs ="<< n_proc<<"\n";
 	
 	end = std :: time(NULL);
 	elapsed_time = end-start;
@@ -279,7 +275,7 @@ if(proc_ID==0){
 
 // _______________ FINAL PRINTS ___________________________
 
-kmc.print_final(n_steps/print_every);
+
 
 
 // kmc.reset();
@@ -287,29 +283,7 @@ kmc.print_final(n_steps/print_every);
 // kmc.saveTxt(path2,0);
 
 
-
-convResult = kmc.getIslandConv();//current state
-directResult = kmc.getIsland();//current state;
-
-if(proc_ID==0){
-	std :: string file_name1 = "dummy/final_smooth.txt";
-    std :: ofstream outfile1 (file_name1);
-	std :: string file_name2 = "dummy/final.txt";
-	std :: ofstream outfile2 (file_name2);
-
-	for (int i = 0; i < L; i++)
-	{
-		for (int j = 0; j < L; j++)
-		{
-			outfile1 << convResult[i][j]<< "\n";
-			outfile2 << directResult[i][j]<< "\n"; 
-		}
-		
-	}
-	outfile1.close();
-	outfile2.close();
-}
-
+kmc.print_final(n_steps/print_every,sigma);
 
 MPI_Finalize();
 

@@ -29,14 +29,6 @@ double* A, double* BR, double* E_shift, int* n_steps, int* print_every){
 		
 		std :: getline(finput,line);
 
-		//std::string delimiter = " ";
-
-		//line = line.substr(0, line.find(delimiter)); // token is "scott"
-
-		//std :: cout << "\n " << line[0] << std:: flush;
- 		//int answ = std::stoi(line);
-		 
-
 		if(line[0] == 'y'){	
 			*is_circle= true;// Square or circle? 
 		}
@@ -102,11 +94,12 @@ double* A, double* BR, double* E_shift, int* n_steps, int* print_every){
 	
 
 }
-//subroutine
-void gauss(double *g,const int L, const double sigma ){
+
+double* gauss(const int L, const double sigma ){
 	
-	double mu = double(L)/2;
+	double mu =double(L)/2;
 	double x,y;
+	double * g = (double*) malloc (sizeof(double) * L*L);
  
 	for (int i = 0; i < L; i++)
 	{	
@@ -119,19 +112,37 @@ void gauss(double *g,const int L, const double sigma ){
 	}
 
 // CHECK
-	std :: string file_name = "dummy/gaussianK.txt";
-	std :: ofstream outfile (file_name);
-        if (outfile.is_open()){
-            for ( int i = 0;i < L;i++){
-                for(int j =0;j<L;j++){
-                    outfile << g[j+L*i]<< "\n"; 
-                }
-            }
-        }
-        outfile.close();
+	// std :: string file_name = "dummy/gaussianK.txt";
+	// std :: ofstream outfile (file_name);
+    //     if (outfile.is_open()){
+    //         for ( int i = 0;i < L;i++){
+    //             for(int j =0;j<L;j++){
+    //                 outfile << g[j+L*i]<< "\n"; 
+    //             }
+    //         }
+    //     }
+    //     outfile.close();
 
+//need to shift for fourier space to be correctly centered in frequency.. don't really understand why..
 
-	return;
+return g;
+
+}
+
+void fftShift(double* in, double* out,const int xdim, const int ydim, int x_shift, int y_shift){
+
+	if(!x_shift && !y_shift){
+		x_shift = xdim/2;
+		y_shift = ydim/2;
+	}
+
 	
+  for (int i = 0; i < xdim; i++) {
+    int ii = (i + x_shift) % xdim;
+    for (int j = 0; j < ydim; j++) {
+      int jj = (j + y_shift) % ydim;
+      out[ii * ydim + jj] = in[i * ydim + j];
+    }
+  }
 
 }

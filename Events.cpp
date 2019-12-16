@@ -1,8 +1,7 @@
-#include "global.h"
+//#include "global.h"
 #include "Events.h"
-#include<list>
-#include<tuple>
-#include<algorithm>
+#include "functions.h"
+
 
 void Events :: populate(const int  x,const int y){
     element.push_back(std::make_tuple(x,y));

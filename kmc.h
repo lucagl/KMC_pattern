@@ -1,5 +1,6 @@
 #ifndef	KMC_H
 #define KMC_H
+
 #include "Events.h"
 #include "Island.h"
 #include "Adatom.h"
@@ -24,7 +25,7 @@ public:
     double step(const double , const bool debug_mode  = false);
 
     void saveTxt(const std :: string,const int,const  int flag =0 ) const;
-    void print_final(int) const;//CHECK and CHANGE
+    void print_final(const int,const double) ;//CHECK and CHANGE not very elegant
 
     double get_concentration() const;
     int* get_nevents() const;
@@ -88,7 +89,6 @@ private:
     double det_rate(const int, const int ) const;
     double att_rate() const;
     double cumulative ( double * ) ;// calls rate evaluation, so is not a constant member function
-    int extract (const int ) const;// extracts event
     bool is_attSite(const int , const int ) const;
     void debug(const unsigned, const int, const int, const bool) const;
 

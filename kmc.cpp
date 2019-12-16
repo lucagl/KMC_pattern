@@ -1,9 +1,7 @@
 
-#include "global.h"
 #include "kmc.h"
-#include "Adatom.h"
-#include "Island.h"
-#include "Events.h"
+
+
 
 omp_lock_t writelock1, writelock2;
 static unsigned step_counter=0;
@@ -42,28 +40,28 @@ KMC:: KMC(const double J_read, const double BR_read, const double A_read, const 
     // std :: cout << "\nHERE "<< std :: flush;
     for (int i = 0; i < n_classes-1; i++)
     {
-        R[i].init(L);
+        R[i].init();
     }
-    R[diffusion].init(L,true);
+    R[diffusion].init(true);
 
     
 }
 
 void KMC :: initConv(double sigma, bool both){
-    std :: cout << "\n Initialising convolution routines \n" << std :: flush;
+
+   // std :: cout << "\n Initialising convolution routines \n" << std :: flush;
+
     if(!both) island.initConv(sigma);
-    else{island.initConv(sigma);adatom.initConv(sigma);}
-    //add adatom initialisation
+
+    else{island.initConv(sigma); adatom.initConv(sigma);}
+    
 }
 
 void KMC :: reset(){
     
     std :: cout << "\n RESETTING \n" << std :: flush;
     island = Island(L,init_isCircle,init_radius);
-    adatom = Adatom(L,c0);//but new random arrangement of adatoms.. Is this ok??
-    //std :: cout << "\n HERE \n" << std :: flush;
-
-    //std :: cout << "\n" << R[attachment].N << std :: flush;
+    adatom = Adatom(L,c0);
     
     for (int i = 0; i < n_classes; i++)
     {
@@ -71,8 +69,7 @@ void KMC :: reset(){
     }
 
     KMC :: init();
-    // new(&island) Island(L,init_isCircle,init_radius);//reset with initial radius
-    // new(&adatom) Adatom(L,c0);//reset with initial concentration
+    
     
 }
 
@@ -282,9 +279,9 @@ std :: cout << "\n Initialising classes \n"<< std :: flush;
         }
     }
 
-    // std :: cout << "\n Initial rate per diffusing adatom  " << R[diffusion].D <<" \n";
+    // std :: cout << "\n Initial rate per diffusing adatom  " << R[diffusion].getPeratomRate() <<" \n";
     // std :: cout << "\n total rate for diff adatom  " << R[diffusion].getRate() <<" \n";
-    // std :: cout << "\n Initial rate per attachment adatom  " << R[attachment].D << "  # in the class= "<< R[attachment].N <<" \n";
+    // std :: cout << "\n Initial rate per attachment adatom  " << R[attachment].getPeratomRate() << "  # in the class= "<< R[attachment].N <<" \n";
     // std :: cout << "\n total rate for diff adatom  " << R[attachment].getRate() <<" \n";
 
 
@@ -318,14 +315,6 @@ double KMC :: cumulative (double* r){
     }
     R_sum = r[n_classes];
     return R_sum;
-}
-
-inline int KMC ::  extract (int N) const{
-    if (N>RAND_MAX){
-        std :: cout << "\n Problem, cannot extract random number bigger than " << RAND_MAX << "\n";
-        exit(EXIT_FAILURE);
-    }
-    return (rand() % N);
 }
 
 
@@ -395,41 +384,50 @@ void KMC :: saveTxt (const std:: string path, int frame, int flag) const{
 }
 
 
+void KMC :: print_final (const int n_frames,const double sigma){
+    double** outIsland;
+    double** outAdatom;
 
-
-
-/////////////////////////////
-
-void KMC :: print_final (const int n_frames) const{
 
     auto path = "plots" + (std::to_string(proc_ID));
-	std :: ofstream outfile (path+"/configuration.txt");
- 
+	std :: ofstream outfile1 (path+"/configuration.txt");
+    std :: ofstream outfile2 (path+"/final_islandConv.txt");
+    std :: ofstream outfile3 (path+"/final_adatomConv.txt");
 
-	if (outfile.is_open()){
+    KMC :: initConv(sigma,1);//1 initialises both island and adatom convolution if not already initialised
+    outIsland = island.gaussianConv();
+    outAdatom = adatom.gaussianConv();
 
-        outfile << L << "\t" << n_frames << "\t" << current_T << "\t" << concentration << "\t" << "\n";
-
+	if (outfile1.is_open()){
+        outfile1 << L << "\t" << n_frames << "\t" << current_T << "\t" << concentration << "\t" << "\n";
         for ( int i = 0;i < L;i++){
             for(int j =0;j<L;j++){
-                outfile << "\t"<< island.matrix[i][j]; 
+                outfile1 << "\t"<< island.matrix[i][j]; 
             }
-            outfile <<"\n";
+            outfile1 <<"\n";
 	    }
-        outfile <<"\n";
+        outfile1 <<"\n";
         for ( int i = 0;i < L;i++){
             for(int j =0;j<L;j++){
-                outfile << "\t"<< adatom.matrix[i][j]; 
+                outfile1 << "\t"<< adatom.matrix[i][j]; 
             }
-            outfile <<"\n";
+            outfile1 <<"\n";
 	    }
     }
-    
-    
-    outfile.close();
+    outfile1.close();
+
+    if (outfile2.is_open()&&outfile3.is_open()){
+            for ( int i = 0;i < L;i++){
+                for(int j =0;j<L;j++){
+                    outfile2 <<  outIsland[i][j] << "\n"; 
+                    outfile3 <<  outAdatom[i][j] << "\n"; 
+                }
+            }
+        outfile2.close();
+        outfile3.close();
+    }
+
 }
-
-
 
 bool KMC :: update_nn1DetachmentClasses(const int x, const int y){
 

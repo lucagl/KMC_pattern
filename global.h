@@ -1,27 +1,7 @@
 #ifndef GLOBAL_H
 #define GLOBAL_H
-
-
-#include <iostream>
-#include <fstream>//for file writing-reading
-#include <stdlib.h>     /* srand, rand */
-#include <string>
-#include <sstream>
-#include <time.h>
-#include <math.h>
-#include <ctime>
-#include <cstdlib>
-
-//Shared memory parallelisation
-#include <omp.h>
-//-----------------
 #include "functions.h"
 
-
-//#include <complex.h>
-
-
-#include <fftw3.h>
 
 
 
@@ -38,7 +18,7 @@ extern const int root_process;
 
 class FlatLand {
     protected :
-        int L;
+        unsigned L;
         // double * g;
         fftw_complex *gft;
         fftw_plan FT,IFT;
@@ -61,11 +41,13 @@ class FlatLand {
         };
         void initConv(const double);
 
-        void resetConv(double sigma){
+        void resetKernel(double sigma){
             if(isConvinit) {
+                double * gk = (double*) malloc (sizeof(double) * L*L);
                 double * g = (double*) malloc (sizeof(double) * L*L);
-                gauss(g,L,sigma);
-                fftw_execute_dft_r2c(FT,g,gft);
+                g = gauss(L,sigma);
+                fftShift(g,gk,L,L);
+                fftw_execute_dft_r2c(FT,gk,gft);
             }
             else {std :: cout << "Cannot reset non initialised instance. ERROR"<< std ::endl; return;}
         };
@@ -113,8 +95,7 @@ class FlatLand {
 
         //empty arrays related to convolution method
             if(isConvinit){
-                std :: cout << "\n fftw deallocation \n" << std :: flush;
-               
+               // std :: cout << "\n fftw deallocation \n" << std :: flush; 
             fftw_free(gft);
             fftw_destroy_plan(FT);
             fftw_destroy_plan(IFT);
