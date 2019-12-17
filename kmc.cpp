@@ -47,15 +47,20 @@ KMC:: KMC(const double J_read, const double BR_read, const double A_read, const 
     
 }
 
-void KMC :: initConv(double sigma, bool both){
+// void KMC :: initConv_island(double sigma){
 
-   // std :: cout << "\n Initialising convolution routines \n" << std :: flush;
+//    // std :: cout << "\n Initialising convolution routines \n" << std :: flush;
 
-    if(!both) island.initConv(sigma);
-
-    else{island.initConv(sigma); adatom.initConv(sigma);}
+//     island.initConv(sigma);
     
-}
+// }
+
+// void KMC :: initConv_adatom(double sigma){
+
+//    adatom.initConv(sigma);
+    
+// }
+
 
 void KMC :: reset(){
     
@@ -384,19 +389,14 @@ void KMC :: saveTxt (const std:: string path, int frame, int flag) const{
 }
 
 
-void KMC :: print_final (const int n_frames,const double sigma){
-    double** outIsland;
-    double** outAdatom;
+void KMC :: print_final (const int n_frames, bool isConv=0){
 
 
     auto path = "plots" + (std::to_string(proc_ID));
 	std :: ofstream outfile1 (path+"/configuration.txt");
-    std :: ofstream outfile2 (path+"/final_islandConv.txt");
-    std :: ofstream outfile3 (path+"/final_adatomConv.txt");
 
-    KMC :: initConv(sigma,1);//1 initialises both island and adatom convolution if not already initialised
-    outIsland = island.gaussianConv();
-    outAdatom = adatom.gaussianConv();
+    //KMC :: initConv(sigma,1);//1 initialises both island and adatom convolution if not already initialised
+
 
 	if (outfile1.is_open()){
         outfile1 << L << "\t" << n_frames << "\t" << current_T << "\t" << concentration << "\t" << "\n";
@@ -416,17 +416,39 @@ void KMC :: print_final (const int n_frames,const double sigma){
     }
     outfile1.close();
 
-    if (outfile2.is_open()&&outfile3.is_open()){
-            for ( int i = 0;i < L;i++){
-                for(int j =0;j<L;j++){
-                    outfile2 <<  outIsland[i][j] << "\n"; 
-                    outfile3 <<  outAdatom[i][j] << "\n"; 
-                }
-            }
-        outfile2.close();
-        outfile3.close();
-    }
+    if (isConv){
 
+        double** outIsland;
+        double** outAdatom;
+        std :: ofstream outfile2 (path+"/final_islandConv.txt");
+        std :: ofstream outfile3 (path+"/final_adatomConv.txt");
+
+        if(!adatom.isConv()){
+            std :: cout <<"Adatom convolution not initialized, using defaut sigma"<< std :: endl;
+            double sigma = L/50;
+            adatom.initConv(sigma);
+            }
+        if(!island.isConv()){
+            std :: cout <<"Island convolution not initialized, using defaut sigma"<< std :: endl;
+            double sigma = L/100;
+            island.initConv(sigma);
+            }
+    
+        outIsland = island.gaussianConv();
+        outAdatom = adatom.gaussianConv();
+
+        if (outfile2.is_open()&&outfile3.is_open()){
+                for ( int i = 0;i < L;i++){
+                    for(int j =0;j<L;j++){
+                        outfile2 <<  outIsland[i][j] << "\n"; 
+                        outfile3 <<  outAdatom[i][j] << "\n"; 
+                    }
+                }
+            outfile2.close();
+            outfile3.close();
+        }
+
+    }
 }
 
 bool KMC :: update_nn1DetachmentClasses(const int x, const int y){

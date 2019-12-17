@@ -281,9 +281,10 @@ if(proc_ID==0){
 // kmc.reset();
 // auto path2 = "dummy";
 // kmc.saveTxt(path2,0);
+kmc.initConv_adatom(double(L)/20);
+kmc.initConv_island(2);
 
-
-kmc.print_final(n_steps/print_every,sigma);
+kmc.print_final(n_steps/print_every,1);
 
 MPI_Finalize();
 

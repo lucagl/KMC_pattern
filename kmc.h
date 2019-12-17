@@ -14,7 +14,8 @@ public:
 
     KMC(const double, const double, const double, const double,const int, const bool, const int, const double, const double T0);
 
-    void initConv (double,bool both=0);
+    void initConv_island (double sigma){island.initConv(sigma);};
+    void initConv_adatom (double sigma){adatom.initConv(sigma);};
 
     void reset ();
 
@@ -25,7 +26,7 @@ public:
     double step(const double , const bool debug_mode  = false);
 
     void saveTxt(const std :: string,const int,const  int flag =0 ) const;
-    void print_final(const int,const double) ;//CHECK and CHANGE not very elegant
+    void print_final(const int, const bool) ;//CHECK and CHANGE not very elegant
 
     double get_concentration() const;
     int* get_nevents() const;

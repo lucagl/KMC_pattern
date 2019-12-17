@@ -28,17 +28,8 @@ class FlatLand {
         unsigned short ** matrix;
         int getBox()const {return L;};
         double ** gaussianConv() const;
+        bool isConv() const {return isConvinit;};
         
-
-        FlatLand(){};
-
-        FlatLand(const int L_in){
-            L = L_in;
-            matrix =new unsigned short*[L];
-            for (int i =0;i<L;i++){
-                matrix[i] = new unsigned short [L] (); 
-            }
-        };
         void initConv(const double);
 
         void resetKernel(double sigma){
@@ -66,6 +57,16 @@ class FlatLand {
             outfile.close();
         };
 
+        FlatLand(){};
+
+        FlatLand(const int L_in){
+            L = L_in;
+            matrix =new unsigned short*[L];
+            for (int i =0;i<L;i++){
+                matrix[i] = new unsigned short [L] (); 
+            }
+        };
+        
 
 
 

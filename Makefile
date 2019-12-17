@@ -21,7 +21,7 @@ global.o : global.h global.cpp functions.h
 Events.o : Events.h Events.cpp functions.h
 	$(COMP) -c Events.cpp $(FFTFLAG) $(OPENMPFLAG) $(OPTIMFLAGS)
 
-kmc.o : Events.h Adatom.h Island.h
+kmc.o : Events.h Adatom.h Island.h kmc.cpp
 	$(COMP) -c kmc.cpp $(FFTFLAG) $(OPENMPFLAG) $(OPTIMFLAGS)
 
 clean:
