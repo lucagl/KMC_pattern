@@ -28,6 +28,8 @@ System of coordinates is x: left-right-wise and y: top-bottom wise. The indexes 
 - Redefine all 2d arrays in contiguous memory to avoid copying them in temporal variable for fourier transform
 	(However if the convolution is done just a few times should not be too heavy)
 
+-Check coherency variable types everywhere (es. int and unsigned..)
+
 
 
 /////
@@ -82,7 +84,6 @@ int main(int argc, char **argv){
 // char **argv; //MPI stuff
 
 const double J =0.2;
-const double sigma =2;
 
 double T0,conc0, A, BR, E_shift;
 int L,radius, n_steps;
@@ -128,13 +129,17 @@ if(proc_ID == root_process){
 
 seed = time(NULL)*(proc_ID+1);
 
+int syst_cores = std :: stoi(exec("grep -c ^processor /proc/cpuinfo"));
 
-#pragma omp parallel 
+//std :: cout << syst_cores << std :: endl;
+#pragma omp parallel num_threads(syst_cores)
 {
 	#pragma omp single
 	{
-	std :: cout << "\n Max number of threads per process used = " << omp_get_max_threads() << "\n \n";
-	localseed = new unsigned[omp_get_max_threads()];//one seed per potential thread
+	max_threads = omp_get_num_threads();
+	// max_threads = omp_get_max_threads(); Use this if threads are set from environment variable
+	std :: cout << "\n Max number of threads per process used = " << max_threads << "\n \n";
+	localseed = new unsigned[max_threads];//one seed per potential thread
 	}
 	
 	unsigned id = omp_get_thread_num();	
@@ -177,34 +182,6 @@ system(remove_old);
 	KMC kmc(J,BR,A,E_shift,L,is_circle,radius,conc0,T0);
 	kmc.init();
 
-	//__________________
-	
-	// kmc.initConv(sigma,1);
-
-	// double** convResult = kmc.getIslandConv();//current state
-	// unsigned short** directResult = kmc.getIsland();//current state;
-
-// if(proc_ID==0){
-// 	std :: string file_name1 = "dummy/initial_smooth.txt";
-//     std :: ofstream outfile1 (file_name1);
-// 	std :: string file_name2 = "dummy/initial.txt";
-// 	std :: ofstream outfile2 (file_name2);
-
-// 	for (int i = 0; i < L; i++)
-// 	{
-// 		for (int j = 0; j < L; j++)
-// 		{
-// 			outfile1 << convResult[i][j]<< "\n";
-// 			outfile2 << directResult[i][j]<< "\n"; 
-// 		}
-		
-// 	}
-// 	outfile1.close();
-// 	outfile2.close();
-// }
-
-
-
 //_____________________________ EPISODES ______________________________
 
 // int e=0;
@@ -236,6 +213,7 @@ for (int k = 1; k <= n_steps; k++){
 		//std :: cout << floor(float(k)/n_steps)*100 << "% (threads per process= "<< n_threads << " )"<< std :: flush;
 		std :: cout  << " || "<< std :: flush;
 		n_threads= ceil(float(kmc.get_classN()[25])/3500);//update number threads based on number of diffusing adatoms (very empirical..)
+		if(n_threads>max_threads) n_threads = max_threads;
 		}
 }
 
@@ -283,8 +261,26 @@ if(proc_ID==0){
 // kmc.saveTxt(path2,0);
 kmc.initConv_adatom(double(L)/20);
 kmc.initConv_island(2);
-
 kmc.print_final(n_steps/print_every,1);
+
+// double sigma = 1;
+// double** convResult_isl, ** convResult_adt; 
+// for (int i = 0; i < 20; i++)
+// {
+	
+// 	kmc.initConv_adatom(sigma*3);
+// 	kmc.initConv_island(sigma);
+// 	convResult_isl = kmc.getIslandConv();
+// 	convResult_adt = kmc.getAdatomConv();
+	
+// 	std:: string file1 = "dummy/island" + std::to_string(i) + ".txt";
+// 	std:: string file2 = "dummy/adatom" + std::to_string(i) + ".txt";
+// 	printFile(convResult_isl,L,file1,std::to_string(sigma));
+// 	printFile(convResult_adt,L,file2,std::to_string(sigma*3));
+// 	sigma+=0.2;
+
+// }
+
 
 MPI_Finalize();
 

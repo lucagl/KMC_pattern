@@ -28,7 +28,16 @@ public:
 			nn2[i] = new unsigned short[L] ();
 		}
 		
-		if (radius!=0){
+		if (radius >= L){
+			//vertical bar
+			std :: cout << "\nVertical bar\n "<< std :: endl;
+			for(int i =0;i<L; i++){		
+					for(int j =int(L/2-L/20);j<int(L/2+L/20);j++){
+						matrix[i][j] = 1;
+					}
+				}
+		}
+		else{
 			int x0 = int(L/2);
 			if(circle == false){
 				for(int i =0;i<L; i++){		
@@ -49,8 +58,9 @@ public:
 				}
 			}	
 		}
-	// initialise kernel and fft for convolution
-	}
+	};
+
+
 
 // copy assignement operator
 

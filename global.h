@@ -10,10 +10,10 @@
 // GLOBAL VARIABLES 
 extern const double  PI; //A = attachment const, F=adatom diffusion constant
 extern int proc_ID,n_proc;
-extern unsigned seed,total_n_proc,n_threads;
+extern unsigned seed,total_n_proc,n_threads,max_threads;
 extern unsigned* localseed;
 extern const int root_process;
-
+extern const int n_threadsFTT;
 
 
 class FlatLand {
@@ -46,7 +46,7 @@ class FlatLand {
         void saveTxt(const std::string& file_name, const double T, const double c) const {
             std :: ofstream outfile (file_name);
             if (outfile.is_open()){
-                outfile <<"#T = " << T <<"\tc ="<<c <<"\n";;
+                outfile <<"#T = " << T <<"\tc ="<<c <<"\n";
                 outfile << "#Island\n";
                 for ( int i = 0;i < L;i++){
                     for(int j =0;j<L;j++){

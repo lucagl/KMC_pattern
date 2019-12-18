@@ -3,6 +3,9 @@
 
 
 
+#include <memory>
+
+
 void read_input(int* L, double* T, double* c, int* radius, bool* is_circle, 
 double* A, double* BR, double* E_shift, int* n_steps, int* print_every){
 
@@ -145,4 +148,31 @@ void fftShift(double* in, double* out,const int xdim, const int ydim, int x_shif
     }
   }
 
+}
+
+void printFile(double** in, const int L, const std::string& file_name,const std::string&flag )  {
+	std :: ofstream outfile (file_name);
+	if (outfile.is_open()){
+		if(flag!="Null") outfile <<flag << "\n";
+		for ( int i = 0;i < L;i++){
+			for(int j =0;j<L;j++){
+				outfile << in[i][j]<< "\n"; 
+			}
+		}
+	}
+	outfile.close();
+}
+
+
+std::string exec(const char* cmd) {
+    std::array<char, 128> buffer;
+    std::string result;
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
+    if (!pipe) {
+        throw std::runtime_error("popen() failed!");
+    }
+    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+        result += buffer.data();
+    }
+    return result;
 }

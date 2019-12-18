@@ -36,5 +36,9 @@ double* gauss(const int, const double);
 
 void fftShift(double*, double*, const int , const int, int x_shift=0, int y_shift=0);
 
+void printFile(double**, const int , const std::string&,const std::string&flag = "Null" );
+
+std::string exec(const char* );
+
 
  #endif

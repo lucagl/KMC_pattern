@@ -5,9 +5,10 @@
 //Define global variables
 const double PI = 3.14159265358979323846;
 const int root_process=0;
-unsigned id,seed,n_threads;
+unsigned id,seed,n_threads, max_threads;
 int proc_ID,n_proc;
 unsigned* localseed;
+const int n_threadsFTT = 4;
 //_______________________________
 
 
@@ -15,9 +16,8 @@ unsigned* localseed;
 void FlatLand :: initConv(const double sigma){
     int Lf = L/2+1;
     double norm = 1./(double(L)*double(L));
-    const int n_threadsFTT = 4;
 
-    if(isConvinit) return;
+    if(isConvinit) {resetKernel(sigma); return;}
 
     isConvinit = true;
     
@@ -58,7 +58,7 @@ double** FlatLand :: gaussianConv()const {
     fftw_complex *convolft = fftw_alloc_complex (L * Lf);
 
     
-    #pragma omp parallel 
+    #pragma omp parallel num_threads(n_threadsFTT)
     {
         #pragma omp for 
         for (int i = 0; i < L*L; i++)
