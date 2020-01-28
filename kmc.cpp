@@ -63,8 +63,9 @@ KMC:: KMC(const double J_read, const double BR_read, const double A_read, const 
 
 
 void KMC :: reset(){
-    
-    std :: cout << "\n RESETTING \n" << std :: flush;
+    if(proc_ID == root_process){
+        std :: cout << "\n RESETTING \n" << std :: flush;
+    }
     island = Island(L,init_isCircle,init_radius);
     adatom = Adatom(L,c0);
     
@@ -80,7 +81,9 @@ void KMC :: reset(){
 
 //BETA NEVER TESTED------------------------------------
 void KMC :: read (const std :: string filename){      
-        std :: cout << "\n Overwriting initial configuration \n";
+        if(proc_ID == root_process){
+            std :: cout << "\n Overwriting initial configuration \n";
+        }
         std :: string line;
 
         // std :: cin >> filename;
@@ -144,7 +147,9 @@ void KMC :: read (const std :: string filename){
 void KMC :: init(){
     
 // assign correct rate per class element 
-std :: cout << "\n Initialising classes \n"<< std :: flush;
+    if(proc_ID == root_process){
+        std :: cout << "\n Initialising classes \n"<< std :: flush;
+    }
     R[_0x0].setRate(det_rate(0,0)); 
     R[_1x0].setRate(det_rate(1,0));
     R[_2x0].setRate(det_rate(2,0));
@@ -372,21 +377,39 @@ int* KMC :: get_classN() const {
 }
 
 
-void KMC :: saveTxt (const std:: string path, int frame, int flag) const{
+void KMC :: saveTxt (const std:: string path, int frame,  bool isConv, bool flag) const{
 
-    //auto path = "plots" + (std::to_string(proc_ID));
-    auto name_a = path + "/adatom" + std::to_string(frame) + ".txt";
-    auto name_b = path + "/island" + std::to_string(frame) + ".txt";
 
     if (flag==0){
-        adatom.saveTxt(name_a,current_T,concentration);
-        island.saveTxt(name_b,current_T,concentration);
+        if(!isConv){
+                auto name_a = path + "/adatom" + std::to_string(frame) + ".txt";
+                auto name_b = path + "/island" + std::to_string(frame) + ".txt";
+                adatom.saveTxt(name_a,current_T,concentration);
+                island.saveTxt(name_b,current_T,concentration);
+        }
+        else
+        {
+            auto name_a = path + "/adatom_conv" + std::to_string(frame) + ".txt";
+            auto name_b = path + "/island_conv" + std::to_string(frame) + ".txt";
+            adatom.saveTxt_conv(name_a,current_T,concentration);
+            island.saveTxt_conv(name_b,current_T,concentration);
+        }
+        
     }
     else if (flag ==1){
-        island.saveTxt(name_b,current_T, concentration);
+        if(!isConv){
+           
+            auto name_b = path + "/island" + std::to_string(frame) + ".txt";
+            island.saveTxt(name_b,current_T,concentration);
+        }
+        else
+        {
+            auto name_b = path + "/island_conv" + std::to_string(frame) + ".txt";
+            island.saveTxt_conv(name_b,current_T,concentration);
+        }
     }
 
-}
+}   
 
 
 void KMC :: print_final (const int n_frames, bool isConv=0){

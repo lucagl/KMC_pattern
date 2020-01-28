@@ -12,7 +12,7 @@ class KMC {
 
 public:
 
-    KMC(const double, const double, const double, const double,const int, const bool, const int, const double, const double T0);
+    KMC(const double, const double, const double, const double,const int, const bool, const int, const double, const double);
 
     void initConv_island (double sigma){island.initConv(sigma);};
     void initConv_adatom (double sigma){adatom.initConv(sigma);};
@@ -25,7 +25,7 @@ public:
 
     double step(const double , const bool debug_mode  = false);
 
-    void saveTxt(const std :: string,const int,const  int flag =0 ) const;
+    void saveTxt(const std :: string,const int, const bool isConv=false,const  bool flag =false ) const;
     void print_final(const int, const bool) ;//CHECK and CHANGE not very elegant
 
     double get_concentration() const;

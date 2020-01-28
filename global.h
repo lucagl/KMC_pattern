@@ -47,10 +47,28 @@ class FlatLand {
             std :: ofstream outfile (file_name);
             if (outfile.is_open()){
                 outfile <<"#T = " << T <<"\tc ="<<c <<"\n";
-                outfile << "#Island\n";
+                outfile << "#Positions\n";
                 for ( int i = 0;i < L;i++){
                     for(int j =0;j<L;j++){
                         outfile << matrix[i][j]<< "\n"; 
+                    }
+                }
+            }
+            outfile.close();
+        };
+
+        void saveTxt_conv(const std::string& file_name, const double T, const double c) const {
+            
+            if(!isConvinit) return;
+
+            double ** matrix_conv = gaussianConv();
+            std :: ofstream outfile (file_name);
+            if (outfile.is_open()){
+                outfile <<"#T = " << T <<"\tc ="<<c <<"\n";
+                outfile << "#Positions convolved\n";
+                for ( int i = 0;i < L;i++){
+                    for(int j =0;j<L;j++){
+                        outfile << matrix_conv[i][j]<< "\n"; 
                     }
                 }
             }

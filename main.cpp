@@ -138,7 +138,9 @@ int syst_cores = std :: stoi(exec("grep -c ^processor /proc/cpuinfo"));
 	{
 	max_threads = omp_get_num_threads();
 	// max_threads = omp_get_max_threads(); Use this if threads are set from environment variable
-	std :: cout << "\n Max number of threads per process used = " << max_threads << "\n \n";
+	if(proc_ID == root_process){
+		std :: cout << "\n Max number of threads per process used = " << max_threads << "\n \n";
+	}
 	localseed = new unsigned[max_threads];//one seed per potential thread
 	}
 	
@@ -181,6 +183,8 @@ system(remove_old);
 	
 	KMC kmc(J,BR,A,E_shift,L,is_circle,radius,conc0,T0);
 	kmc.init();
+	kmc.initConv_adatom(double(L)/20);
+	kmc.initConv_island(2);
 
 //_____________________________ EPISODES ______________________________
 
@@ -191,8 +195,13 @@ system(remove_old);
 //kmc.reset();
 
 // _________________________RUN KMC ___________________________
-std :: cout << "\n *Starting integration* \n" << std :: endl;
-kmc.saveTxt(path,0);
+
+if(proc_ID == root_process){
+	std :: cout << "\n *Starting integration* \n" << std :: endl;
+}
+
+kmc.saveTxt(path,0,true,true);
+//kmc.saveTxt(path,0);
 frame = 0;
 double t =0;
 for (int k = 1; k <= n_steps; k++){
@@ -207,13 +216,15 @@ for (int k = 1; k <= n_steps; k++){
 	
 	if ((k%print_every)== 0){
 		frame+=1;
-		kmc.saveTxt(path,frame);		
+		kmc.saveTxt(path,frame,true,true);//save convolved images
+		//kmc.saveTxt(path,frame);//same usual ones
+		n_threads= ceil(float(kmc.get_classN()[25])/3500);//update number threads based on number of diffusing adatoms (very empirical..)
+		if(n_threads>max_threads) n_threads = max_threads;		
 	}
 	if(k%(1+n_steps/10)==0 && proc_ID == root_process){
 		//std :: cout << floor(float(k)/n_steps)*100 << "% (threads per process= "<< n_threads << " )"<< std :: flush;
 		std :: cout  << " || "<< std :: flush;
-		n_threads= ceil(float(kmc.get_classN()[25])/3500);//update number threads based on number of diffusing adatoms (very empirical..)
-		if(n_threads>max_threads) n_threads = max_threads;
+		
 		}
 }
 
@@ -259,8 +270,7 @@ if(proc_ID==0){
 // kmc.reset();
 // auto path2 = "dummy";
 // kmc.saveTxt(path2,0);
-kmc.initConv_adatom(double(L)/20);
-kmc.initConv_island(2);
+
 kmc.print_final(n_steps/print_every,1);
 
 // double sigma = 1;

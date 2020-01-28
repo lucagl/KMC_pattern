@@ -30,9 +30,9 @@ public:
 		
 		if (radius >= L){
 			//vertical bar
-			std :: cout << "\nVertical bar\n "<< std :: endl;
+			//std :: cout << "\nVertical bar\n "<< std :: endl;
 			for(int i =0;i<L; i++){		
-					for(int j =int(L/2-L/20);j<int(L/2+L/20);j++){
+					for(int j =int(L/2-L/5);j<int(L/2+L/5);j++){
 						matrix[i][j] = 1;
 					}
 				}
