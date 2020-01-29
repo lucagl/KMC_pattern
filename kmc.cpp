@@ -1,9 +1,7 @@
 
-#include "global.h"
 #include "kmc.h"
-#include "Adatom.h"
-#include "Island.h"
-#include "Events.h"
+
+
 
 omp_lock_t writelock1, writelock2;
 static unsigned step_counter=0;
@@ -19,37 +17,89 @@ enum det_classes {
 };
 
 
-KMC:: KMC(const double J_read, const double BR_read, const double A_read, const double E_read){
+KMC:: KMC(const double J_read, const double BR_read, const double A_read, const double E_read,const int L_read, const bool is_circle, const int radius, const double conc_read, const double T0){
 
     if(proc_ID == root_process){
-            std :: cout << "\n Starting KMC with " << n_classes << " classes of events \n";
+            std :: cout << "\n Starting KMC with " << n_classes << " classes of events \n" << std :: flush;
     }
     J = J_read; // link strenght
     BR = BR_read; // Ratio between first neighbours energy and second neighbours one
     A =A_read; // attachment over diffusion parameter >0 =few attachement, <0 many attachement (diffusion dominated)
     E_shift = E_read; //Shift in detachment energy to increase equilibrium concentration
+    L = L_read;
+    current_T = T0;// initial temperature
+    c0 = conc_read; //initial concentration
+    concentration = c0;//set current concentration
+    init_isCircle=is_circle;
+    init_radius = radius;
+    
+    island = Island(L,is_circle,radius);
+    adatom = Adatom(L,c0);
+    // std :: cout << "\nHERE "<< std :: flush;
+    // std :: cout << island.nn1[0][4]<< std :: flush;
+    // std :: cout << "\nHERE "<< std :: flush;
+    for (int i = 0; i < n_classes-1; i++)
+    {
+        R[i].init();
+    }
+    R[diffusion].init(true);
 
+    
 }
 
-void KMC :: init (const int L_read, const bool is_circle, const int radius, const double conc_read, const double T0, const bool old_conf){
+// void KMC :: initConv_island(double sigma){
+
+//    // std :: cout << "\n Initialising convolution routines \n" << std :: flush;
+
+//     island.initConv(sigma);
+    
+// }
+
+// void KMC :: initConv_adatom(double sigma){
+
+//    adatom.initConv(sigma);
+    
+// }
 
 
-    if (old_conf) {
-        std :: cout << "\n Insert full path to last configuration file \n";
-        std :: string filename,line;
-        std :: cin >> filename;
+void KMC :: reset(){
+    if(proc_ID == root_process){
+        std :: cout << "\n RESETTING \n" << std :: flush;
+    }
+    island = Island(L,init_isCircle,init_radius);
+    adatom = Adatom(L,c0);
+    
+    for (int i = 0; i < n_classes; i++)
+    {
+        R[i].clear();
+    }
+
+    KMC :: init();
+    
+    
+}
+
+//BETA NEVER TESTED------------------------------------
+void KMC :: read (const std :: string filename){      
+        if(proc_ID == root_process){
+            std :: cout << "\n Overwriting initial configuration \n";
+        }
+        std :: string line;
+
+        // std :: cin >> filename;
        // std :: cout << filename;
 
 	    std :: ifstream finput(filename);
         
-	
+        // island.~Island();
+        // adatom.~Adatom();
 	    if (finput.is_open()){
 
             std :: getline(finput,line, '\t'); //extracts until character delimiter '\t'
             L= std::stoi(line); //parse to integer
             
-            island.init(L);
-            adatom.init(L);
+            island = Island(L);
+            adatom = Adatom(L);
 
             std :: getline(finput,line, '\t'); //skip
             std :: getline(finput,line, '\t'); 
@@ -88,59 +138,49 @@ void KMC :: init (const int L_read, const bool is_circle, const int radius, cons
         finput.close();
         }
         else{
-        std :: cout << "input file not found. Abort \n";
+        std :: cout << "Input file not found. Abort \n";
 		exit(EXIT_FAILURE);
         }
-    }
+}
 
-    else{
-        L = L_read;
-        current_T = T0;// initial temperature
-        concentration = conc_read; //initial concentration
-        
-        island.init(L,is_circle,radius);
-        adatom.init(L,concentration);
-    }
 
+void KMC :: init(){
     
-    for (int i = 0; i < n_classes-1; i++)
-    {
-        R[i].init(L);
-    }
-    R[diffusion].init(L,true);
 // assign correct rate per class element 
-
-    R[_0x0].D = det_rate(0,0); 
-    R[_1x0].D = det_rate(1,0);
-    R[_2x0].D = det_rate(2,0);
-    R[_3x0].D = det_rate(3,0);
-    R[_4x0].D = det_rate(4,0);
-    R[_0x1].D = det_rate(0,1);
-    R[_1x1].D = det_rate(1,1);
-    R[_2x1].D = det_rate(2,1);
-    R[_3x1].D = det_rate(3,1);
-    R[_4x1].D = det_rate(4,1);
-    R[_0x2].D = det_rate(0,2);
-    R[_1x2].D = det_rate(1,2);
-    R[_2x2].D = det_rate(2,2);
-    R[_3x2].D = det_rate(3,2);
-    R[_4x2].D = det_rate(4,2);
-    R[_0x3].D = det_rate(0,3);
-    R[_1x3].D = det_rate(1,3);
-    R[_2x3].D = det_rate(2,3);
-    R[_3x3].D = det_rate(3,3);
-    R[_4x3].D = det_rate(4,3);
-    R[_0x4].D = det_rate(0,4);
-    R[_1x4].D = det_rate(1,4);
-    R[_2x4].D = det_rate(2,4);
-    R[_3x4].D = det_rate(3,4);
+    if(proc_ID == root_process){
+        std :: cout << "\n Initialising classes \n"<< std :: flush;
+    }
+    R[_0x0].setRate(det_rate(0,0)); 
+    R[_1x0].setRate(det_rate(1,0));
+    R[_2x0].setRate(det_rate(2,0));
+    R[_3x0].setRate(det_rate(3,0));
+    R[_4x0].setRate(det_rate(4,0));
+    R[_0x1].setRate(det_rate(0,1));
+    R[_1x1].setRate(det_rate(1,1));
+    R[_2x1].setRate(det_rate(2,1));
+    R[_3x1].setRate(det_rate(3,1));
+    R[_4x1].setRate(det_rate(4,1));
+    R[_0x2].setRate(det_rate(0,2));
+    R[_1x2].setRate(det_rate(1,2));
+    R[_2x2].setRate(det_rate(2,2));
+    R[_3x2].setRate(det_rate(3,2));
+    R[_4x2].setRate(det_rate(4,2));
+    R[_0x3].setRate(det_rate(0,3));
+    R[_1x3].setRate(det_rate(1,3));
+    R[_2x3].setRate(det_rate(2,3));
+    R[_3x3].setRate(det_rate(3,3));
+    R[_4x3].setRate(det_rate(4,3));
+    R[_0x4].setRate(det_rate(0,4));
+    R[_1x4].setRate(det_rate(1,4));
+    R[_2x4].setRate(det_rate(2,4));
+    R[_3x4].setRate(det_rate(3,4));
     
-    R[attachment].D = att_rate();
-    R[diffusion].D = 4.0 *1; //4 possible movements, diffusion constant =1 (normalization)
-
+    R[attachment].setRate(att_rate());
+    R[diffusion].setRate(4.0 *1); //4 possible movements, diffusion constant =1 (normalization)
+    //std :: cout << "\n HERE "<< std :: flush;
     //compute all neighbour list
     island.init_neighbours(); 
-
+   // std :: cout << "\n HERE2 "<< std :: flush;
 // Fill classes
     for (int y = 0; y < L; y++){
         for (int x = 0; x < L; x++){
@@ -249,28 +289,26 @@ void KMC :: init (const int L_read, const bool is_circle, const int radius, cons
         }
     }
 
-    // std :: cout << "\n Initial rate per diffusing adatom  " << R[diffusion].D <<" \n";
+    // std :: cout << "\n Initial rate per diffusing adatom  " << R[diffusion].getPeratomRate() <<" \n";
     // std :: cout << "\n total rate for diff adatom  " << R[diffusion].getRate() <<" \n";
-    // std :: cout << "\n Initial rate per attachment adatom  " << R[attachment].D << "  # in the class= "<< R[attachment].N <<" \n";
+    // std :: cout << "\n Initial rate per attachment adatom  " << R[attachment].getPeratomRate() << "  # in the class= "<< R[attachment].N <<" \n";
     // std :: cout << "\n total rate for diff adatom  " << R[attachment].getRate() <<" \n";
 
 
 }
  
 
-double KMC ::  det_rate(const int nn1, const int nn2 ) const{
+inline double KMC :: det_rate(const int nn1, const int nn2 ) const{
 
     double rate;
-    //rate = exp((-J*(nn1+BR*nn2) - A)/current_T);
     rate = exp((-J*(nn1+BR*nn2) - A + E_shift)/current_T);//" attachment strenght"A=E_A-E_D with E_D: diff energy, E_A: attachment energy
 
     return rate;
 }
 
-double KMC ::  att_rate() const{
+inline double KMC ::  att_rate() const{
 
     double rate;
-    //rate = exp(-(A+E_shift)/current_T);
     rate = exp(-A/current_T);
 
     return rate;
@@ -289,17 +327,9 @@ double KMC :: cumulative (double* r){
     return R_sum;
 }
 
-int KMC ::  extract (int N) const{
-    if (N>RAND_MAX){
-        std :: cout << "\n Problem, cannot extract random number bigger than " << RAND_MAX << "\n";
-        exit(EXIT_FAILURE);
-    }
-    return (rand() % N);
-}
 
 
-
-bool KMC :: is_attSite(const int x,const int y) const{
+inline bool KMC :: is_attSite(const int x,const int y) const{
 	
 	int contact = false ;
 	int top,bottom,left,right;
@@ -347,52 +377,102 @@ int* KMC :: get_classN() const {
 }
 
 
-void KMC :: print (int frame, int flag) const{
+void KMC :: saveTxt (const std:: string path, int frame,  bool isConv, bool flag) const{
 
-    auto path = "plots" + (std::to_string(proc_ID));
-    auto name_a = path + "/adatom" + std::to_string(frame) + ".txt";
-    auto name_b = path + "/island" + std::to_string(frame) + ".txt";
 
     if (flag==0){
-        adatom.print(name_a,current_T,concentration);
-        island.print(name_b,current_T,concentration);
+        if(!isConv){
+                auto name_a = path + "/adatom" + std::to_string(frame) + ".txt";
+                auto name_b = path + "/island" + std::to_string(frame) + ".txt";
+                adatom.saveTxt(name_a,current_T,concentration);
+                island.saveTxt(name_b,current_T,concentration);
+        }
+        else
+        {
+            auto name_a = path + "/adatom_conv" + std::to_string(frame) + ".txt";
+            auto name_b = path + "/island_conv" + std::to_string(frame) + ".txt";
+            adatom.saveTxt_conv(name_a,current_T,concentration);
+            island.saveTxt_conv(name_b,current_T,concentration);
+        }
+        
     }
     else if (flag ==1){
-        island.print(name_b,current_T, concentration);
+        if(!isConv){
+           
+            auto name_b = path + "/island" + std::to_string(frame) + ".txt";
+            island.saveTxt(name_b,current_T,concentration);
+        }
+        else
+        {
+            auto name_b = path + "/island_conv" + std::to_string(frame) + ".txt";
+            island.saveTxt_conv(name_b,current_T,concentration);
+        }
     }
 
-}
+}   
 
-void KMC :: print_final (const int n_frames) const{
+
+void KMC :: print_final (const int n_frames, bool isConv=0){
+
 
     auto path = "plots" + (std::to_string(proc_ID));
-	std :: ofstream outfile (path+"/configuration.txt");
- 
+	std :: ofstream outfile1 (path+"/configuration.txt");
 
-	if (outfile.is_open()){
+    //KMC :: initConv(sigma,1);//1 initialises both island and adatom convolution if not already initialised
 
-        outfile << L << "\t" << n_frames << "\t" << current_T << "\t" << concentration << "\t" << "\n";
 
+	if (outfile1.is_open()){
+        outfile1 << L << "\t" << n_frames << "\t" << current_T << "\t" << concentration << "\t" << "\n";
         for ( int i = 0;i < L;i++){
             for(int j =0;j<L;j++){
-                outfile << "\t"<< island.matrix[i][j]; 
+                outfile1 << "\t"<< island.matrix[i][j]; 
             }
-            outfile <<"\n";
+            outfile1 <<"\n";
 	    }
-        outfile <<"\n";
+        outfile1 <<"\n";
         for ( int i = 0;i < L;i++){
             for(int j =0;j<L;j++){
-                outfile << "\t"<< adatom.matrix[i][j]; 
+                outfile1 << "\t"<< adatom.matrix[i][j]; 
             }
-            outfile <<"\n";
+            outfile1 <<"\n";
 	    }
     }
+    outfile1.close();
+
+    if (isConv){
+
+        double** outIsland;
+        double** outAdatom;
+        std :: ofstream outfile2 (path+"/final_islandConv.txt");
+        std :: ofstream outfile3 (path+"/final_adatomConv.txt");
+
+        if(!adatom.isConv()){
+            std :: cout <<"Adatom convolution not initialized, using defaut sigma"<< std :: endl;
+            double sigma = L/50;
+            adatom.initConv(sigma);
+            }
+        if(!island.isConv()){
+            std :: cout <<"Island convolution not initialized, using defaut sigma"<< std :: endl;
+            double sigma = L/100;
+            island.initConv(sigma);
+            }
     
-    
-    outfile.close();
+        outIsland = island.gaussianConv();
+        outAdatom = adatom.gaussianConv();
+
+        if (outfile2.is_open()&&outfile3.is_open()){
+                for ( int i = 0;i < L;i++){
+                    for(int j =0;j<L;j++){
+                        outfile2 <<  outIsland[i][j] << "\n"; 
+                        outfile3 <<  outAdatom[i][j] << "\n"; 
+                    }
+                }
+            outfile2.close();
+            outfile3.close();
+        }
+
+    }
 }
-
-
 
 bool KMC :: update_nn1DetachmentClasses(const int x, const int y){
 
@@ -1238,7 +1318,7 @@ bool KMC :: update_AttachmentClasses(const int x, const int y){
 
  	R_sum = cumulative(r); 
 
- 	d_rand =  ((double) rand() / (RAND_MAX)) * R_sum;
+ 	d_rand= ((double) rand() / (RAND_MAX)) * R_sum;
 
 /*===================================
 DETACHEMENT EVENT AT A NN1=0, NN2 =0 SITE
@@ -3703,8 +3783,8 @@ std :: vector <std :: tuple<int, int>> Diff_adatoms{};
     // }
 
         #pragma omp for 
-        for (unsigned long int i = 0; i < L*L; i++){
-            for(int k=0; k<adatom.matrix[i/L][i%L]; k++){
+        for (int i = 0; i < L*L; i++){
+            for(int k=0; k<adatom.matrix[i/L][i%L]; k++){//(y,x)[i][j] j advances at contiguous mem locations
                 omp_set_lock(&writelock1);
                     R[diffusion].populate(i%L,i/L);
                 omp_unset_lock(&writelock1);
@@ -3729,7 +3809,7 @@ step_counter++;
 
 //############# Time computation ########################
 
-//d_rand = ((double) rand() / (RAND_MAX));
+//d_ransetRate(((double) rand() / (RAND_MAX));
 //double time = -log(d_rand)/R_sum;
 
 //########################################################
@@ -3831,7 +3911,7 @@ void KMC :: debug (const unsigned who, const int x, const int y,  const bool err
     }
 
     else{
-        std:: cout << "Nothing happened = "<< who << "\n" << std :: flush ; 
+        std:: cout << "Nothing happenesetRate("<< who << "\n" << std :: flush ; 
         exit(EXIT_FAILURE);
     }
 
