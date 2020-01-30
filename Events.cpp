@@ -98,3 +98,11 @@ int * Events :: where (const int i) const{
 //     element.clear();    
 //     N=0;
 // }
+
+
+
+
+void Events :: setRateTimeDep(const double T_new , const double T_old) {
+    r = pow(r, T_old/T_new);
+    return;
+}

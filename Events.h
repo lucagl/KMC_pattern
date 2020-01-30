@@ -12,15 +12,18 @@ class Events {
 	//list more efficient than vector for deletion and insertion
 		bool is_diff;
 		double r;
-		inline double rate_general(){return r*double(N);};
-		double rate_diffusion(){return r;}; 
+		inline double rate_general()const {return r*double(N);};
+		double rate_diffusion() const {return r;}; 
 		double (Events :: *tRate) ();
 		 // elements in the class
 		
 
 	public:
 		void setRate(double in_rate){r=in_rate;}; // constant rate
-		double getPeratomRate(){return r;};
+
+		void setRateTimeDep(const double , const double);
+
+		double getPeratomRate()const {return r;};
 		//std::tuple<int, int> coordinate(int i); //return a tuple
 		//unsigned getNumber() const {return N;};
 		unsigned  N=0;
@@ -36,7 +39,7 @@ class Events {
 		void clear() {element.clear(); N=0;};
 		//double rate();
 		
-		double getRate() {return (this->*tRate) ();}
+		double getRate() const {return (this->*tRate) ();}
 
 		void init (const bool isDiff =0){
 			//L = box_size;

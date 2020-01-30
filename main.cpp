@@ -48,6 +48,12 @@ System of coordinates is x: left-right-wise and y: top-bottom wise. The indexes 
 
 - Change attachment site criteria based on being on the diagonal ? --> No but tempting..
 
+-------------------- POSSIBLE IMPROVEMENTS ---------------------
+
+- Use binary search for event extraction? 
+	However, since I use classes there are not that many possible events.
+	Maybe evffective without classes. Note that the class implies a second random number extraction for the event within it.
+
 ################################################################################
 */
 
@@ -68,15 +74,15 @@ int ierr;
 
 /*  Need:
 	methods to initialise and init
-		env.init() ok
-		env.reset() ok
+		env.init() <->kmc.init ok
+		env.reset() <->kmc.reset ok
 	methods to print
 		env.render()
 	methods for extracting informations:
 		env.action_space.sample() ..
 	step:
 	observation, reward, done, info = env.step(action)
-So what I called kmc could become environment.. However I need to set number of episodes..
+Crate env object in python. Better for plotting 
 */
 int main(int argc, char **argv){
 
@@ -85,11 +91,21 @@ int main(int argc, char **argv){
 
 const double J =0.2;
 
+const bool timeDepON = 1;
+
+const bool timeDepOFF =0;
+
+bool timeDep = timeDepOFF;
+
+double current_tPhys, current_T, tau;
+
+// variables form input file
 double T0,conc0, A, BR, E_shift;
-int L,radius, n_steps;
-int frame, print_every;
+int L,radius, n_steps,frame, print_every;
 
 bool read_old,is_circle;
+
+//----------------------------
 
 std::time_t start, end,curr_time;
 clock_t t1,t2;
@@ -177,11 +193,13 @@ system(remove_old);
 // -------------------------------------------------------
 
 
+
 // 	___________________INITIALIZATION _____________________________
 	
 	srand (seed);// initialise random generator differently for each MPI thread
 	
 	KMC kmc(J,BR,A,E_shift,L,is_circle,radius,conc0,T0);
+	current_T = T0;
 	kmc.init();
 	kmc.initConv_adatom(double(L)/20);
 	kmc.initConv_island(2);
@@ -203,17 +221,27 @@ if(proc_ID == root_process){
 kmc.saveTxt(path,0,true,true);
 //kmc.saveTxt(path,0);
 frame = 0;
-double t =0;
+
 for (int k = 1; k <= n_steps; k++){
 
-	/* Temperature can be changed here..
-	T = T0 + ..
-	A = A0 + ..
-	*/
-	// EVOLUTION STEP 
+	// ------------------ EVOLUTION STEP ------------------------------------------
+	double inputT = current_T + tau*0.001;
+	 
+	//TODO :let some relaxation.. 
+
+	tau=kmc.step(timeDep,inputT);
+
+	// update time and time dependent rates and variables 
 	
-	t+=kmc.step(T0);
+	current_tPhys += tau; //current elapsed physical time
+	std :: cout << tau <<"\n" ;
 	
+	
+
+// ----------------------------------------
+
+
+	// print on file, CPU update 
 	if ((k%print_every)== 0){
 		frame+=1;
 		kmc.saveTxt(path,frame,true,true);//save convolved images
@@ -226,6 +254,10 @@ for (int k = 1; k <= n_steps; k++){
 		std :: cout  << " || "<< std :: flush;
 		
 		}
+
+
+
+
 }
 
 //__________________ FINAL MESSAGES ____________________________
@@ -298,6 +330,8 @@ MPI_Finalize();
 
 
 return 0;
+
+
  
 }
 

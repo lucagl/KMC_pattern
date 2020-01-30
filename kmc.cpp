@@ -9,6 +9,7 @@ static unsigned step_counter=0;
 enum det_classes {
     // #nn1 X #nn2
     // N = nn1 + 5 * nn2
+    //nn1 = N%5 , nn2 = N/5
     _0x0 = 0, _1x0=1, _2x0=2, _3x0=3, _4x0=4,
     _0x1 = 5,_1x1 = 6, _2x1 = 7, _3x1 = 8, _4x1 = 9,
     _0x2 = 10, _1x2 = 11, _2x2 = 12, _3x2 = 13, _4x2 = 14,
@@ -47,20 +48,6 @@ KMC:: KMC(const double J_read, const double BR_read, const double A_read, const 
     
 }
 
-// void KMC :: initConv_island(double sigma){
-
-//    // std :: cout << "\n Initialising convolution routines \n" << std :: flush;
-
-//     island.initConv(sigma);
-    
-// }
-
-// void KMC :: initConv_adatom(double sigma){
-
-//    adatom.initConv(sigma);
-    
-// }
-
 
 void KMC :: reset(){
     if(proc_ID == root_process){
@@ -79,7 +66,7 @@ void KMC :: reset(){
     
 }
 
-//BETA NEVER TESTED------------------------------------
+// --------------------- CAREFUL!! BETA: NEVER TESTED ------------------------------------
 void KMC :: read (const std :: string filename){      
         if(proc_ID == root_process){
             std :: cout << "\n Overwriting initial configuration \n";
@@ -143,10 +130,14 @@ void KMC :: read (const std :: string filename){
         }
 }
 
+// ---------------------------------------------
+// ----------------------
+
+
+
 
 void KMC :: init(){
-    
-// assign correct rate per class element 
+    // assign correct rate per class element 
     if(proc_ID == root_process){
         std :: cout << "\n Initialising classes \n"<< std :: flush;
     }
@@ -181,7 +172,7 @@ void KMC :: init(){
     //compute all neighbour list
     island.init_neighbours(); 
    // std :: cout << "\n HERE2 "<< std :: flush;
-// Fill classes
+    // Fill classes
     for (int y = 0; y < L; y++){
         for (int x = 0; x < L; x++){
             if (island.nn1[y][x]==0 && island.nn2[y][x]==0 && island.matrix[y][x]){
@@ -316,15 +307,74 @@ inline double KMC ::  att_rate() const{
 
 
 double KMC :: cumulative (double* r){
+    //should I return t here since I need to compute it?
     
-    double R_sum =0;
+    double R_sum;
+
     r[0] = 0;
-    for (int i = 1; i <=n_classes; i++)
-    {
-        r[i] = r[i-1] + R[(i - 1)].getRate();
-    }
-    R_sum = r[n_classes];
-    return R_sum;
+
+    //if (T_new -current_T < threshold){
+        for (int i = 1; i <=n_classes; i++)
+        {
+            r[i] = r[i-1] + R[(i - 1)].getRate();
+        }
+        R_sum = r[n_classes];
+        return R_sum;
+   // }
+
+}
+
+double KMC :: der_cumulative (double* r){     
+        double dR_sum =0;
+        //double dr[n_classes];
+        //dr[0] = 0;
+        // for (int i = 1; i <n_classes-1; i++)
+        // {
+        //     dr[i] =dr[i-1] - (-J*((i%5)+BR*(i/5)) - A + E_shift) * R[(i - 1)].getRate()/(T*T);//check
+        // }
+        // dr[attachment] = dr[_3x4] - (-A/(T*T))* R[attachment].getRate();
+        // dR_sum = dr[n_classes-1];//diffusion constant has null derivative
+        for (int i = 1; i <n_classes-1; i++){
+            dR_sum += - (-J*((i%5)+BR*(i/5)) - A + E_shift) * R[(i - 1)].getRate()/(T*T);
+        }
+        dR_sum += - (-A/(T*T))* R[attachment].getRate();
+
+        return dR_sum;
+
+
+}
+
+double KMC :: setRates( const double T_new, const double T_old){
+
+    //use power trick 
+
+    R[_0x0].setRateTimeDep(T_new,current_T); 
+    R[_1x0].setRateTimeDep(T_new,current_T);
+    R[_2x0].setRateTimeDep(T_new,current_T);
+    R[_3x0].setRateTimeDep(T_new,current_T);
+    R[_4x0].setRateTimeDep(T_new,current_T);
+    R[_0x1].setRateTimeDep(T_new,current_T);
+    R[_1x1].setRateTimeDep(T_new,current_T);
+    R[_2x1].setRateTimeDep(T_new,current_T);
+    R[_3x1].setRateTimeDep(T_new,current_T);
+    R[_4x1].setRateTimeDep(T_new,current_T);
+    R[_0x2].setRateTimeDep(T_new,current_T);
+    R[_1x2].setRateTimeDep(T_new,current_T);
+    R[_2x2].setRateTimeDep(T_new,current_T);
+    R[_3x2].setRateTimeDep(T_new,current_T);
+    R[_4x2].setRateTimeDep(T_new,current_T);
+    R[_0x3].setRateTimeDep(T_new,current_T);
+    R[_1x3].setRateTimeDep(T_new,current_T);
+    R[_2x3].setRateTimeDep(T_new,current_T);
+    R[_3x3].setRateTimeDep(T_new,current_T);
+    R[_4x3].setRateTimeDep(T_new,current_T);
+    R[_0x4].setRateTimeDep(T_new,current_T);
+    R[_1x4].setRateTimeDep(T_new,current_T);
+    R[_2x4].setRateTimeDep(T_new,current_T);
+    R[_3x4].setRateTimeDep(T_new,current_T);
+    
+    R[attachment].setRateTimeDep(T_new,current_T);
+
 }
 
 
@@ -1296,14 +1346,8 @@ bool KMC :: update_AttachmentClasses(const int x, const int y){
     return error;    
 }
 
-		
-	
-
-
-
-
    
- double KMC:: step(const double T, const bool debug_mode){
+ double KMC:: step(const bool timeDep, const double dT, const bool debug_mode){
 
     unsigned who = 100;//dummy value
    
@@ -1314,11 +1358,16 @@ bool KMC :: update_AttachmentClasses(const int x, const int y){
     double r [n_classes+1];
     bool error = 0;
 
-    current_T = T;
+    //new ----------
+
+    static double tau =0 ;//maybe change to usual class variable
+
+    //
+
 
  	R_sum = cumulative(r); 
 
- 	d_rand= ((double) rand() / (RAND_MAX)) * R_sum;
+ 	d_rand= ((double) (rand()+1) /(double) (RAND_MAX+1)) * R_sum;
 
 /*===================================
 DETACHEMENT EVENT AT A NN1=0, NN2 =0 SITE
@@ -3794,21 +3843,45 @@ concentration = static_cast<double>(adatom.N)/(L*L);//update average concentrati
 
 step_counter++;
 
-
-//############# Time computation ########################
-
-//d_ransetRate(((double) rand() / (RAND_MAX));
-//double time = -log(d_rand)/R_sum;
-
-//########################################################
-
-
 if((proc_ID==root_process && debug_mode)||(proc_ID==root_process && error==true)){
     debug(who,x,y,error);
 }
+//############# Time computation ########################
+d_rand = ((double) (rand()+1) /(double) (RAND_MAX+1));
+double u = -log(d_rand);
+if(!timeDep){
+    tau = u/R_sum;
+    return tau;
+}
+else{
 
+    T.push_back(inputT); 
+    
+    double dR_sum = der_cumulative(current_T);//r is already calculated dR_sum = sum [der (R_det)] + der(R[attachment]). You also need current_T which is available
+    
+    alpha = dR_sum*dT/(R_sum*R_sum) 
 
-return 0;
+    tau = u/R_sum *(1-0.5*alpha * u);
+
+    if (0.5*alpha*u> threshold) tau = integrate_cumul(r)..;//need the whole array of temperatures..
+
+    /*
+    temperature evolution = action evolution (<--> related to policy). Thus it make snse to have it as a class variable that can be instanciated for instance with "sample" routine
+    Transfer all temperature evolution here internally 
+    */
+
+   //tau must be the one of before
+    static? dT = (inputT - current_T)/tau; //to be used at next time step --> stati or internal variable of the class
+
+    kmc.setRates(inputT,current_T); //new rates according to new temperature for next kmc evolution. Globally t->R(t)->evolution->tau->T(t+tau)->R(t+tau)->evolution->tau ecc..
+    static? elapsed_Physt +=tau;
+    tPhys.push_back(elapsed_Physt); //array of cumulative tau associated with the physical time
+
+    current_T = inputT;
+
+    return tau;
+}
+//########################################################
 
 
 }
