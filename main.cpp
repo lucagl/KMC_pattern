@@ -216,19 +216,10 @@ for (int k = 1; k <= n_steps; k++){
 	
 	if ((k%print_every)== 0){
 		frame+=1;
-<<<<<<< HEAD
-		kmc.print(frame);
-
-		//update number threads
-		//Parallelization seems conveninet only for sizes about 200X200 onwards.
-		//Make it non parallelized if using sistemaically smaller sizes..
-		n_threads= ceil(float(kmc.get_classN()[25])/3000);
-=======
 		kmc.saveTxt(path,frame,true,true);//save convolved images
 		//kmc.saveTxt(path,frame);//same usual ones
 		n_threads= ceil(float(kmc.get_classN()[25])/3500);//update number threads based on number of diffusing adatoms (very empirical..)
 		if(n_threads>max_threads) n_threads = max_threads;		
->>>>>>> devel
 	}
 	if(k%(1+n_steps/10)==0 && proc_ID == root_process){
 		//std :: cout << floor(float(k)/n_steps)*100 << "% (threads per process= "<< n_threads << " )"<< std :: flush;
