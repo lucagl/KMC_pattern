@@ -36,6 +36,16 @@ public:
 						matrix[i][j] = 1;
 					}
 				}
+
+//diagonal bar given theta
+// think a bit about the consequences of working with integers.. I will have somemiscrepancies arising from that?
+// shall I introduce a conventional normalization factor ?
+				// for(int i =0;i<L; i++){		
+				// 	for(int j =0;j<L;j++){
+					// if (i = int(cos(theta)))
+				// 		matrix[i][j] = 1;
+				// 	}
+				// }
 		}
 		else{
 			int x0 = int(L/2);

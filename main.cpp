@@ -129,7 +129,8 @@ if(proc_ID == root_process){
 
 seed = time(NULL)*(proc_ID+1);
 
-int syst_cores = std :: stoi(exec("grep -c ^processor /proc/cpuinfo"));
+// int syst_cores = std :: stoi(exec("grep -c ^processor /proc/cpuinfo"));//linux
+int syst_cores = std :: stoi(exec("sysctl -n hw.ncpu"));//mac
 
 //std :: cout << syst_cores << std :: endl;
 #pragma omp parallel num_threads(syst_cores)
@@ -183,7 +184,7 @@ system(remove_old);
 	
 	KMC kmc(J,BR,A,E_shift,L,is_circle,radius,conc0,T0);
 	kmc.init();
-	kmc.initConv_adatom(double(L)/20);
+	kmc.initConv_adatom(double(L)/30);
 	kmc.initConv_island(2);
 
 //_____________________________ EPISODES ______________________________

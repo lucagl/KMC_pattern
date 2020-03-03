@@ -1,7 +1,7 @@
 COMP = mpic++
 OPTIMFLAGS = -O1 
 OPENMPFLAG = -fopenmp
-FFTFLAG = -L/usr/local/lib/ -lfftw3 -lfftw3_omp
+FFTFLAG = -lfftw3 -lfftw3_omp
 
 OBJS = main.o functions.o global.o Events.o kmc.o
 

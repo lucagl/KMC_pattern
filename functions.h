@@ -20,7 +20,8 @@
 #include <omp.h>
 //-----------------
 //Fast Fourier Transform
-#include <fftw3.h>
+#include </usr/local/include/fftw3.h>
+//Linux machine #include <fftw3.h>
 
 void read_input(int* , double* , double* , int* , bool*, double* , double *, double *, int* , int*);
 
