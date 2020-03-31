@@ -6,10 +6,18 @@
 #include <memory>
 
 
-void read_input(int* L, double* T, double* c, int* radius, bool* is_circle, 
+void read_input(std :: string inName, int* L, double* T, double* c, int* radius, bool* is_circle, 
 double* A, double* BR, double* E_shift, int* n_steps, int* print_every){
 
-	std :: ifstream finput("Input.txt");
+	std :: ifstream finput;
+
+	if(inName!=""){
+		finput.open(inName.c_str());
+		//std :: cout << "Reading " << inName.c_str()<< "\n";
+	}
+	else {finput.open("Input.txt");}
+
+
     std :: string line;
 	
 
@@ -86,7 +94,7 @@ double* A, double* BR, double* E_shift, int* n_steps, int* print_every){
 		finput.close();
 	}
 	else {
-		std :: cout << "input file not existing. Abort \n";
+		std :: cout << "input file not provided. Abort \n";
 		exit(EXIT_FAILURE);
 	}
 

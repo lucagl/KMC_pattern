@@ -83,6 +83,18 @@ int main(int argc, char **argv){
 // int argc; //MPI stuff
 // char **argv; //MPI stuff
 
+std :: string inFile = "";
+
+if(proc_ID == root_process){
+	if( argc == 2 ) {
+		inFile = argv[1];
+	}
+
+	else {
+		std :: cout << "Usage: ./cppfile InputFile\n";
+		std:: cout << "\n Attempt to read default \"Input.txt\" file as input\n";
+	}
+}
 const double J =0.2;
 
 double T0,conc0, A, BR, E_shift;
@@ -116,7 +128,7 @@ if(proc_ID == root_process){
 	std :: cout << "\n Start time " << ctime(&curr_time) << "\n" << std :: flush;	
 	std :: cout << "\n Number of processors= "<< n_proc << std :: endl ;
 
-	read_input(&L, &T0,& conc0, &radius,&is_circle, &A, &BR, &E_shift, &n_steps, &print_every);//, &read_old);
+	read_input(inFile, &L, &T0,& conc0, &radius,&is_circle, &A, &BR, &E_shift, &n_steps, &print_every);//, &read_old);
 
 	std :: cout << "\n J= " << J << "  |  L= "<< L<< "  |  T=" << T0 <<"  |  concentration= "<< conc0 <<
 		"  |  initial island radius= "<< radius <<  "  |  attachment parameter= " << A << "	|	Energy shift= " << E_shift << "	|	Bond energy ratio= "<< BR <<"  |  kmc steps= " << n_steps<<
@@ -129,8 +141,8 @@ if(proc_ID == root_process){
 
 seed = time(NULL)*(proc_ID+1);
 
-// int syst_cores = std :: stoi(exec("grep -c ^processor /proc/cpuinfo"));//linux
-int syst_cores = std :: stoi(exec("sysctl -n hw.ncpu"));//mac
+int syst_cores = std :: stoi(exec("grep -c ^processor /proc/cpuinfo"));//linux
+//int syst_cores = std :: stoi(exec("sysctl -n hw.ncpu"));//mac
 
 //std :: cout << syst_cores << std :: endl;
 #pragma omp parallel num_threads(syst_cores)
@@ -201,7 +213,7 @@ if(proc_ID == root_process){
 	std :: cout << "\n *Starting integration* \n" << std :: endl;
 }
 
-kmc.saveTxt(path,0,true,true);
+kmc.saveTxt(path,0,true,false);
 //kmc.saveTxt(path,0);
 frame = 0;
 double t =0;
@@ -217,7 +229,7 @@ for (int k = 1; k <= n_steps; k++){
 	
 	if ((k%print_every)== 0){
 		frame+=1;
-		kmc.saveTxt(path,frame,true,true);//save convolved images
+		kmc.saveTxt(path,frame,true,false);//save convolved images
 		//kmc.saveTxt(path,frame);//same usual ones
 		n_threads= ceil(float(kmc.get_classN()[25])/3500);//update number threads based on number of diffusing adatoms (very empirical..)
 		if(n_threads>max_threads) n_threads = max_threads;		
