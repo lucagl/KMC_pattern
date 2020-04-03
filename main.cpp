@@ -183,7 +183,7 @@ MPI_Bcast(&print_every, 1, MPI_INT, 0, MPI_COMM_WORLD);
 auto aString = "mkdir plots" + (std::to_string(proc_ID));
 const char* makeDir = aString.c_str();
 auto path = "plots" + (std::to_string(proc_ID));
-auto bString ="rm " + path + "/island* " + path + "/adatom* " + path + "/island_conv* "  path + "/adatom_conv* ";
+auto bString ="rm " + path + "/island* " + path + "/adatom* " + path + "/island_conv* " + path + "/adatom_conv* ";
 const char* remove_old = bString.c_str();
 system(makeDir);
 system(remove_old);
