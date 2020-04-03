@@ -24,6 +24,7 @@ mpic++ *.cpp -o kmc.ex -lfftw3_omp -lfftw3 -fopenmp
 System of coordinates is x: left-right-wise and y: top-bottom wise. The indexes of arrays start with 0.
 
 -------------------- TODO -----------------
+- Delete final print function not really nice
 - [minor]displace kmc.init() within constructor?
 - Redefine all 2d arrays in contiguous memory to avoid copying them in temporal variable for fourier transform
 	(However if the convolution is done just a few times should not be too heavy)
@@ -83,6 +84,18 @@ int main(int argc, char **argv){
 // int argc; //MPI stuff
 // char **argv; //MPI stuff
 
+std :: string inFile = "";
+
+if(proc_ID == root_process){
+	if( argc == 2 ) {
+		inFile = argv[1];
+	}
+
+	else {
+		std :: cout << "Usage: ./cppfile InputFile\n";
+		std:: cout << "\n Attempt to read default \"Input.txt\" file as input\n";
+	}
+}
 const double J =0.2;
 
 double T0,conc0, A, BR, E_shift;
@@ -116,7 +129,7 @@ if(proc_ID == root_process){
 	std :: cout << "\n Start time " << ctime(&curr_time) << "\n" << std :: flush;	
 	std :: cout << "\n Number of processors= "<< n_proc << std :: endl ;
 
-	read_input(&L, &T0,& conc0, &radius,&is_circle, &A, &BR, &E_shift, &n_steps, &print_every);//, &read_old);
+	read_input(inFile, &L, &T0,& conc0, &radius,&is_circle, &A, &BR, &E_shift, &n_steps, &print_every);//, &read_old);
 
 	std :: cout << "\n J= " << J << "  |  L= "<< L<< "  |  T=" << T0 <<"  |  concentration= "<< conc0 <<
 		"  |  initial island radius= "<< radius <<  "  |  attachment parameter= " << A << "	|	Energy shift= " << E_shift << "	|	Bond energy ratio= "<< BR <<"  |  kmc steps= " << n_steps<<
@@ -129,8 +142,8 @@ if(proc_ID == root_process){
 
 seed = time(NULL)*(proc_ID+1);
 
-// int syst_cores = std :: stoi(exec("grep -c ^processor /proc/cpuinfo"));//linux
-int syst_cores = std :: stoi(exec("sysctl -n hw.ncpu"));//mac
+int syst_cores = std :: stoi(exec("grep -c ^processor /proc/cpuinfo"));//linux
+//int syst_cores = std :: stoi(exec("sysctl -n hw.ncpu"));//mac
 
 //std :: cout << syst_cores << std :: endl;
 #pragma omp parallel num_threads(syst_cores)
@@ -201,10 +214,12 @@ if(proc_ID == root_process){
 	std :: cout << "\n *Starting integration* \n" << std :: endl;
 }
 
-kmc.saveTxt(path,0,true,true);
+
 //kmc.saveTxt(path,0);
 frame = 0;
 double t =0;
+
+kmc.saveTxt(path,frame,t,true,true);
 for (int k = 1; k <= n_steps; k++){
 
 	/* Temperature can be changed here..
@@ -217,7 +232,7 @@ for (int k = 1; k <= n_steps; k++){
 	
 	if ((k%print_every)== 0){
 		frame+=1;
-		kmc.saveTxt(path,frame,true,true);//save convolved images
+		kmc.saveTxt(path,frame,t,true,true);//save convolved images
 		//kmc.saveTxt(path,frame);//same usual ones
 		n_threads= ceil(float(kmc.get_classN()[25])/3500);//update number threads based on number of diffusing adatoms (very empirical..)
 		if(n_threads>max_threads) n_threads = max_threads;		
@@ -249,6 +264,7 @@ if(proc_ID==0){
 	 << counter[22]<<"\tDetachment # nn1= 3,nn2=4 " << counter[23]
 	 <<"\nAttachment # = " << counter[24] << "\t Diffusion # = " << counter[25] ;
 
+	std :: cout << "\n Elapsed physical time = " << t<<std::endl ;
 	
 	end = std :: time(NULL);
 	elapsed_time = end-start;
@@ -256,7 +272,7 @@ if(proc_ID==0){
 	seconds = ((float)t2-(float)t1)/ CLOCKS_PER_SEC;
 	time(&curr_time);
 	std :: cout << "\n Elapsed CPU time = " << seconds <<"s \n"<< std:: endl;
-	std :: cout << "\n Elapsed time = " << elapsed_time <<"s \n"<< std:: endl;
+	std :: cout << "\n Elapsed integration time = " << elapsed_time <<"s \n"<< std:: endl;
 	std :: cout << "\n End time " << ctime(&curr_time) << "\n";
 	std :: cout << "-----------"<<"\n"<< std:: endl;
 

@@ -43,10 +43,11 @@ class FlatLand {
             else {std :: cout << "Cannot reset non initialised instance. ERROR"<< std ::endl; return;}
         };
 
-        void saveTxt(const std::string& file_name, const double T, const double c) const {
+        void saveTxt(const std::string& file_name, const double T, const double c, const double time) const {
             std :: ofstream outfile (file_name);
             if (outfile.is_open()){
                 outfile <<"#T = " << T <<"\tc ="<<c <<"\n";
+                outfile << "# Physical time = "<< time <<"\n";
                 outfile << "#Positions\n";
                 for ( int i = 0;i < L;i++){
                     for(int j =0;j<L;j++){
@@ -57,7 +58,7 @@ class FlatLand {
             outfile.close();
         };
 
-        void saveTxt_conv(const std::string& file_name, const double T, const double c) const {
+        void saveTxt_conv(const std::string& file_name, const double T, const double c, const double time) const {
             
             if(!isConvinit) return;
 
@@ -65,6 +66,7 @@ class FlatLand {
             std :: ofstream outfile (file_name);
             if (outfile.is_open()){
                 outfile <<"#T = " << T <<"\tc ="<<c <<"\n";
+                outfile << "# Physical time = "<< time <<"\n";
                 outfile << "#Positions convolved\n";
                 for ( int i = 0;i < L;i++){
                     for(int j =0;j<L;j++){

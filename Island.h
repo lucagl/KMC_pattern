@@ -31,9 +31,20 @@ public:
 		if (radius >= L){
 			//vertical bar
 			//std :: cout << "\nVertical bar\n "<< std :: endl;
-			for(int i =0;i<L; i++){		
-					for(int j =int(L/2-L/5);j<int(L/2+L/5);j++){
-						matrix[i][j] = 1;
+			//Multiple vertical lines
+			//estimate how many bands fit..	
+			int thickness = 20;
+		
+			std :: cout << "Band thickness =" << thickness<< " Number of bands " << L/thickness/2;
+			
+			for(int i =0;i<L; i++){	
+					//for(int j =int(L/2-L/5);j<int(L/2+L/5);j++){
+					int n = 0;
+					bool flag=0;
+					for(int j =int(thickness/2);j<L-int(thickness/2);j++){
+						if(n%thickness==0) {flag = !flag; }//std:: cout << n<<"SWITCH"<< flag <<"\n";}
+						matrix[i][j] = flag;
+						n+=1;	
 					}
 				}
 

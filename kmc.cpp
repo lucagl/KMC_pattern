@@ -377,22 +377,22 @@ int* KMC :: get_classN() const {
 }
 
 
-void KMC :: saveTxt (const std:: string path, int frame,  bool isConv, bool flag) const{
+void KMC :: saveTxt (const std:: string path, const int frame, const double time, bool isConv, bool flag) const{
 
 
     if (flag==0){
         if(!isConv){
                 auto name_a = path + "/adatom" + std::to_string(frame) + ".txt";
                 auto name_b = path + "/island" + std::to_string(frame) + ".txt";
-                adatom.saveTxt(name_a,current_T,concentration);
-                island.saveTxt(name_b,current_T,concentration);
+                adatom.saveTxt(name_a,current_T,concentration,time);
+                island.saveTxt(name_b,current_T,concentration,time);
         }
         else
         {
             auto name_a = path + "/adatom_conv" + std::to_string(frame) + ".txt";
             auto name_b = path + "/island_conv" + std::to_string(frame) + ".txt";
-            adatom.saveTxt_conv(name_a,current_T,concentration);
-            island.saveTxt_conv(name_b,current_T,concentration);
+            adatom.saveTxt_conv(name_a,current_T,concentration,time);
+            island.saveTxt_conv(name_b,current_T,concentration,time);
         }
         
     }
@@ -400,17 +400,19 @@ void KMC :: saveTxt (const std:: string path, int frame,  bool isConv, bool flag
         if(!isConv){
            
             auto name_b = path + "/island" + std::to_string(frame) + ".txt";
-            island.saveTxt(name_b,current_T,concentration);
+            island.saveTxt(name_b,current_T,concentration,time);
         }
         else
         {
             auto name_b = path + "/island_conv" + std::to_string(frame) + ".txt";
-            island.saveTxt_conv(name_b,current_T,concentration);
+            island.saveTxt_conv(name_b,current_T,concentration,time);
         }
     }
 
 }   
 
+
+//This function should be removed in future implementations
 
 void KMC :: print_final (const int n_frames, bool isConv=0){
 
@@ -1317,8 +1319,10 @@ bool KMC :: update_AttachmentClasses(const int x, const int y){
     current_T = T;
 
  	R_sum = cumulative(r); 
-
- 	d_rand= ((double) rand() / (RAND_MAX)) * R_sum;
+    //std :: cout << "R sum = " << R_sum << std::fflush;
+    // Uniform random number between (0,1]
+ 	d_rand= ((double) (rand()+1)) /((double) (RAND_MAX) +1) * R_sum;
+    //std :: cout << "\nRandom number " << d_rand << std::fflush;
 
 /*===================================
 DETACHEMENT EVENT AT A NN1=0, NN2 =0 SITE
@@ -3809,9 +3813,15 @@ step_counter++;
 
 //############# Time computation ########################
 
-//d_ransetRate(((double) rand() / (RAND_MAX));
-//double time = -log(d_rand)/R_sum;
+d_rand= ((double) (rand()+1)) /((double) (RAND_MAX) +1);
 
+double time = -log(d_rand)/R_sum;
+
+
+//std :: cout << "Random number " << ((double) (rand()+1)) /((double) (RAND_MAX) +1) << std::fflush;
+//std :: cout << "\n Drand =  " << d_rand << std::fflush;
+
+//std :: cout <<"\n Physical time  " <<log(d_rand)<<"\t"<<time <<std::endl;
 //########################################################
 
 
@@ -3820,12 +3830,13 @@ if((proc_ID==root_process && debug_mode)||(proc_ID==root_process && error==true)
 }
 
 
-return 0;
+return time;
 
 
 }
  
- 
+ // FUTURE IMPROVEMENT: use preprocessor macros to turn on this feature when compiling in debug mode
+// (has to e defined as an optinon in the makefile)
  
 void KMC :: debug (const unsigned who, const int x, const int y,  const bool error) const {
 

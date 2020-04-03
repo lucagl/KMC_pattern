@@ -25,7 +25,7 @@ public:
 
     double step(const double , const bool debug_mode  = false);
 
-    void saveTxt(const std :: string,const int, const bool isConv=false,const  bool flag =false ) const;
+    void saveTxt(const std :: string,const int, const double , const bool isConv=false,const  bool flag =false ) const;
     void print_final(const int, const bool) ;//CHECK and CHANGE not very elegant
 
     double get_concentration() const;
