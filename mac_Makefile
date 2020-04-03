@@ -1,3 +1,4 @@
+#need to set enviromental variable export OMPI_CC=gcc-9
 COMP = mpic++
 OPTIMFLAGS = -O1 
 OPENMPFLAG = -fopenmp
