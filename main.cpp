@@ -24,6 +24,7 @@ mpic++ *.cpp -o kmc.ex -lfftw3_omp -lfftw3 -fopenmp
 System of coordinates is x: left-right-wise and y: top-bottom wise. The indexes of arrays start with 0.
 
 -------------------- TODO -----------------
+- Delete final print function not really nice
 - [minor]displace kmc.init() within constructor?
 - Redefine all 2d arrays in contiguous memory to avoid copying them in temporal variable for fourier transform
 	(However if the convolution is done just a few times should not be too heavy)
@@ -213,10 +214,12 @@ if(proc_ID == root_process){
 	std :: cout << "\n *Starting integration* \n" << std :: endl;
 }
 
-kmc.saveTxt(path,0,true,false);
+
 //kmc.saveTxt(path,0);
 frame = 0;
 double t =0;
+
+kmc.saveTxt(path,frame,t,true,true);
 for (int k = 1; k <= n_steps; k++){
 
 	/* Temperature can be changed here..
@@ -229,7 +232,7 @@ for (int k = 1; k <= n_steps; k++){
 	
 	if ((k%print_every)== 0){
 		frame+=1;
-		kmc.saveTxt(path,frame,true,false);//save convolved images
+		kmc.saveTxt(path,frame,t,true,true);//save convolved images
 		//kmc.saveTxt(path,frame);//same usual ones
 		n_threads= ceil(float(kmc.get_classN()[25])/3500);//update number threads based on number of diffusing adatoms (very empirical..)
 		if(n_threads>max_threads) n_threads = max_threads;		
@@ -261,6 +264,7 @@ if(proc_ID==0){
 	 << counter[22]<<"\tDetachment # nn1= 3,nn2=4 " << counter[23]
 	 <<"\nAttachment # = " << counter[24] << "\t Diffusion # = " << counter[25] ;
 
+	std :: cout << "\n Elapsed physical time = " << t<<std::endl ;
 	
 	end = std :: time(NULL);
 	elapsed_time = end-start;
@@ -268,7 +272,7 @@ if(proc_ID==0){
 	seconds = ((float)t2-(float)t1)/ CLOCKS_PER_SEC;
 	time(&curr_time);
 	std :: cout << "\n Elapsed CPU time = " << seconds <<"s \n"<< std:: endl;
-	std :: cout << "\n Elapsed time = " << elapsed_time <<"s \n"<< std:: endl;
+	std :: cout << "\n Elapsed integration time = " << elapsed_time <<"s \n"<< std:: endl;
 	std :: cout << "\n End time " << ctime(&curr_time) << "\n";
 	std :: cout << "-----------"<<"\n"<< std:: endl;
 
