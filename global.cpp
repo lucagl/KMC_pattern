@@ -5,10 +5,9 @@
 //Define global variables
 const double PI = 3.14159265358979323846;
 const int root_process=0;
-unsigned id,seed,n_threads, max_threads;
+unsigned id,seed,n_threads, max_threads,n_threadsFTT;
 int proc_ID,n_proc;
 unsigned* localseed;
-const int n_threadsFTT = 4;
 //_______________________________
 
 
@@ -27,10 +26,12 @@ void FlatLand :: initConv(const double sigma){
     //g contains gaussian centered in the center (L/2)
     g=gauss(L,sigma);
     fftShift(g,gk,L,L);
+    gft = fftw_alloc_complex (L * Lf);//real to complex. The complex array has size N_x x (N_y/2 +1) 
 
     fftw_init_threads();
+    n_threadsFTT = max_threads;
     fftw_plan_with_nthreads(n_threadsFTT);
-    gft = fftw_alloc_complex (L * Lf);//real to complex. The complex array has size N_x x (N_y/2 +1) 
+    
 
     FT = fftw_plan_dft_r2c_2d (L,L,gk,gft,FFTW_ESTIMATE);//plan for real to complex
     IFT = fftw_plan_dft_c2r_2d (L,L,gft,gk,FFTW_ESTIMATE);//plan for complex to real        

@@ -3705,8 +3705,9 @@ std :: vector <std :: tuple<int, int>> Diff_adatoms{};
         Diff_adatoms.push_back(std :: make_tuple (R[diffusion].where(i)[0],R[diffusion].where(i)[1]));
     }
 
-    #pragma omp parallel private (i_rand,x,y) num_threads(n_threads)
+    #pragma omp parallel private (i_rand,x,y)
     {   
+        
          //OBS: 
         /* Localseed must be set externally or at every call new memory location assigned and rand_r will re-initialise the sequence.
         Observe that I cannot have same seed or every thread has exactly same sequence.
@@ -3719,7 +3720,7 @@ std :: vector <std :: tuple<int, int>> Diff_adatoms{};
   
         int id = omp_get_thread_num();
 
-        #pragma omp for schedule(dynamic) nowait//further could prevent correlations in random sequnces
+        #pragma omp for schedule(dynamic) nowait//further could prevent correlations in random sequences (?)
             for (unsigned long int i = 0; i < Diff_adatoms.size(); i++){
                 //std :: cout << "\n thread "<< omp_get_thread_num() << "loop index" << i << std:: flush;
 
@@ -3768,6 +3769,8 @@ std :: vector <std :: tuple<int, int>> Diff_adatoms{};
         // Refill diffusion and attachment classes 
         #pragma omp single  
         {
+            // std::cout << "\n\n"<< omp_get_num_threads();
+            // std::cout << "\n\n"<< omp_get_max_threads ();
             R[diffusion].clear();
             R[attachment].clear();
         }

@@ -10,10 +10,9 @@
 // GLOBAL VARIABLES 
 extern const double  PI; //A = attachment const, F=adatom diffusion constant
 extern int proc_ID,n_proc;
-extern unsigned seed,total_n_proc,n_threads,max_threads;
+extern unsigned seed,total_n_proc,n_threads,max_threads,n_threadsFTT;
 extern unsigned* localseed;
 extern const int root_process;
-extern const int n_threadsFTT;
 
 
 class FlatLand {

@@ -25,6 +25,7 @@ System of coordinates is x: left-right-wise and y: top-bottom wise. The indexes 
 
 -------------------- TODO -----------------
 - Delete final print function not really nice
+- Give (shared memory) multithreading option from input file
 - [minor]displace kmc.init() within constructor?
 - Redefine all 2d arrays in contiguous memory to avoid copying them in temporal variable for fourier transform
 	(However if the convolution is done just a few times should not be too heavy)
@@ -66,7 +67,7 @@ System of coordinates is x: left-right-wise and y: top-bottom wise. The indexes 
 //------
 
 int ierr;
-
+bool multi_thread = true;
 /*  Need:
 	methods to initialise and init
 		env.init() ok
@@ -86,16 +87,7 @@ int main(int argc, char **argv){
 
 std :: string inFile = "";
 
-if(proc_ID == root_process){
-	if( argc == 2 ) {
-		inFile = argv[1];
-	}
 
-	else {
-		std :: cout << "Usage: ./cppfile InputFile\n";
-		std:: cout << "\n Attempt to read default \"Input.txt\" file as input\n";
-	}
-}
 const double J =0.2;
 
 double T0,conc0, A, BR, E_shift;
@@ -125,6 +117,15 @@ MPI_Comm_rank(MPI_COMM_WORLD, &proc_ID);
 // ----------------- READ INPUT AND PRINT INITIAL INFO -------------
 if(proc_ID == root_process){
 	// read from input file and broadcast
+	if( argc == 2 ) {
+		inFile = argv[1];
+	}
+
+	else {
+		std :: cout << "Usage: ./cppfile InputFile\n";
+		std:: cout << "\n Attempt to read default \"Input.txt\" file as input\n";
+	}
+
 	time(&curr_time);
 	std :: cout << "\n Start time " << ctime(&curr_time) << "\n" << std :: flush;	
 	std :: cout << "\n Number of processors= "<< n_proc << std :: endl ;
@@ -152,18 +153,28 @@ int syst_cores = std :: stoi(exec("grep -c ^processor /proc/cpuinfo"));//linux
 	{
 	max_threads = omp_get_num_threads();
 	// max_threads = omp_get_max_threads(); Use this if threads are set from environment variable
-	if(proc_ID == root_process){
-		std :: cout << "\n Max number of threads per process used = " << max_threads << "\n \n";
-	}
-	localseed = new unsigned[max_threads];//one seed per potential thread
-	}
-	
+
+	localseed = new unsigned[max_threads];//one seed per potential thread (more than those actually used )
+
 	unsigned id = omp_get_thread_num();	
 
 	localseed[id] = seed *(id + 1);
-	
+
+	if(multi_thread) max_threads = floor(max_threads/n_proc);
+	else max_threads = 1;
+
+	if(proc_ID == root_process){
+			std :: cout << "\n Max number of threads available in the machine = " << syst_cores << "\n";
+			std :: cout << "\n Max number of threads per process used = " << max_threads << "\n";
+		}
+	//std::cout << "\n\n"<< omp_get_num_threads();
+	}
 }
-	
+
+
+omp_set_num_threads (max_threads);
+n_threads = max_threads;//useless if allow omp to choose number of threads at runtime
+
 
 //RootID broadcast data to other processors
 MPI_Bcast(&L, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -183,7 +194,7 @@ MPI_Bcast(&print_every, 1, MPI_INT, 0, MPI_COMM_WORLD);
 auto aString = "mkdir plots" + (std::to_string(proc_ID));
 const char* makeDir = aString.c_str();
 auto path = "plots" + (std::to_string(proc_ID));
-auto bString ="rm " + path + "/island* " + path + "/adatom* " + path + "/island_conv* " + path + "/adatom_conv* ";
+auto bString ="rm " + path + "/island* " + path + "/adatom* ";
 const char* remove_old = bString.c_str();
 system(makeDir);
 system(remove_old);
@@ -234,8 +245,8 @@ for (int k = 1; k <= n_steps; k++){
 		frame+=1;
 		kmc.saveTxt(path,frame,t,true,true);//save convolved images
 		//kmc.saveTxt(path,frame);//same usual ones
-		n_threads= ceil(float(kmc.get_classN()[25])/3500);//update number threads based on number of diffusing adatoms (very empirical..)
-		if(n_threads>max_threads) n_threads = max_threads;		
+		//n_threads= ceil(float(kmc.get_classN()[25])/3500);//update number threads based on number of diffusing adatoms (very empirical..)
+		//if(n_threads>max_threads) n_threads = max_threads;		
 	}
 	if(k%(1+n_steps/10)==0 && proc_ID == root_process){
 		//std :: cout << floor(float(k)/n_steps)*100 << "% (threads per process= "<< n_threads << " )"<< std :: flush;

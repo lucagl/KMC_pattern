@@ -33,9 +33,9 @@ public:
 			//std :: cout << "\nVertical bar\n "<< std :: endl;
 			//Multiple vertical lines
 			//estimate how many bands fit..	
-			int thickness = 20;
+			int thickness = 40;
 		
-			std :: cout << "Band thickness =" << thickness<< " Number of bands " << L/thickness/2;
+			std :: cout << "Band thickness =" << thickness<< " Number of bands " << int(L/thickness)/2;
 			
 			for(int i =0;i<L; i++){	
 					//for(int j =int(L/2-L/5);j<int(L/2+L/5);j++){
