@@ -11,8 +11,9 @@ const int n_classes = 26 ;
 class KMC {
 
 public:
-
-    KMC(const double, const double, const double, const double,const int, const bool, const int, const double, const double);
+    KMC(): L(0){};
+    KMC (unsigned L_in) : L(L_in), island(L_in), adatom(L_in) {}; 
+    KMC(const double, const double, const double, const double,const unsigned, const bool, const int, const double, const double);
 
     void initConv_island (double sigma){island.initConv(sigma);};
     void initConv_adatom (double sigma){adatom.initConv(sigma);};
@@ -75,7 +76,7 @@ private:
     bool init_isCircle;
     int init_radius;
     int event_counter[n_classes] {};
-    int L;
+    const unsigned L;
     double  concentration;
     double J;
     double BR;

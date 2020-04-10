@@ -14,16 +14,15 @@ class Adatom: public FlatLand {
         // bool is_attSite(int ,int );
         //void saveTxt (const std::string&, const double, const double) const;
         Adatom() {};
-        Adatom(const int L_in , const double concentration =0){
-           // std :: cout << "Initialising adatom \n" << std :: flush;
+        Adatom(const unsigned L_in , const double concentration =0) : FlatLand(L_in) {
+            //std :: cout << "Initialising adatom \n" << std :: flush;
             int current_density = 1;
             int rand_inti,rand_intj;
 
-            L = L_in;
-            matrix =new unsigned short*[L];
-            for (int i =0;i<L;i++){
-                matrix[i] = new unsigned short [L] (); 
-            }
+            //matrix =new unsigned short*[L];
+            // for (int i =0;i<L;i++){
+            //     matrix[i] = new unsigned short [L] (); 
+            // }
 
             if(concentration!=0){
                 N = static_cast<int>(concentration*L*L);
@@ -41,17 +40,6 @@ class Adatom: public FlatLand {
             
             }
         }
-// //Misses copy assignement and copy constructior (rule of three)
-
-
-//         ~Adatom(){
-//         for(int i = 0; i < L; ++i) {
-//             delete [] matrix[i];
-//         }
-//         delete [] matrix;	
-//         }
-
-
 };
 
 #endif

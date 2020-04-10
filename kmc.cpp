@@ -17,7 +17,9 @@ enum det_classes {
 };
 
 
-KMC:: KMC(const double J_read, const double BR_read, const double A_read, const double E_read,const int L_read, const bool is_circle, const int radius, const double conc_read, const double T0){
+KMC:: KMC(const double J_read, const double BR_read, const double A_read, const double E_read,
+const unsigned L_read, const bool is_circle, const int radius, const double conc_read, const double T0) : L(L_read)
+{
 
     if(proc_ID == root_process){
             std :: cout << "\n Starting KMC with " << n_classes << " classes of events \n" << std :: flush;
@@ -26,15 +28,17 @@ KMC:: KMC(const double J_read, const double BR_read, const double A_read, const 
     BR = BR_read; // Ratio between first neighbours energy and second neighbours one
     A =A_read; // attachment over diffusion parameter >0 =few attachement, <0 many attachement (diffusion dominated)
     E_shift = E_read; //Shift in detachment energy to increase equilibrium concentration
-    L = L_read;
+    // L = L_read;
     current_T = T0;// initial temperature
     c0 = conc_read; //initial concentration
     concentration = c0;//set current concentration
     init_isCircle=is_circle;
     init_radius = radius;
+  
+    adatom = Adatom(L_read,c0);
     
-    island = Island(L,is_circle,radius);
-    adatom = Adatom(L,c0);
+    island = Island(L_read,is_circle,radius);
+    
     // std :: cout << "\nHERE "<< std :: flush;
     // std :: cout << island.nn1[0][4]<< std :: flush;
     // std :: cout << "\nHERE "<< std :: flush;
@@ -96,10 +100,10 @@ void KMC :: read (const std :: string filename){
 	    if (finput.is_open()){
 
             std :: getline(finput,line, '\t'); //extracts until character delimiter '\t'
-            L= std::stoi(line); //parse to integer
+            int L_in= std::stoi(line); //parse to integer
             
-            island = Island(L);
-            adatom = Adatom(L);
+            island = Island(L_in);
+            adatom = Adatom(L_in);
 
             std :: getline(finput,line, '\t'); //skip
             std :: getline(finput,line, '\t'); 

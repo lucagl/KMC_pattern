@@ -11,19 +11,17 @@ public:
 	unsigned short ** nn1;
 	unsigned short ** nn2;
 	Island(){};
-	Island(const int L_in, const bool circle =0, const int radius = 0){
+	Island(const unsigned L_in, const bool circle =0, const int radius = 0): FlatLand(L_in)
+	{
 	//default value in order to be able to initialise the object given the total box size when reading from previous integration file
-	//	std :: cout << "Initialising island \n" << std :: flush;
-		L = L_in;
-		// std :: cout << "\n L=" << L << std :: flush;
-		// std :: cout << "\n radius=" << radius << std :: flush;
-		matrix = new unsigned short*[L];
+	    // std :: cout << "\n Initialising island \n\n" << std :: endl;
+		// std :: cout << "Island L="<< L << std:: endl;
+		//matrix = new unsigned short*[L];
 		
 		nn1 = new unsigned short* [L];
 		nn2 = new unsigned short* [L];
-
 		for (int i =0;i<L;i++){ 
-			matrix[i] = new unsigned short[L] ();
+			//matrix[i] = new unsigned short[L] ();
 			nn1[i] = new unsigned short[L] ();
 			nn2[i] = new unsigned short[L] ();
 		}
@@ -47,18 +45,10 @@ public:
 						n+=1;	
 					}
 				}
-
-//diagonal bar given theta
-// think a bit about the consequences of working with integers.. I will have somemiscrepancies arising from that?
-// shall I introduce a conventional normalization factor ?
-				// for(int i =0;i<L; i++){		
-				// 	for(int j =0;j<L;j++){
-					// if (i = int(cos(theta)))
-				// 		matrix[i][j] = 1;
-				// 	}
-				// }
+			
 		}
 		else{
+			
 			int x0 = int(L/2);
 			if(circle == false){
 				for(int i =0;i<L; i++){		
@@ -86,6 +76,7 @@ public:
 // copy assignement operator
 
  Island& operator=(const Island& oldobj){
+	 //Don't know why it does not call copy assignment of mother class also..
             //std:: cout << "\n Island class copy assignement called"<< std :: flush; 
             L = oldobj.getBox();
             nn1 =new unsigned short*[L];

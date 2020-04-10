@@ -4,16 +4,19 @@
 
 
 
+//////////////// Global macros and constants /////////////
+#define WARN " <<WARNING>> "
+#define ERR " <<ERROR>> "
+#define INFO " <<INFO>> "
 
-
-
-// GLOBAL VARIABLES 
 extern const double  PI; //A = attachment const, F=adatom diffusion constant
 extern int proc_ID,n_proc;
 extern unsigned seed,total_n_proc,n_threads,max_threads,n_threadsFTT;
 extern unsigned* localseed;
 extern const int root_process;
 
+
+// Main mother class
 
 class FlatLand {
     protected :
@@ -76,14 +79,17 @@ class FlatLand {
             outfile.close();
         };
 
-        FlatLand(){};
+        FlatLand() {};
 
-        FlatLand(const int L_in){
+        FlatLand(const unsigned L_in){
             L = L_in;
+           // std :: cout << "\n flatland L= "<< L << std:: endl;
             matrix =new unsigned short*[L];
             for (int i =0;i<L;i++){
                 matrix[i] = new unsigned short [L] (); 
             }
+            //std :: cout << "\n Initializing Flatland \n"<< std:: endl;
+            
         };
         
 
@@ -107,7 +113,7 @@ class FlatLand {
 
         ~FlatLand(){
           //  std :: cout << "\n Flatland destroyer \n" << std :: flush;
-            int Lf =L/2 +1;
+            
             for(int i = 0; i < L; ++i) {
                 delete [] matrix[i];
             }

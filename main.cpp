@@ -25,7 +25,7 @@ System of coordinates is x: left-right-wise and y: top-bottom wise. The indexes 
 
 -------------------- TODO -----------------
 - Delete final print function not really nice
-- Give (shared memory) multithreading option from input file
+- IMPORTANT Give (shared memory) multithreading option from input file, recommend FALSE
 - [minor]displace kmc.init() within constructor?
 - Redefine all 2d arrays in contiguous memory to avoid copying them in temporal variable for fourier transform
 	(However if the convolution is done just a few times should not be too heavy)
@@ -86,15 +86,15 @@ int main(int argc, char **argv){
 // char **argv; //MPI stuff
 
 std :: string inFile = "";
-
-
+int numargs = argc-1;
+//std :: cout << "\n argc =" << argc<< std::flush;
 const double J =0.2;
 
 double T0,conc0, A, BR, E_shift;
 int L,radius, n_steps;
 int frame, print_every;
 
-bool read_old,is_circle;
+bool is_circle;
 
 std::time_t start, end,curr_time;
 clock_t t1,t2;
@@ -116,13 +116,15 @@ MPI_Comm_rank(MPI_COMM_WORLD, &proc_ID);
 
 // ----------------- READ INPUT AND PRINT INITIAL INFO -------------
 if(proc_ID == root_process){
-	// read from input file and broadcast
-	if( argc == 2 ) {
+	// read from input file and broadcastls
+	if(numargs) {
 		inFile = argv[1];
+		if (numargs>1)
+		std :: cout << WARN << "Ignoring additional non required parameters" << std :: endl;
 	}
 
 	else {
-		std :: cout << "Usage: ./cppfile InputFile\n";
+		//std :: cout << "Usage: ./cppfile InputFile\n";
 		std:: cout << "\n Attempt to read default \"Input.txt\" file as input\n";
 	}
 
@@ -203,7 +205,10 @@ system(remove_old);
 
 
 // 	___________________INITIALIZATION _____________________________
-	
+//if(read_old){
+//	KMC kmc(L)
+//}
+	//else(){
 	srand (seed);// initialise random generator differently for each MPI thread
 	
 	KMC kmc(J,BR,A,E_shift,L,is_circle,radius,conc0,T0);
