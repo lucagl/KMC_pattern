@@ -24,6 +24,7 @@ mpic++ *.cpp -o kmc.ex -lfftw3_omp -lfftw3 -fopenmp
 System of coordinates is x: left-right-wise and y: top-bottom wise. The indexes of arrays start with 0.
 
 -------------------- TODO -----------------
+- Make less memory consuming convolution part. There are somme dummy vectors that could be allocated once for all
 - Delete final print function not really nice
 - IMPORTANT Give (shared memory) multithreading option from input file, recommend FALSE
 - [minor]displace kmc.init() within constructor?
@@ -85,6 +86,12 @@ int main(int argc, char **argv){
 // int argc; //MPI stuff
 // char **argv; //MPI stuff
 
+ierr = MPI_Init(&argc, &argv);
+
+MPI_Comm_size(MPI_COMM_WORLD, &n_proc);
+
+MPI_Comm_rank(MPI_COMM_WORLD, &proc_ID);
+
 std :: string inFile = "";
 int numargs = argc-1;
 //std :: cout << "\n argc =" << argc<< std::flush;
@@ -105,14 +112,6 @@ long elapsed_time;
 
 t1=clock();
 start = std::time(NULL);
-	
-
-ierr = MPI_Init(&argc, &argv);
-
-MPI_Comm_size(MPI_COMM_WORLD, &n_proc);
-
-MPI_Comm_rank(MPI_COMM_WORLD, &proc_ID);
-
 
 // ----------------- READ INPUT AND PRINT INITIAL INFO -------------
 if(proc_ID == root_process){
@@ -157,22 +156,22 @@ int syst_cores = std :: stoi(exec("grep -c ^processor /proc/cpuinfo"));//linux
 	// max_threads = omp_get_max_threads(); Use this if threads are set from environment variable
 
 	localseed = new unsigned[max_threads];//one seed per potential thread (more than those actually used )
-
+	}
 	unsigned id = omp_get_thread_num();	
-
+	// std:: cout << "\n Hello word from thread: \n";
+	// std :: cout <<"\n" <<id << "\n";
 	localseed[id] = seed *(id + 1);
 
-	if(multi_thread) max_threads = floor(max_threads/n_proc);
-	else max_threads = 1;
+	//std::cout << "\n\n"<< omp_get_num_threads();
+}
 
-	if(proc_ID == root_process){
+if(multi_thread) max_threads = floor(max_threads/n_proc);
+else max_threads = 1;
+
+if(proc_ID == root_process){
 			std :: cout << "\n Max number of threads available in the machine = " << syst_cores << "\n";
 			std :: cout << "\n Max number of threads per process used = " << max_threads << "\n";
 		}
-	//std::cout << "\n\n"<< omp_get_num_threads();
-	}
-}
-
 
 omp_set_num_threads (max_threads);
 n_threads = max_threads;//useless if allow omp to choose number of threads at runtime
@@ -305,6 +304,8 @@ if(proc_ID==0){
 // kmc.saveTxt(path2,0);
 
 kmc.print_final(n_steps/print_every,1);
+
+delete [] localseed;
 
 // double sigma = 1;
 // double** convResult_isl, ** convResult_adt; 

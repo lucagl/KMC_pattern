@@ -39,6 +39,10 @@ void FlatLand :: initConv(const double sigma){
     fftw_execute_dft_r2c(FT,gk,gft); //forward fourier transform stored in gft. 
     /*CAREFUL : do not back transofrm gft giving as argument to c2r gft. 
     The function affects the first argument..*/
+    free(g);
+    free(gk);
+
+
 
 }
 
@@ -90,8 +94,11 @@ double** FlatLand :: gaussianConv()const {
 
     fftw_free(convolft);
     fftw_free(fSpace);
+    free (direct);
 
 
     return smooth_matrix;
 
 }
+
+// Routines to dispose fft routines 

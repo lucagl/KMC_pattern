@@ -476,6 +476,12 @@ void KMC :: print_final (const int n_frames, bool isConv=0){
             outfile2.close();
             outfile3.close();
         }
+        for(int i = 0; i < L; ++i) {
+                delete [] outAdatom[i];
+                delete [] outIsland[i];
+            }
+            delete [] outAdatom;
+            delete [] outIsland;
 
     }
 }

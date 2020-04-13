@@ -41,6 +41,8 @@ class FlatLand {
                 g = gauss(L,sigma);
                 fftShift(g,gk,L,L);
                 fftw_execute_dft_r2c(FT,gk,gft);
+                free(g);
+                free(gk);
             }
             else {std :: cout << "Cannot reset non initialised instance. ERROR"<< std ::endl; return;}
         };
@@ -77,6 +79,10 @@ class FlatLand {
                 }
             }
             outfile.close();
+            for(int i = 0; i < L; ++i) {
+                delete [] matrix_conv[i];
+            }
+            delete [] matrix_conv;
         };
 
         FlatLand() {};
