@@ -453,12 +453,12 @@ void KMC :: print_final (const int n_frames, bool isConv=0){
         std :: ofstream outfile3 (path+"/final_adatomConv.txt");
 
         if(!adatom.isConv()){
-            std :: cout <<"Adatom convolution not initialized, using defaut sigma"<< std :: endl;
+            if(proc_ID==0) std :: cout <<"Adatom convolution not initialized, using defaut sigma"<< std :: endl;
             double sigma = L/50;
             adatom.initConv(sigma);
             }
         if(!island.isConv()){
-            std :: cout <<"Island convolution not initialized, using defaut sigma"<< std :: endl;
+            if(proc_ID==0) std :: cout <<"Island convolution not initialized, using defaut sigma"<< std :: endl;
             double sigma = L/100;
             island.initConv(sigma);
             }
@@ -1331,7 +1331,7 @@ bool KMC :: update_AttachmentClasses(const int x, const int y){
  	R_sum = cumulative(r); 
     //std :: cout << "R sum = " << R_sum << std::fflush;
     // Uniform random number between (0,1]
- 	d_rand= ((double) (rand()+1)) /((double) (RAND_MAX) +1) * R_sum;
+ 	d_rand= ((double) rand()+1) /((double) (RAND_MAX) +1) * R_sum;
     //std :: cout << "\nRandom number " << d_rand << std::fflush;
 
 /*===================================
@@ -3826,11 +3826,12 @@ step_counter++;
 
 //############# Time computation ########################
 
-d_rand= ((double) (rand()+1)) /((double) (RAND_MAX) +1);
+d_rand=  ( (double)rand()+1) /((double) (RAND_MAX) +1);
 
 double time = -log(d_rand)/R_sum;
 
-
+// std :: cout << "Rand MAX " << RAND_MAX;
+// std :: cout << "\n Drand =  " << d_rand << std::fflush;
 //std :: cout << "Random number " << ((double) (rand()+1)) /((double) (RAND_MAX) +1) << std::fflush;
 //std :: cout << "\n Drand =  " << d_rand << std::fflush;
 
