@@ -8,6 +8,9 @@ const int root_process=0;
 unsigned id,seed,n_threads, max_threads,n_threadsFTT;
 int proc_ID,n_proc;
 unsigned* localseed;
+
+//
+bool diagonal =false;
 //_______________________________
 
 

@@ -27,22 +27,14 @@ public:
 		}
 		
 		if (radius >= L){
-			//Multiple vertical lines
-			//estimate how many bands fit..
-			bool diagonal = false;	
+			//Multiple bands
 			const int nbands = 5;
-			if (proc_ID ==0)
-			{
-				std :: cout << "\n Straight line 0, diagonal lines (45°) 1. Insert value \n" << std:: endl;
-				std:: cin >> diagonal;
-				std :: cout << "\n Inserted value : " << diagonal;
-
-			}
-			
-			
-		
+				
 			if(!diagonal){
+				if (proc_ID ==0)
+				{
 				std :: cout << "\n Vertical bands \n" << std:: endl;
+				}
 				int thickness =int ((double)L/(2*nbands));
 
 			for(int i =0;i<L; i++){	
@@ -56,7 +48,10 @@ public:
 				}
 			}
 			else{
+				if (proc_ID ==0)
+				{
 				std :: cout << "\n Diagonal bands \n" << std:: endl;
+				}
 				int thickness = int (sqrt(2) * (double) L/(2*nbands));
 				bool flag=0;
 				// int switchx = (int)((double) thickness/cos(PI/4));

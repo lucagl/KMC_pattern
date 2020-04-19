@@ -145,8 +145,14 @@ if(proc_ID == root_process){
 	std :: cout << "\n Equilibrium concentration at T=0, is  " << c_eq << "\n";
 	if(radius>=L){
 		std ::  cout << "\n Size or radius larger than or equal to box size:\n Bands mode\n"<< std::endl;
+		std :: cout << "\n Straight line 0, diagonal lines (45°) 1. Insert value \n" << std:: endl;
+		std:: cin >> diagonal;
+		std :: cout << "\n Inserted value : " << diagonal;
 	}
 }
+///////// move to input file
+MPI_Bcast(&diagonal, 1, MPI_INT, 0, MPI_COMM_WORLD);
+///////////////
 
 seed = time(NULL)*(proc_ID+1);
 

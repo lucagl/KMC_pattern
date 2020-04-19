@@ -16,6 +16,12 @@ extern unsigned* localseed;
 extern const int root_process;
 
 
+// temporary..
+
+extern bool diagonal;
+
+//////////
+
 // Main mother class
 
 class FlatLand {
