@@ -18,7 +18,7 @@ enum det_classes {
 
 
 KMC:: KMC(const double J_read, const double BR_read, const double A_read, const double E_read,
-const unsigned L_read, const bool is_circle, const int radius, const double conc_read, const double T0) : L(L_read)
+const int L_read, const bool is_circle, const int radius, const double conc_read, const double T0) : L(L_read)
 {
 
     if(proc_ID == root_process){
@@ -1331,7 +1331,7 @@ bool KMC :: update_AttachmentClasses(const int x, const int y){
  	R_sum = cumulative(r); 
     //std :: cout << "R sum = " << R_sum << std::fflush;
     // Uniform random number between (0,1]
- 	d_rand= ((double) rand()+1) /((double) (RAND_MAX) +1) * R_sum;
+ 	d_rand= ((double) rand()+1) /((double) RAND_MAX +1) * R_sum;
     //std :: cout << "\nRandom number " << d_rand << std::fflush;
 
 /*===================================
@@ -3711,7 +3711,7 @@ The problem is that the change of content of an index with list can problems sin
 Therefore I cannot have random access like vector or arrays.. I have to iterate on a pointer which is shared!
 */
 std :: vector <std :: tuple<int, int>> Diff_adatoms{};
-    for (unsigned long int  i = 0; i < R[diffusion].N; i++){
+    for (int  i = 0; i < R[diffusion].N; i++){
         Diff_adatoms.push_back(std :: make_tuple (R[diffusion].where(i)[0],R[diffusion].where(i)[1]));
     }
 
@@ -3826,15 +3826,13 @@ step_counter++;
 
 //############# Time computation ########################
 
-d_rand=  ( (double)rand()+1) /((double) (RAND_MAX) +1);
+d_rand=  ( (double)rand() + 1) /( (double)RAND_MAX +1 );
 
 double time = -log(d_rand)/R_sum;
 
-// std :: cout << "Rand MAX " << RAND_MAX;
+// std :: cout << "\nRand MAX overflow" << double(RAND_MAX +1);
+// std :: cout << "\n Rand MAX overflow handled\n" << (double)RAND_MAX +1;
 // std :: cout << "\n Drand =  " << d_rand << std::fflush;
-//std :: cout << "Random number " << ((double) (rand()+1)) /((double) (RAND_MAX) +1) << std::fflush;
-//std :: cout << "\n Drand =  " << d_rand << std::fflush;
-
 //std :: cout <<"\n Physical time  " <<log(d_rand)<<"\t"<<time <<std::endl;
 //########################################################
 

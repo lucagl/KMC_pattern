@@ -117,7 +117,7 @@ double* gauss(const int L, const double sigma ){
 		for (int j = 0; j < L; j++)
 		{	x = double(i)-mu;
 			y = double(j) - mu;
-			g[j+L*i]= 1/(sigma*2*PI) * exp(-(x*x+y*y)/(2*sigma*sigma));
+			g[j+L*i]= 1/(sigma*sigma*2*PI) * exp(-(x*x+y*y)/(2*sigma*sigma));
 		}
 		
 	}

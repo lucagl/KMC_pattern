@@ -23,7 +23,7 @@ class Events {
 		double getPeratomRate(){return r;};
 		//std::tuple<int, int> coordinate(int i); //return a tuple
 		//unsigned getNumber() const {return N;};
-		unsigned  N=0;
+		int  N=0;
 		//unsigned short ** mask; 
 		
 		void destroy(int i); //destroy ith element

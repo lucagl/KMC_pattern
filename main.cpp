@@ -24,6 +24,9 @@ mpic++ *.cpp -o kmc.ex -lfftw3_omp -lfftw3 -fopenmp
 System of coordinates is x: left-right-wise and y: top-bottom wise. The indexes of arrays start with 0.
 
 -------------------- TODO -----------------
+-IMPORTANT: User defined sigma for convolution..
+- IMPORTANT: In kmc class trnasform adatom and island objects in pointers. 
+             Much more elegant to avoid constructor to be called at initialization.
 - Make less memory consuming convolution part. There are somme dummy vectors that could be allocated once for all
 - Delete final print function not really nice
 - IMPORTANT Give (shared memory) multithreading option from input file, recommend FALSE
@@ -67,7 +70,7 @@ System of coordinates is x: left-right-wise and y: top-bottom wise. The indexes 
 
 //------
 
-int ierr;
+int ierr,err;
 bool multi_thread = true;
 /*  Need:
 	methods to initialise and init
@@ -140,6 +143,9 @@ if(proc_ID == root_process){
 	double c_eq = exp((-2*J*(1+BR) + E_shift)/T0);
 	
 	std :: cout << "\n Equilibrium concentration at T=0, is  " << c_eq << "\n";
+	if(radius>=L){
+		std ::  cout << "\n Size or radius larger than or equal to box size:\n Bands mode\n"<< std::endl;
+	}
 }
 
 seed = time(NULL)*(proc_ID+1);
@@ -197,8 +203,8 @@ const char* makeDir = aString.c_str();
 auto path = "plots" + (std::to_string(proc_ID));
 auto bString ="rm " + path + "/island* " + path + "/adatom* ";
 const char* remove_old = bString.c_str();
-system(makeDir);
-system(remove_old);
+err = system(makeDir);
+err = system(remove_old);
 
 // -------------------------------------------------------
 

@@ -27,16 +27,14 @@ public:
 		}
 		
 		if (radius >= L){
-			//vertical bar
-			//std :: cout << "\nVertical bar\n "<< std :: endl;
 			//Multiple vertical lines
 			//estimate how many bands fit..	
-			int thickness = 40;
+			bool diagonal = true;
 		
-			std :: cout << "Band thickness =" << thickness<< " Number of bands " << int(L/thickness)/2;
-			
+			if(!diagonal){
+				const int nbands = 5;
+				int thickness =int ((double)L/(2*nbands));
 			for(int i =0;i<L; i++){	
-					//for(int j =int(L/2-L/5);j<int(L/2+L/5);j++){
 					int n = 0;
 					bool flag=0;
 					for(int j =int(thickness/2);j<L-int(thickness/2);j++){
@@ -45,8 +43,72 @@ public:
 						n+=1;	
 					}
 				}
+			}
+			else{
+				const int nbands = 5;
+				int thickness = int (sqrt(2) * (double) L/(2*nbands));
+				bool flag=0;
+				// int switchx = (int)((double) thickness/cos(PI/4));
+				int offset = ceil(((double) thickness/sin(PI/4))); 
+				// int nx,ny;
+				// bool flagx,flagy;
+				// ny = 0;
+				// nx = -1;
+				// // flag = 0;
+				// flagx=0;
+				// flagy=0;
+				// bool swap = 0;
+				// //int s=0;
+				// for(int i =0;i<L; i++){	
+				// 	//nx= -ny + offset;
+				// 	ny +=1;
+				// 	if(abs(ny)%offset==0) {flagy=!flagy; }
+				// 	// std:: cout << "\n"<< nx<<"\t"<<ny << std::endl;
+				// 	nx =-ny;
+				// 	flagx = 0;
+				// 	for(int j= 0;j<L;j++){
+				// 		if(nx%(offset)==0) {flagx= !flagx;}
+				// 		//if(nx%(offset/2)==0) {swap= !swap;}
+				// 		//matrix[((L-1)-i)*swap + i*!swap][((L-1)-j)*swap + j*!swap] = flagx^flagy;//xor and offset identical for many bands
+				// 		matrix[i][j] = flagx^flagy;
+				// 		nx +=1;	
+				// 		//i = y, j = x
+				// 	}
+				// }
+				//draw lines and the fill them
+				int x0 = 0;
+				while(x0<L){
+					int x,y;
+						for(int j= 0;j<L;j++){
+							x = j;
+							y = -x +x0 ;
+							if(y>=L) {//std::cout <<"\n HERE" << L <<"\t" << y <<std::endl;
+							 y=-L+y;  };
+							if(y <0) {//std::cout <<"\n HERE" << L <<"\t" << y <<std::endl; 
+							y= L + y; };
+							//std::cout <<"\n"<< y <<std ::endl;
+							matrix[y][x] = flag;
+						}
+						x0+=1;
+						if(x0%offset==0) flag=!flag;
+				}
+
+			}	
 			
 		}
+
+
+
+
+
+
+
+
+
+
+
+
+
 		else{
 			
 			int x0 = int(L/2);

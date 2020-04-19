@@ -14,7 +14,6 @@ unsigned* localseed;
 
 void FlatLand :: initConv(const double sigma){
     int Lf = L/2+1;
-    double norm = 1./(double(L)*double(L));
 
     if(isConvinit) {resetKernel(sigma); return;}
 
@@ -25,6 +24,8 @@ void FlatLand :: initConv(const double sigma){
     double * g = (double*) malloc (sizeof(double) * L*L);
     //g contains gaussian centered in the center (L/2)
     g=gauss(L,sigma);
+ 
+    
     fftShift(g,gk,L,L);
     gft = fftw_alloc_complex (L * Lf);//real to complex. The complex array has size N_x x (N_y/2 +1) 
 
@@ -36,7 +37,9 @@ void FlatLand :: initConv(const double sigma){
     FT = fftw_plan_dft_r2c_2d (L,L,gk,gft,FFTW_ESTIMATE);//plan for real to complex
     IFT = fftw_plan_dft_c2r_2d (L,L,gft,gk,FFTW_ESTIMATE);//plan for complex to real        
 
-    fftw_execute_dft_r2c(FT,gk,gft); //forward fourier transform stored in gft. 
+    fftw_execute_dft_r2c(FT,gk,gft); //forward fourier transform stored in gft.
+    
+    
     /*CAREFUL : do not back transofrm gft giving as argument to c2r gft. 
     The function affects the first argument..*/
     free(g);

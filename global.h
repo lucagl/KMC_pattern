@@ -20,7 +20,7 @@ extern const int root_process;
 
 class FlatLand {
     protected :
-        unsigned L;
+        int L;
         // double * g;
         fftw_complex *gft;
         fftw_plan FT,IFT;
