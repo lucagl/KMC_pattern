@@ -7,7 +7,7 @@
 
 
 void read_input(std :: string inName, int* L, double* T, double* c, int* radius, bool* is_circle, 
-double* A, double* BR, double* E_shift, int* n_steps, int* print_every){
+double* A, double* BR, double* E_shift, unsigned long* n_steps, int* print_every){
 
 	std :: ifstream finput;
 
@@ -66,11 +66,15 @@ double* A, double* BR, double* E_shift, int* n_steps, int* print_every){
 		
 		std :: getline(finput,line); 
 		
-		*n_steps= std::stoi(line); // kmc steps
+		*n_steps= std::stol(line); // kmc steps
 		
-		std :: getline(finput,line); 
+		std :: getline(finput,line); // frames
 		
 		*print_every= std::stoi(line);
+
+
+		// std :: getline(finput,line); //sigma
+		// *sigma = std::stod(line);
 		
 		// std :: getline(finput,line, ' '); 
 		

@@ -31,17 +31,22 @@ class FlatLand {
         fftw_complex *gft;
         fftw_plan FT,IFT;
         bool isConvinit = false;
+        double sigma;
 
     public:
         unsigned short ** matrix;
         int getBox()const {return L;};
+        double getSigma() const {return sigma;}
         double ** gaussianConv() const;
         bool isConv() const {return isConvinit;};
         
         void initConv(const double);
 
-        void resetKernel(double sigma){
+        void resetKernel(double sigma_in){
             if(isConvinit) {
+                // std:: cout <<"Resetting" <<std ::endl;
+                sigma = sigma_in;
+                
                 double * gk = (double*) malloc (sizeof(double) * L*L);
                 double * g = (double*) malloc (sizeof(double) * L*L);
                 g = gauss(L,sigma);
@@ -54,9 +59,10 @@ class FlatLand {
         };
 
         void saveTxt(const std::string& file_name, const double T, const double c, const double time) const {
+            
             std :: ofstream outfile (file_name);
             if (outfile.is_open()){
-                outfile <<"#T = " << T <<"\tc ="<<c <<"\n";
+                outfile <<"#T = " << T <<"\t c ="<<c <<"\n";
                 outfile << "# Physical time = "<< time <<"\n";
                 outfile << "#Positions\n";
                 for ( int i = 0;i < L;i++){
@@ -68,14 +74,14 @@ class FlatLand {
             outfile.close();
         };
 
-        void saveTxt_conv(const std::string& file_name, const double T, const double c, const double time) const {
-            
+        void saveTxt_conv( std::string& file_name, const double T, const double c, const double time) const {
+            //std:: cout << "\nSaving sigma="<< sigma << std :: flush;
             if(!isConvinit) return;
-
+            file_name.append("_sigma" + std::to_string(int(sigma))+ ".txt");
             double ** matrix_conv = gaussianConv();
             std :: ofstream outfile (file_name);
             if (outfile.is_open()){
-                outfile <<"#T = " << T <<"\tc ="<<c <<"\n";
+                outfile <<"#T = " << T <<"\t c ="<<c <<"\n";
                 outfile << "# Physical time = "<< time <<"\n";
                 outfile << "#Positions convolved\n";
                 for ( int i = 0;i < L;i++){

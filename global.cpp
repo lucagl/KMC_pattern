@@ -15,13 +15,13 @@ bool diagonal =false;
 
 
 
-void FlatLand :: initConv(const double sigma){
+void FlatLand :: initConv(const double sigma_in){
     int Lf = L/2+1;
 
-    if(isConvinit) {resetKernel(sigma); return;}
+    if(isConvinit) {resetKernel(sigma_in); return;}
 
     isConvinit = true;
-    
+    sigma = sigma_in;
    // std :: cout <<"Initialization of convolution routines"<< std :: endl;
     double * gk = (double*) malloc (sizeof(double) * L*L);
     double * g = (double*) malloc (sizeof(double) * L*L);

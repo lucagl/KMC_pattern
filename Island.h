@@ -28,14 +28,19 @@ public:
 		
 		if (radius >= L){
 			//Multiple bands
-			const int nbands = 5;
+			
 				
 			if(!diagonal){
+				const int nbands = 3;
+				int thickness =int ((double)L/(2*nbands));
+
 				if (proc_ID ==0)
 				{
-				std :: cout << "\n Vertical bands \n" << std:: endl;
+				std :: cout << "\n Vertical bands \n" << std:: endl; 
+				std :: cout << "\n nbands = " << nbands;
+				std :: cout << "\n Thickness= " << thickness << std:: endl;
 				}
-				int thickness =int ((double)L/(2*nbands));
+				
 
 			for(int i =0;i<L; i++){	
 					int n = 0;
@@ -48,11 +53,15 @@ public:
 				}
 			}
 			else{
+				const int nbands = 5;
+				int thickness = int (sqrt(2) * (double) L/(2*nbands));
+
 				if (proc_ID ==0)
 				{
 				std :: cout << "\n Diagonal bands \n" << std:: endl;
+				std :: cout << "Thickness= " << thickness << std:: endl;
 				}
-				int thickness = int (sqrt(2) * (double) L/(2*nbands));
+				
 				bool flag=0;
 				// int switchx = (int)((double) thickness/cos(PI/4));
 				int offset = ceil(((double) thickness/sin(PI/4))); 

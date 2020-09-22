@@ -56,7 +56,10 @@
 			"memory_resource": "cpp",
 			"ratio": "cpp",
 			"string": "cpp",
-			"thread": "cpp"
+			"thread": "cpp",
+			"functional": "cpp",
+			"iterator": "cpp",
+			"iomanip": "cpp"
 		}
 	}
 }

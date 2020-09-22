@@ -393,8 +393,8 @@ void KMC :: saveTxt (const std:: string path, const int frame, const double time
         }
         else
         {
-            auto name_a = path + "/adatom_conv" + std::to_string(frame) + ".txt";
-            auto name_b = path + "/island_conv" + std::to_string(frame) + ".txt";
+            auto name_a = path + "/adatom_conv" + std::to_string(frame);// + ".txt";
+            auto name_b = path + "/island_conv" + std::to_string(frame);// + ".txt";
             adatom.saveTxt_conv(name_a,current_T,concentration,time);
             island.saveTxt_conv(name_b,current_T,concentration,time);
         }
@@ -408,7 +408,7 @@ void KMC :: saveTxt (const std:: string path, const int frame, const double time
         }
         else
         {
-            auto name_b = path + "/island_conv" + std::to_string(frame) + ".txt";
+            auto name_b = path + "/island_conv" + std::to_string(frame);// + ".txt";
             island.saveTxt_conv(name_b,current_T,concentration,time);
         }
     }

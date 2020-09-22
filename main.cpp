@@ -24,12 +24,18 @@ mpic++ *.cpp -o kmc.ex -lfftw3_omp -lfftw3 -fopenmp
 System of coordinates is x: left-right-wise and y: top-bottom wise. The indexes of arrays start with 0.
 
 -------------------- TODO -----------------
--IMPORTANT: User defined sigma for convolution..
+- IMPORTANT: Construct better reading from input:
+	USE: ConfigFile.h
+	Class for reading named values from configuration files
+	Richard J. Wagner  v2.1  24 May 2004  wagnerr@umich.edu
+
+// Copyright (c) 2004 Richard J. Wagner
+- IMPORTANT: User defined sigma for convolution..
 - IMPORTANT: In kmc class trnasform adatom and island objects in pointers. 
              Much more elegant to avoid constructor to be called at initialization.
+- IMPORTANT Give (shared memory) multithreading option from input file, recommend FALSE. Also choose # threads from user input
 - Make less memory consuming convolution part. There are somme dummy vectors that could be allocated once for all
 - Delete final print function not really nice
-- IMPORTANT Give (shared memory) multithreading option from input file, recommend FALSE
 - [minor]displace kmc.init() within constructor?
 - Redefine all 2d arrays in contiguous memory to avoid copying them in temporal variable for fourier transform
 	(However if the convolution is done just a few times should not be too heavy)
@@ -39,7 +45,7 @@ System of coordinates is x: left-right-wise and y: top-bottom wise. The indexes 
 
 
 /////
-- MAJOR :Time dependent Temperature
+- MAJOR :Time dependent Temperature..
 
 - Program architecture can be improved.. 
 	for instance L in both master and dependent classes is redundant.
@@ -101,7 +107,8 @@ int numargs = argc-1;
 const double J =0.2;
 
 double T0,conc0, A, BR, E_shift;
-int L,radius, n_steps;
+int L,radius;
+unsigned long n_steps;
 int frame, print_every;
 
 bool is_circle;
@@ -112,6 +119,7 @@ clock_t t1,t2;
 float seconds;
 
 long elapsed_time;
+double sigma, sigma0 = 2;
 
 t1=clock();
 start = std::time(NULL);
@@ -142,7 +150,7 @@ if(proc_ID == root_process){
   
 	double c_eq = exp((-2*J*(1+BR) + E_shift)/T0);
 	
-	std :: cout << "\n Equilibrium concentration at T=0, is  " << c_eq << "\n";
+	std :: cout << "\n Equilibrium concentration is  " << c_eq << "\n";
 	if(radius>=L){
 		std ::  cout << "\n Size or radius larger than or equal to box size:\n Bands mode\n"<< std::endl;
 		std :: cout << "\n Straight line 0, diagonal lines (45°) 1. Insert value \n" << std:: endl;
@@ -152,6 +160,7 @@ if(proc_ID == root_process){
 }
 ///////// move to input file
 MPI_Bcast(&diagonal, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
 ///////////////
 
 seed = time(NULL)*(proc_ID+1);
@@ -177,7 +186,7 @@ int syst_cores = std :: stoi(exec("grep -c ^processor /proc/cpuinfo"));//linux
 	//std::cout << "\n\n"<< omp_get_num_threads();
 }
 
-if(multi_thread) max_threads = floor(max_threads/n_proc);
+if(multi_thread) max_threads = 1+floor((max_threads-1)/n_proc);
 else max_threads = 1;
 
 if(proc_ID == root_process){
@@ -198,8 +207,10 @@ MPI_Bcast(&is_circle, 1, MPI_INT, 0, MPI_COMM_WORLD);
 MPI_Bcast(&BR, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 MPI_Bcast(&A, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 MPI_Bcast(&E_shift, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-MPI_Bcast(&n_steps, 1, MPI_INT, 0, MPI_COMM_WORLD);
+MPI_Bcast(&n_steps, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
 MPI_Bcast(&print_every, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+//MPI_Bcast(&sigma, 1, MPI_INT, 0, MPI_COMM_WORLD);
 //MPI_Bcast(&read_old, 1, MPI_C_BOOL, 0, MPI_COMM_WORLD); skip for now, I wnat to handle this directly in python
 
 // make directories for each thread
@@ -225,7 +236,7 @@ err = system(remove_old);
 	KMC kmc(J,BR,A,E_shift,L,is_circle,radius,conc0,T0);
 	kmc.init();
 	kmc.initConv_adatom(double(L)/30);
-	kmc.initConv_island(2);
+	//kmc.initConv_island(sigma0);
 
 //_____________________________ EPISODES ______________________________
 
@@ -246,21 +257,36 @@ if(proc_ID == root_process){
 frame = 0;
 double t =0;
 
-kmc.saveTxt(path,frame,t,true,true);
-for (int k = 1; k <= n_steps; k++){
+// int nsigma = 2;
+sigma = sigma0;
+// for(int i= 0; i<nsigma;i++){
+	// sigma = sigma0+i*2;
+	kmc.initConv_island(sigma);
+	kmc.saveTxt(path,frame,t,true,true);//save convolved images
+	//std :: cout << sigma << std:: endl;
+	
+	
+	// }
+
+
+for (unsigned long k = 1; k <= n_steps; k++){
 
 	/* Temperature can be changed here..
 	T = T0 + ..
 	A = A0 + ..
 	*/
-	// EVOLUTION STEP 
-	
+	//################### EVOLUTION STEP 	
 	t+=kmc.step(T0);
-	
+//##########################
+// ########## Printing ######################
 	if ((k%print_every)== 0){
 		frame+=1;
-		kmc.saveTxt(path,frame,t,true,true);//save convolved images
-		//kmc.saveTxt(path,frame);//same usual ones
+		// for(int i= 0; i<nsigma;i++){
+			// sigma = sigma0+i*2;
+			kmc.initConv_island(sigma);
+			kmc.saveTxt(path,frame,t,true,true);//save convolved images
+		// }
+		
 		//n_threads= ceil(float(kmc.get_classN()[25])/3500);//update number threads based on number of diffusing adatoms (very empirical..)
 		//if(n_threads>max_threads) n_threads = max_threads;		
 	}
@@ -270,6 +296,39 @@ for (int k = 1; k <= n_steps; k++){
 		
 		}
 }
+
+// _______________ FINAL PRINTS ___________________________
+
+
+// kmc.reset();
+// auto path2 = "dummy";
+// kmc.saveTxt(path2,0);
+
+kmc.print_final(n_steps/print_every,1);
+
+delete [] localseed;
+
+// double sigma = 1;
+// double** convResult_isl, ** convResult_adt; 
+// for (int i = 0; i < 20; i++)
+// {
+	
+// 	kmc.initConv_adatom(sigma*3);
+// 	kmc.initConv_island(sigma);
+// 	convResult_isl = kmc.getIslandConv();
+// 	convResult_adt = kmc.getAdatomConv();
+	
+// 	std:: string file1 = "dummy/island" + std::to_string(i) + ".txt";
+// 	std:: string file2 = "dummy/adatom" + std::to_string(i) + ".txt";
+// 	printFile(convResult_isl,L,file1,std::to_string(sigma));
+// 	printFile(convResult_adt,L,file2,std::to_string(sigma*3));
+// 	sigma+=0.2;
+
+// }
+
+
+MPI_Finalize();
+
 
 //__________________ FINAL MESSAGES ____________________________
 if(proc_ID==0){
@@ -305,42 +364,6 @@ if(proc_ID==0){
 
 	//Other final messages like physical time
 }
-
-// _______________ FINAL PRINTS ___________________________
-
-
-
-
-// kmc.reset();
-// auto path2 = "dummy";
-// kmc.saveTxt(path2,0);
-
-kmc.print_final(n_steps/print_every,1);
-
-delete [] localseed;
-
-// double sigma = 1;
-// double** convResult_isl, ** convResult_adt; 
-// for (int i = 0; i < 20; i++)
-// {
-	
-// 	kmc.initConv_adatom(sigma*3);
-// 	kmc.initConv_island(sigma);
-// 	convResult_isl = kmc.getIslandConv();
-// 	convResult_adt = kmc.getAdatomConv();
-	
-// 	std:: string file1 = "dummy/island" + std::to_string(i) + ".txt";
-// 	std:: string file2 = "dummy/adatom" + std::to_string(i) + ".txt";
-// 	printFile(convResult_isl,L,file1,std::to_string(sigma));
-// 	printFile(convResult_adt,L,file2,std::to_string(sigma*3));
-// 	sigma+=0.2;
-
-// }
-
-
-MPI_Finalize();
-
-
 
 
 return 0;

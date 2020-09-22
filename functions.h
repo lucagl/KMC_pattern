@@ -23,7 +23,7 @@
 #include </usr/local/include/fftw3.h>
 //Linux machine #include <fftw3.h>
 
-void read_input(std::string, int* , double* , double* , int* , bool*, double* , double *, double *, int* , int*);
+void read_input(std::string, int* , double* , double* , int* , bool*, double* , double *, double *, unsigned long* , int*);
 
 inline unsigned extract (unsigned N){
     if (N>RAND_MAX){
