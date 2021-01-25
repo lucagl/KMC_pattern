@@ -78,6 +78,7 @@ System of coordinates is x: left-right-wise and y: top-bottom wise. The indexes 
 
 int ierr,err;
 bool multi_thread = true;
+int setThreads ;
 /*  Need:
 	methods to initialise and init
 		env.init() ok
@@ -142,7 +143,12 @@ if(proc_ID == root_process){
 	std :: cout << "\n Start time " << ctime(&curr_time) << "\n" << std :: flush;	
 	std :: cout << "\n Number of processors= "<< n_proc << std :: endl ;
 
-	read_input(inFile, &L, &T0,& conc0, &radius,&is_circle, &A, &BR, &E_shift, &n_steps, &print_every);//, &read_old);
+	int readThreads;
+	read_input(inFile,&readThreads, &L, &T0,& conc0, &radius,&is_circle, &A, &BR, &E_shift, &n_steps, &print_every);//, &read_old);
+
+	if(multi_thread) setThreads = readThreads;
+	else setThreads = 1;
+	std :: cout << "\n n threads read="<< setThreads;
 
 	std :: cout << "\n J= " << J << "  |  L= "<< L<< "  |  T=" << T0 <<"  |  concentration= "<< conc0 <<
 		"  |  initial island radius= "<< radius <<  "  |  attachment parameter= " << A << "	|	Energy shift= " << E_shift << "	|	Bond energy ratio= "<< BR <<"  |  kmc steps= " << n_steps<<
@@ -158,6 +164,9 @@ if(proc_ID == root_process){
 		std :: cout << "\n Inserted value : " << diagonal;
 	}
 }
+
+omp_set_num_threads (setThreads); 
+
 ///////// move to input file
 MPI_Bcast(&diagonal, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
@@ -169,7 +178,7 @@ int syst_cores = std :: stoi(exec("grep -c ^processor /proc/cpuinfo"));//linux
 //int syst_cores = std :: stoi(exec("sysctl -n hw.ncpu"));//mac
 
 //std :: cout << syst_cores << std :: endl;
-#pragma omp parallel num_threads(syst_cores)
+#pragma omp parallel num_threads(syst_cores) //Forcing to use sys cores to set the upper boundary in the threads number
 {
 	#pragma omp single
 	{
@@ -186,16 +195,23 @@ int syst_cores = std :: stoi(exec("grep -c ^processor /proc/cpuinfo"));//linux
 	//std::cout << "\n\n"<< omp_get_num_threads();
 }
 
-if(multi_thread) max_threads = 1+floor((max_threads-1)/n_proc);
-else max_threads = 1;
+// if(multi_thread) max_threads = 1+floor((max_threads-1)/n_proc);
+
 
 if(proc_ID == root_process){
-			std :: cout << "\n Max number of threads available in the machine = " << syst_cores << "\n";
-			std :: cout << "\n Max number of threads per process used = " << max_threads << "\n";
+			#pragma omp parallel
+			{
+				#pragma omp single
+				{
+					setThreads = omp_get_num_threads();
+				}
+			}
+			// std :: cout << "\n Max number of threads available in the machine = " << syst_cores << "\n";
+			std :: cout << "\n Max number of threads per process available = " << max_threads << "\n";
+			std :: cout << "\n Max number of threads per process used = " << setThreads << "\n";
 		}
 
-omp_set_num_threads (max_threads);
-n_threads = max_threads;//useless if allow omp to choose number of threads at runtime
+n_threads = setThreads;//useless if allow omp to choose number of threads at runtime
 
 
 //RootID broadcast data to other processors

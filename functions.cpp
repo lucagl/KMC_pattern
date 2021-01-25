@@ -6,7 +6,7 @@
 #include <memory>
 
 
-void read_input(std :: string inName, int* L, double* T, double* c, int* radius, bool* is_circle, 
+void read_input(std :: string inName,int* nthreads, int* L, double* T, double* c, int* radius, bool* is_circle, 
 double* A, double* BR, double* E_shift, unsigned long* n_steps, int* print_every){
 
 	std :: ifstream finput;
@@ -22,6 +22,12 @@ double* A, double* BR, double* E_shift, unsigned long* n_steps, int* print_every
 	
 
 	if (finput.is_open()){
+
+		//NEW get n threads from user
+		std :: getline(finput,line);
+		*nthreads = std::stoi(line);
+
+
 		std :: getline(finput,line); 
 		
 		*L= std::stoi(line); //parse to integer
