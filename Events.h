@@ -34,6 +34,11 @@ class Events {
 		bool exist (const int ,const int ) const;// checks existence of the element in the list based on its coordinate
 		int* where (const int ) const; //returns coordinate of the element
 		void clear() {element.clear(); N=0;};
+		std::list<std::tuple<int, int>> :: iterator begin() {return element.begin();};
+		std::list<std::tuple<int, int>> :: iterator end() {return element.end();};
+		std::list<std::tuple<int, int>> :: iterator erase(std::list<std::tuple<int, int>> :: iterator i){return element.erase(i);};
+		int size() {N=element.size(); return N;};
+		void merge(Events& other) {N+=other.element.size(); element.merge(other.element);};
 		//double rate();
 		
 		double getRate() {return (this->*tRate) ();}
@@ -55,7 +60,21 @@ class Events {
 		// 	}
 		// delete [] mask;
 		}
+		// Events(){};
+		Events& operator=( const Events& other ) {
+		N = other.N;
+		element = other.element;
+		// NOTE : keep original def of rate not the one from the assigned event class..
+		if(is_diff) tRate = & Events ::  rate_diffusion;
+		else tRate = & Events :: rate_general;
+		
+		return *this;
+  }
 		};
 
-
+// Events& Events::operator=( const Events& other ) {
+//       N = other.N;
+//       element = other.element;
+//       return *this;
+//   }
 #endif

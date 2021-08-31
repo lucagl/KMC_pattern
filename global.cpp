@@ -33,7 +33,7 @@ void FlatLand :: initConv(const double sigma_in){
     gft = fftw_alloc_complex (L * Lf);//real to complex. The complex array has size N_x x (N_y/2 +1) 
 
     fftw_init_threads();
-    n_threadsFTT = max_threads;
+    n_threadsFTT = n_threads;
     fftw_plan_with_nthreads(n_threadsFTT);
     
 

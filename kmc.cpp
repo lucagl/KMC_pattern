@@ -3691,8 +3691,8 @@ DIFFUSION EVENT
 
         
         
-        omp_init_lock(&writelock1);
-        omp_init_lock(&writelock2);
+        // omp_init_lock(&writelock1);
+        // omp_init_lock(&writelock2);
 
 
         who = diffusion;
@@ -3711,10 +3711,31 @@ The problem is that the change of content of an index with list can problems sin
 Therefore I cannot have random access like vector or arrays.. I have to iterate on a pointer which is shared!
 */
 std :: vector <std :: tuple<int, int>> Diff_adatoms{};
-    for (int  i = 0; i < R[diffusion].N; i++){
-        Diff_adatoms.push_back(std :: make_tuple (R[diffusion].where(i)[0],R[diffusion].where(i)[1]));
-    }
+// for (int  i = 0; i < R[diffusion].N; i++){
+//         Diff_adatoms.push_back(std :: make_tuple (R[diffusion].where(i)[0],R[diffusion].where(i)[1]));
+//         printf("\n(%d,%d)",std ::get<0>(Diff_adatoms[i]),std :: get<1>(Diff_adatoms[i]));
+//     }
+auto it = R[diffusion].begin();
+// int contatore = 0;
+// std :: cout << "HERE0"<< std:: flush;
 
+while (it != R[diffusion].end()){
+    Diff_adatoms.push_back(std :: make_tuple (std::get<0>(*it), std ::get<1>(*it)));
+    it = R[diffusion].erase(it);
+    // printf("\n(%d,%d)",std ::get<0>(Diff_adatoms[contatore]),std :: get<1>(Diff_adatoms[contatore]));
+    // contatore++;
+}
+    R[diffusion].size(); //update element size (0 after complete deletion)
+
+    // printf("\n%d ",R[diffusion].N);
+    // printf("\n%d ", Diff_adatoms.size());
+
+    // R[diffusion].clear();
+
+    // R[attachment].clear();
+    // std :: cout << "HERE1"<< std:: flush;
+
+    
     #pragma omp parallel private (i_rand,x,y)
     {   
         
@@ -3730,94 +3751,202 @@ std :: vector <std :: tuple<int, int>> Diff_adatoms{};
   
         int id = omp_get_thread_num();
 
-        #pragma omp for schedule(dynamic) nowait//further could prevent correlations in random sequences (?)
-            for (unsigned long int i = 0; i < Diff_adatoms.size(); i++){
+        Events localDiff;
+        
+        #pragma omp for schedule (static) nowait//further could prevent correlations in random sequences (?)
+            for (int i = 0; i < Diff_adatoms.size(); i++){
                 //std :: cout << "\n thread "<< omp_get_thread_num() << "loop index" << i << std:: flush;
 
                 x= std :: get<0>(Diff_adatoms[i]);
                 y= std :: get<1>(Diff_adatoms[i]);
                 
                 i_rand = rand_r(&localseed[id]) % 4 +1;//independent seed for each thread, if seed does not change sequence keep going from that seed
-               
-               #pragma omp atomic
-                    adatom.matrix[y][x] -= 1;
+                // if(i%1000==0) printf("\n processor: %d is %d.\t Local diff size= %d",id,i,localDiff.N);
+                // fflush(stdout); 
+
+                // ATTACHMENT CLASS IS MORE LIKELY UNSYNCRONIZED, SINCE NOT ALWAYS HAPPENING
+                if(is_attSite(x,y)){
+                 //remove if it was (in the previous position) on an attachment site
+                    // omp_set_lock(&writelock2);
+                    #pragma omp critical (attUpdate) 
+                    {
+                        error=R[attachment].destroy_singleCoordinate(x,y);//this is slow
+                    }
+                    // omp_unset_lock(&writelock2);
+                }
+
+               #pragma omp atomic update
+                    adatom.matrix[y][x]--;
                
                 if(i_rand ==1){      
                     int top = y+1;
                     if(top==L) top = 0;
 
-                    #pragma omp atomic
-                        adatom.matrix[top][x] += 1;
+                    #pragma omp atomic update
+                        adatom.matrix[top][x] ++;
 
+                    // omp_set_lock(&writelock1);
+                    // #pragma omp critical (diffUpdate) 
+                    // {
+                    //     R[diffusion].populate(x,top);
+                    // }
+                    localDiff.populate(x,top);
+                    // omp_unset_lock(&writelock1);
+                    
+                    if(is_attSite(x,top)) {
+                    // omp_set_lock(&writelock2);
+                    #pragma omp critical (attUpdate) 
+                    {
+                        R[attachment].populate(x,top);
+                    // omp_unset_lock(&writelock2);
+                    }
+                    }
                 }
+
                 else if(i_rand ==2){
 
                     int bottom = y-1;
                     if(bottom==-1) bottom = L-1;
 
-                   #pragma omp atomic
-                        adatom.matrix[bottom][x] += 1;
+                   #pragma omp atomic update
+                        adatom.matrix[bottom][x]++;
+
+                    // omp_set_lock(&writelock1);
+                    // #pragma omp critical (diffUpdate) 
+                    // {
+                    //     R[diffusion].populate(x,bottom);
+                    // }
+                    localDiff.populate(x,bottom);
+
+                    // omp_unset_lock(&writelock1);
+                    if(is_attSite(x,bottom)) {
+                    // omp_set_lock(&writelock2);
+                    #pragma omp critical (attUpdate) 
+                    {
+                        R[attachment].populate(x,bottom);
+                    }
+                    // omp_unset_lock(&writelock2);
+                    }
+
                 }
+
                 else if(i_rand ==3){
 
                     int right = x+1;
                     if (right ==L) right = 0;
 
-                    #pragma omp atomic
-                        adatom.matrix[y][right] += 1;
+                    #pragma omp atomic update
+                        adatom.matrix[y][right]++;
+
+                    // omp_set_lock(&writelock1);
+                    // #pragma omp critical (diffUpdate) 
+                    // {
+                    //     R[diffusion].populate(right,y);
+                    // }
+                    localDiff.populate(right,y);
+                    // omp_unset_lock(&writelock1);
+                    if(is_attSite(right,y)) {
+                    // omp_set_lock(&writelock2);
+                    #pragma omp critical (attUpdate) 
+                    {
+                        R[attachment].populate(right,y);
+                    }
+                    // omp_unset_lock(&writelock2);
+                    }
                 }
+
                 else if(i_rand ==4){
 
                     int left = x-1;
                     if (left == -1) left = L-1;
 
-                    #pragma omp atomic
-                        adatom.matrix[y][left] += 1;
+                    #pragma omp atomic update
+                        adatom.matrix[y][left]++;
+
+                    // omp_set_lock(&writelock1);
+                    // #pragma omp critical (diffUpdate) 
+                    // {
+                    //     R[diffusion].populate(left,y);
+                    // }
+                    localDiff.populate(left,y);
+                    // omp_unset_lock(&writelock1);
+
+
+                    if(is_attSite(left,y)) {
+                    // omp_set_lock(&writelock2);
+                    #pragma omp critical (attUpdate) 
+                    {
+                        R[attachment].populate(left,y);
+                    }
+                    // omp_unset_lock(&writelock2);
+                    }
                 }
             }
-
-        // Refill diffusion and attachment classes 
-        #pragma omp single  
-        {
-            // std::cout << "\n\n"<< omp_get_num_threads();
-            // std::cout << "\n\n"<< omp_get_max_threads ();
-            R[diffusion].clear();
-            R[attachment].clear();
-        }
-      
         
+        // #pragma omp single  
+        // {
+        //     // std::cout << "\n\n"<< omp_get_num_threads();
+        //     // std::cout << "\n\n"<< omp_get_max_threads ();
+        //     R[diffusion].clear();
+        //     R[attachment].clear();
+        // }
 
+        // RECOMBINE..
+        // printf("\nThread %d  local diff size: %d ",id,localDiff.N);
 
+        // omp_set_lock(&writelock1);
+        #pragma omp critical (diffUpdate) 
+            R[diffusion].merge(localDiff);
+        // omp_unset_lock(&writelock1);
+    
 
-
-    // for (int y = 0; y < L; y++){
-    //     for (int x = 0; x < L; x++){
-    //         for(int k=0; k<adatom.matrix[y][x]; k++){
-    //             R[diffusion].populate(x,y);
-    //             if(is_attSite(x,y)) R[attachment].populate(x,y);
-    //         }
-    //     }
-    // }
-
-        #pragma omp for 
-        for (int i = 0; i < L*L; i++){
-            for(int k=0; k<adatom.matrix[i/L][i%L]; k++){//(y,x)[i][j] j advances at contiguous mem locations
-                omp_set_lock(&writelock1);
-                    R[diffusion].populate(i%L,i/L);
-                omp_unset_lock(&writelock1);
+        // #pragma omp for 
+        // for (int i = 0; i < L*L; i++){
+        //     for(int k=0; k<adatom.matrix[i/L][i%L]; k++){//(y,x)[i][j] j advances at contiguous mem locations
+        //         omp_set_lock(&writelock1);
+        //             R[diffusion].populate(i%L,i/L);
+        //         omp_unset_lock(&writelock1);
                 
-                if(is_attSite(i%L,i/L)) {
-                    omp_set_lock(&writelock2);
-                        R[attachment].populate(i%L,i/L);
-                    omp_unset_lock(&writelock2);
-                }
-            }
+        //         if(is_attSite(i%L,i/L)) {
+        //             omp_set_lock(&writelock2);
+        //                 R[attachment].populate(i%L,i/L);
+        //             omp_unset_lock(&writelock2);
+        //         }
+        //     }
+        // }
         }
-   }
-omp_destroy_lock(&writelock1);  
-omp_destroy_lock(&writelock2); 
+    // omp_destroy_lock(&writelock1);
 
-}
+    }
+// printf("\n DIFF size : %d ",R[diffusion].N);
+
+// omp_destroy_lock(&writelock2); 
+
+// std :: cout << "HERE2"<< std:: flush;
+
+// for (int i = 0; i < L*L; i++){
+//     for(int k=0; k<adatom.matrix[i/L][i%L]; k++){//(y,x)[i][j] j advances at contiguous mem location
+//             R[diffusion].populate(i%L,i/L);
+//         if(is_attSite(i%L,i/L)) {
+//                 R[attachment].populate(i%L,i/L);
+//         }
+//     }
+// }
+
+    
+// for (int y = 0; y < L; y++){
+//     for (int x = 0; x < L; x++){
+//         for(int k=0; k<adatom.matrix[y][x]; k++){
+//             R[diffusion].populate(x,y);
+//             if(is_attSite(x,y)) R[attachment].populate(x,y);
+//         }
+//     }
+// }
+
+
+
+
+
 
 concentration = static_cast<double>(adatom.N)/(L*L);//update average concentration of adatoms
 

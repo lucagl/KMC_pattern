@@ -251,7 +251,7 @@ err = system(remove_old);
 	
 	KMC kmc(J,BR,A,E_shift,L,is_circle,radius,conc0,T0);
 	kmc.init();
-	kmc.initConv_adatom(double(L)/30);
+	kmc.initConv_adatom(6);
 	//kmc.initConv_island(sigma0);
 
 //_____________________________ EPISODES ______________________________
@@ -277,8 +277,10 @@ double t =0;
 sigma = sigma0;
 // for(int i= 0; i<nsigma;i++){
 	// sigma = sigma0+i*2;
+
 	kmc.initConv_island(sigma);
-	kmc.saveTxt(path,frame,t,true,true);//save convolved images
+	kmc.saveTxt(path,frame,t,true,false);//save convolved images
+	
 	//std :: cout << sigma << std:: endl;
 	
 	
@@ -300,7 +302,7 @@ for (unsigned long k = 1; k <= n_steps; k++){
 		// for(int i= 0; i<nsigma;i++){
 			// sigma = sigma0+i*2;
 			kmc.initConv_island(sigma);
-			kmc.saveTxt(path,frame,t,true,true);//save convolved images
+			kmc.saveTxt(path,frame,t,true,false);//save convolved images
 		// }
 		
 		//n_threads= ceil(float(kmc.get_classN()[25])/3500);//update number threads based on number of diffusing adatoms (very empirical..)
