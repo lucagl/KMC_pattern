@@ -34,6 +34,7 @@ void FlatLand :: initConv(const double sigma_in){
 
     fftw_init_threads();
     n_threadsFTT = n_threads;
+    // printf("\n nThreads FTT = %d \n",n_threadsFTT);ls
     fftw_plan_with_nthreads(n_threadsFTT);
     
 

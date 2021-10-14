@@ -1,0 +1,12 @@
+2	    nThreads
+500         size
+0.1         Temperature
+1       concentration
+20          initial island size (radius or edge..)
+y	    circular island (if n squared)	
+0.2           attachment parameter
+0.70711     Bond energy ratio
+0.0        E_shift
+100000   kmc steps
+1000     print frequency
+no         read from previous configuration file

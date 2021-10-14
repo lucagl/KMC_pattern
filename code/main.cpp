@@ -1,3 +1,11 @@
+/*		TODO
+Redo everything with c++ vectors. 
+Allocate in advance space and reallocate when needed.
+Maybe you loose a bit of readability but gain in efficiency of memory access..
+*/
+
+
+
 /*######################### 2D SINGLE LAYER CLUSTER GROWTH COUPLED TO A CONCENTRATION FIELD ######################
 
  Author:								Luca Gagliardi IIT
@@ -251,6 +259,8 @@ err = system(remove_old);
 	
 	KMC kmc(J,BR,A,E_shift,L,is_circle,radius,conc0,T0);
 	kmc.init();
+
+
 	kmc.initConv_adatom(6);
 	//kmc.initConv_island(sigma0);
 
