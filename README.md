@@ -11,3 +11,6 @@ Use provided makefile. gcc recomended.
 
 ## Run
 Consider input files in example folder. 2 python3 plotting scripts are also provided.
+
+##Acknowledgements:
+Controlling anisotropy in 2D microscopic models of growth, 	arXiv:2103.15535 [cond-mat.stat-mech]
